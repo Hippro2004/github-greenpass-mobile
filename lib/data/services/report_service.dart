@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:greenpass/core/network/dio_client.dart';
-import 'package:greenpass/core/session.dart';
-import 'package:greenpass/data/dtos/add_report_request.dart';
-import 'package:greenpass/data/dtos/api_response.dart';
-import 'package:greenpass/data/models/report.dart';
+
+import '../../core/session.dart';
+import '../dtos/add_report_request.dart';
+import '../dtos/api_response.dart';
+import '../models/report.dart';
 
 class ReportService {
   Future<ApiResponse<List<Report>>> getMyReport() async {

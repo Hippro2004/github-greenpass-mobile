@@ -1,4 +1,4 @@
-import 'package:greenpass/data/models/user.dart';
+import '../data/models/user.dart';
 
 class Session {
   static User? currentUser;
