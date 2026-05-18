@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/feature/login_view.dart';
-import 'package:greenpass/feature/register_step_2_view.dart';
+import 'package:greenpass/features/auth/views/login_view.dart';
+import 'package:greenpass/features/auth/views/register_step_2_view.dart';
 
 class RegisterStep1View extends StatefulWidget {
   const RegisterStep1View({super.key});

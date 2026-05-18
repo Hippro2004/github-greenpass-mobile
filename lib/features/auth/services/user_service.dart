@@ -1,10 +1,10 @@
 import 'package:greenpass/core/network/dio_client.dart';
-import 'package:greenpass/core/session.dart';
-import 'package:greenpass/data/dtos/api_response.dart';
-import 'package:greenpass/data/dtos/login_request.dart';
-import 'package:greenpass/data/dtos/register_request.dart';
-import 'package:greenpass/data/dtos/update_request.dart';
-import 'package:greenpass/data/models/user.dart';
+import 'package:greenpass/core/storage/session_strorage.dart';
+import 'package:greenpass/features/auth/dtos/api_response.dart';
+import 'package:greenpass/features/auth/dtos/login_request.dart';
+import 'package:greenpass/features/auth/dtos/register_request.dart';
+import 'package:greenpass/features/auth/dtos/update_request.dart';
+import 'package:greenpass/features/auth/models/user.dart';
 
 class UserSevice {
   Future<ApiResponse<User>> login(LoginRequest loginRequest) async {

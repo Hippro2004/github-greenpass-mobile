@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:greenpass/core/network/dio_client.dart';
 
-import '../../core/session.dart';
-import '../dtos/add_report_request.dart';
-import '../dtos/api_response.dart';
+import '../../../core/storage/session_strorage.dart';
+import '../../auth/dtos/add_report_request.dart';
+import '../../auth/dtos/api_response.dart';
 import '../models/report.dart';
 
 class ReportService {

@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:greenpass/data/dtos/add_report_request.dart';
-import 'package:greenpass/data/services/report_service.dart';
+import 'package:greenpass/features/auth/dtos/add_report_request.dart';
+import 'package:greenpass/features/report/services/report_service.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AddReportView extends StatefulWidget {

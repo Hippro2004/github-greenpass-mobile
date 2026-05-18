@@ -1,4 +1,4 @@
-import '../data/models/user.dart';
+import '../../features/auth/models/user.dart';
 
 class Session {
   static User? currentUser;
