@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
-import 'package:greenpass/features/auth/dtos/api_response.dart';
-import 'package:greenpass/features/auth/dtos/qr_response.dart';
+import 'package:greenpass/dtos/api_response.dart';
+import 'package:greenpass/dtos/qr_response.dart';
 import 'package:greenpass/features/stamp/models/stamp.dart';
 
 class StampService {
