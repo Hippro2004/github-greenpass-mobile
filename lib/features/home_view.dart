@@ -4,7 +4,7 @@ import 'package:greenpass/features/more/views/more_view.dart';
 import 'package:greenpass/features/park/views/park_search_view.dart';
 import 'package:greenpass/features/report/views/report_view.dart';
 import 'package:greenpass/features/stamp/views/show_qr_view.dart';
-import 'package:greenpass/features/travel/views/travel_book_view.dart';
+import 'package:greenpass/features/views/travel_book_view.dart';
 
 class MainView extends StatefulWidget {
   const MainView({super.key});

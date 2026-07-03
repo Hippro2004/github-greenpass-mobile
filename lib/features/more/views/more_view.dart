@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/features/more/views/edit_profile_view.dart';
-import 'package:greenpass/features/auth/views/login_view.dart';
+import 'package:greenpass/features/views/login_view.dart';
 
 class MoreView extends StatelessWidget {
   const MoreView({super.key});
