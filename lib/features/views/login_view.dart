@@ -314,7 +314,7 @@ class _LoginViewState extends State<LoginView> {
                                 } on DioException catch (e) {
                                   if (!mounted) return;
 
-                                  final statusCode = e.response!.statusCode;
+                                  final statusCode = e.response?.statusCode;
 
                                   String message;
                                   if (statusCode == 401) {
