@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
-import 'package:greenpass/features/more/views/more_view.dart';
-import 'package:greenpass/features/park/views/park_search_view.dart';
-import 'package:greenpass/features/report/views/report_view.dart';
-import 'package:greenpass/features/stamp/views/show_qr_view.dart';
+import 'package:greenpass/features/views/more_view.dart';
+import 'package:greenpass/features/views/park_search_view.dart';
+import 'package:greenpass/features/views/report_view.dart';
+import 'package:greenpass/features/views/show_qr_view.dart';
 import 'package:greenpass/features/views/travel_book_view.dart';
 
 class MainView extends StatefulWidget {

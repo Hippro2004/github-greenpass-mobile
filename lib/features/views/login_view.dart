@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/dtos/login_request.dart';
-import 'package:greenpass/features/auth/services/user_service.dart';
+import 'package:greenpass/features/services/user_service.dart';
 import 'package:greenpass/features/home_view.dart';
 import 'package:greenpass/features/views/register_step_1_view.dart';
 

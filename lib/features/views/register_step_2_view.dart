@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:greenpass/dtos/register_request.dart';
-import 'package:greenpass/features/auth/services/user_service.dart';
+import 'package:greenpass/features/services/user_service.dart';
 import 'package:greenpass/features/views/login_view.dart';
 import 'package:intl/intl.dart';
 

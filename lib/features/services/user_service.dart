@@ -4,7 +4,7 @@ import 'package:greenpass/dtos/api_response.dart';
 import 'package:greenpass/dtos/login_request.dart';
 import 'package:greenpass/dtos/register_request.dart';
 import 'package:greenpass/dtos/update_request.dart';
-import 'package:greenpass/features/auth/models/user.dart';
+import 'package:greenpass/features/models/user.dart';
 
 class UserSevice {
   Future<ApiResponse<User>> login(LoginRequest loginRequest) async {
