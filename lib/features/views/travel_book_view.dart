@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/features/models/stamp.dart';
-import 'package:greenpass/features/views/stamp_service.dart';
+import 'package:greenpass/features/services/stamp_service.dart';
+import 'package:greenpass/features/views/book_stamp_details.dart';
 
 class TravelBookView extends StatefulWidget {
   const TravelBookView({super.key});
@@ -36,7 +37,7 @@ class _TravelBookViewState extends State<TravelBookView> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = "ไม่สามารถโหลดข้อมูลได้";
+        _error = "ไม่สามารถโหลดข้อมูลแสตมป์ได้ กรุณาลองอีกครั้ง";
         _isLoading = false;
       });
     }
@@ -169,72 +170,88 @@ class _TravelBookViewState extends State<TravelBookView> {
   }
 
   Widget _buildStampCard(Stamp stamp) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: stamp.stampImage != null
-                ? Image.network(
-                    stamp.stampImage!,
-                    height: 100,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                  )
-                : _buildPlaceholder(),
-          ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BookStampDetails(stamp: stamp),
+            ),
+          );
+        },
 
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  stamp.parkName,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
                 ),
-                const SizedBox(height: 4),
-                Row(
+                child: stamp.stampImage != null
+                    ? Image.network(
+                        stamp.stampImage!,
+                        height: 100,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                      )
+                    : _buildPlaceholder(),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.calendar_today_outlined,
-                      size: 11,
-                      color: Colors.grey.shade400,
-                    ),
-                    const SizedBox(width: 4),
                     Text(
-                      stamp.lastStampDate,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade400,
+                      stamp.parkName,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 11,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          stamp.lastStampDate,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

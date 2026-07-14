@@ -37,4 +37,22 @@ class StampService {
           .toList(),
     );
   }
+
+  Future<ApiResponse<List<Stamp>>> getStampDetails(int id) async {
+    try {
+      final response = await DioClient.dio.get(
+        "/stamp/stamp-details",
+        options: Options(headers: {"username": Session.currentUser!.username}),
+      );
+      return ApiResponse(
+        success: response.data["success"],
+        message: response.data["message"],
+        result: (response.data["result"] as List)
+            .map((e) => Stamp.fromJson(e))
+            .toList(),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

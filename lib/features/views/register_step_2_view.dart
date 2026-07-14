@@ -252,8 +252,9 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                 hint: "กรอกวันเดือนปีเกิด",
                                 icon: Icons.calendar_today_outlined,
                                 validator: (value) {
-                                  if (value == null || value.isEmpty)
+                                  if (value == null || value.isEmpty) {
                                     return "กรุณาเลือกวันเดือนปีเกิด";
+                                  }
                                   return null;
                                 },
                                 onTap: () async {
@@ -474,7 +475,7 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                     ),
                                   ),
                                   Text(
-                                    "เป็นชาวต่างชาติ",
+                                    "Is a foreigner ? / เป็นชาวต่างชาติ",
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.black54,
@@ -493,8 +494,9 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                         label: "เขต / อำเภอ",
                                         hint: "กรอกเขต / อำเภอ",
                                         validator: (value) {
-                                          if (value == null || value.isEmpty)
+                                          if (value == null || value.isEmpty) {
                                             return "กรุณากรอกเขต / อำเภอ";
+                                          }
                                           return null;
                                         },
                                       ),
@@ -506,8 +508,9 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                         label: "ตำบล / แขวง",
                                         hint: "กรอกตำบล / แขวง",
                                         validator: (value) {
-                                          if (value == null || value.isEmpty)
+                                          if (value == null || value.isEmpty) {
                                             return "กรุณากรอกตำบล / แขวง";
+                                          }
                                           return null;
                                         },
                                       ),
@@ -521,8 +524,9 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                   hint: "กรอกจังหวัด",
                                   icon: Icons.location_on_outlined,
                                   validator: (value) {
-                                    if (value == null || value.isEmpty)
+                                    if (value == null || value.isEmpty) {
                                       return "กรุณากรอกจังหวัด";
+                                    }
                                     return null;
                                   },
                                 ),
@@ -534,8 +538,9 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                   icon: Icons.markunread_mailbox_outlined,
                                   keyboardType: TextInputType.number,
                                   validator: (value) {
-                                    if (value == null || value.isEmpty)
+                                    if (value == null || value.isEmpty) {
                                       return "กรุณากรอกเลขไปรษณีย์";
+                                    }
                                     return null;
                                   },
                                 ),
@@ -547,8 +552,9 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                 children: [
                                   ElevatedButton.icon(
                                     onPressed: () async {
-                                      if (!formkey.currentState!.validate())
+                                      if (!formkey.currentState!.validate()) {
                                         return;
+                                      }
                                       try {
                                         setState(() => isLoading = true);
 

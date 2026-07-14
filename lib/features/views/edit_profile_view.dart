@@ -314,8 +314,11 @@ class _EditProfileViewState extends State<EditProfileView> {
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
                             if (v == null || v.isEmpty) return "กรุณากรอกอีเมล";
-                            if (!RegExp(r'^[\w.-]+@[\w.-]+\.\w+$').hasMatch(v))
+                            if (!RegExp(
+                              r'^[\w.-]+@[\w.-]+\.\w+$',
+                            ).hasMatch(v)) {
                               return "รูปแบบอีเมลไม่ถูกต้อง";
+                            }
                             return null;
                           },
                         ),
