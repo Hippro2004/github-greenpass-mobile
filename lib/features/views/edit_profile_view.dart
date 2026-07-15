@@ -36,10 +36,13 @@ class _EditProfileViewState extends State<EditProfileView> {
 
   final DateFormat _dateFormat = DateFormat("yyyy-MM-dd");
 
+  // ── ธีมสีเดียวกับหน้า Login ────────────────────────────
   static const Color forestGreen = Color(0xFF2D6A4F);
   static const Color lightGreen = Color(0xFF74C69D);
   static const Color creamBg = Color(0xFFF8F5F0);
   static const Color softBrown = Color(0xFF8B6F47);
+  static const Color darkGreen = Color(0xFF1B4332);
+  static const Color midGreen = Color(0xFF40916C);
 
   @override
   void initState() {
@@ -78,66 +81,6 @@ class _EditProfileViewState extends State<EditProfileView> {
     super.dispose();
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-    String? label,
-    IconData? icon,
-    bool obscure = false,
-    VoidCallback? onToggleObscure,
-    TextInputType? keyboardType,
-    Future<void> Function()? onTap,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscure,
-      keyboardType: keyboardType,
-      readOnly: onTap != null,
-      onTap: onTap,
-      decoration: InputDecoration(
-        labelText: label ?? hint,
-        labelStyle: const TextStyle(color: Colors.black45),
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.black26),
-        prefixIcon: icon != null
-            ? Icon(icon, color: forestGreen, size: 20)
-            : null,
-        suffixIcon: onToggleObscure != null
-            ? IconButton(
-                icon: Icon(
-                  obscure
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  color: Colors.black38,
-                  size: 20,
-                ),
-                onPressed: onToggleObscure,
-              )
-            : null,
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade200),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: forestGreen, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-      ),
-      validator: validator,
-    );
-  }
-
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     try {
@@ -170,7 +113,7 @@ class _EditProfileViewState extends State<EditProfileView> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("แก้ไขข้อมูลสำเร็จ"),
-          backgroundColor: Color(0xFF2D6A4F),
+          backgroundColor: forestGreen,
         ),
       );
       Navigator.pop(context);
@@ -192,6 +135,7 @@ class _EditProfileViewState extends State<EditProfileView> {
       backgroundColor: creamBg,
       body: Stack(
         children: [
+          // ── ลายตกแต่งพื้นหลัง เหมือนหน้า Login เป๊ะ ─────
           Positioned(
             top: -60,
             right: -60,
@@ -216,6 +160,25 @@ class _EditProfileViewState extends State<EditProfileView> {
               ),
             ),
           ),
+          Positioned(
+            top: 90,
+            right: -10,
+            child: Icon(
+              Icons.forest,
+              size: 90,
+              color: Colors.black.withOpacity(0.03),
+            ),
+          ),
+          Positioned(
+            top: 140,
+            left: -30,
+            child: Icon(
+              Icons.park,
+              size: 120,
+              color: Colors.black.withOpacity(0.025),
+            ),
+          ),
+
           CustomScrollView(
             slivers: [
               SliverAppBar(
@@ -226,15 +189,29 @@ class _EditProfileViewState extends State<EditProfileView> {
                 snap: true,
                 leading: IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back, color: forestGreen),
+                  icon: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: forestGreen,
+                      size: 18,
+                    ),
+                  ),
                 ),
                 title: const Text(
                   "แก้ไขข้อมูลส่วนตัว",
                   style: TextStyle(
                     color: forestGreen,
                     fontWeight: FontWeight.w600,
+                    fontSize: 17,
                   ),
                 ),
+                centerTitle: true,
               ),
               SliverToBoxAdapter(
                 child: Padding(
@@ -249,23 +226,45 @@ class _EditProfileViewState extends State<EditProfileView> {
                         Center(
                           child: Stack(
                             children: [
-                              CircleAvatar(
-                                radius: 45,
-                                backgroundColor: Colors.grey.shade200,
-                                child: const Icon(
-                                  Icons.person,
-                                  size: 45,
-                                  color: Colors.grey,
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [darkGreen, midGreen, forestGreen],
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: forestGreen.withOpacity(0.25),
+                                      blurRadius: 14,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: CircleAvatar(
+                                  radius: 45,
+                                  backgroundColor: Colors.grey.shade100,
+                                  child: const Icon(
+                                    Icons.person,
+                                    size: 45,
+                                    color: Colors.grey,
+                                  ),
                                 ),
                               ),
                               Positioned(
                                 bottom: 0,
                                 right: 0,
                                 child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: const BoxDecoration(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
                                     color: forestGreen,
                                     shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
                                   ),
                                   child: const Icon(
                                     Icons.camera_alt,
@@ -277,12 +276,12 @@ class _EditProfileViewState extends State<EditProfileView> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 28),
 
                         Row(
                           children: [
                             Expanded(
-                              child: _buildTextField(
+                              child: _AnimatedTextField(
                                 controller: _firstnameController,
                                 label: "ชื่อจริง",
                                 hint: "กรอกชื่อจริง",
@@ -293,7 +292,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: _buildTextField(
+                              child: _AnimatedTextField(
                                 controller: _lastnameController,
                                 label: "นามสกุล",
                                 hint: "กรอกนามสกุล",
@@ -304,9 +303,9 @@ class _EditProfileViewState extends State<EditProfileView> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
 
-                        _buildTextField(
+                        _AnimatedTextField(
                           controller: _emailController,
                           label: "อีเมล",
                           hint: "กรอกอีเมล",
@@ -322,9 +321,9 @@ class _EditProfileViewState extends State<EditProfileView> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
 
-                        _buildTextField(
+                        _AnimatedTextField(
                           controller: _phoneController,
                           label: "หมายเลขโทรศัพท์",
                           hint: "กรอกหมายเลขโทรศัพท์",
@@ -334,9 +333,9 @@ class _EditProfileViewState extends State<EditProfileView> {
                               ? "กรุณากรอกหมายเลข 10 หลัก"
                               : null,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
 
-                        _buildTextField(
+                        _AnimatedTextField(
                           controller: _birthDateController,
                           label: "วันเดือนปีเกิด",
                           hint: "กรอกวันเดือนปีเกิด",
@@ -356,7 +355,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                             }
                           },
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
 
                         DropdownMenu<int>(
                           width: double.infinity,
@@ -431,7 +430,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                         Row(
                           children: [
                             Transform.scale(
-                              scale: 1.2,
+                              scale: 1.1,
                               child: Checkbox(
                                 value: _isForeigner,
                                 onChanged: (v) =>
@@ -462,7 +461,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                           Row(
                             children: [
                               Expanded(
-                                child: _buildTextField(
+                                child: _AnimatedTextField(
                                   controller: _districtController,
                                   label: "เขต / อำเภอ",
                                   hint: "กรอกเขต / อำเภอ",
@@ -470,7 +469,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: _buildTextField(
+                                child: _AnimatedTextField(
                                   controller: _subDistrictController,
                                   label: "ตำบล / แขวง",
                                   hint: "กรอกตำบล / แขวง",
@@ -478,15 +477,15 @@ class _EditProfileViewState extends State<EditProfileView> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
+                          const SizedBox(height: 16),
+                          _AnimatedTextField(
                             controller: _provinceController,
                             label: "จังหวัด",
                             hint: "กรอกจังหวัด",
                             icon: Icons.location_on_outlined,
                           ),
-                          const SizedBox(height: 12),
-                          _buildTextField(
+                          const SizedBox(height: 16),
+                          _AnimatedTextField(
                             controller: _zipcodeController,
                             label: "เลขไปรษณีย์",
                             hint: "กรอกเลขไปรษณีย์",
@@ -495,23 +494,33 @@ class _EditProfileViewState extends State<EditProfileView> {
                           ),
                         ],
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         const Divider(),
                         const SizedBox(height: 8),
 
                         Align(
                           alignment: Alignment.centerLeft,
-                          child: Text(
-                            "เปลี่ยนรหัสผ่าน (ไม่บังคับ)",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: softBrown,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.lock_outline,
+                                size: 14,
+                                color: softBrown,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                "เปลี่ยนรหัสผ่าน (ไม่บังคับ)",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: softBrown,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        _buildTextField(
+                        const SizedBox(height: 12),
+                        _AnimatedTextField(
                           controller: _passwordController,
                           label: "รหัสผ่านใหม่",
                           hint: "กรอกรหัสผ่านใหม่",
@@ -521,8 +530,8 @@ class _EditProfileViewState extends State<EditProfileView> {
                             () => _obscurePassword = !_obscurePassword,
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        _buildTextField(
+                        const SizedBox(height: 16),
+                        _AnimatedTextField(
                           controller: _confirmPasswordController,
                           label: "ยืนยันรหัสผ่านใหม่",
                           hint: "กรอกรหัสผ่านใหม่อีกครั้ง",
@@ -540,7 +549,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 28),
 
                         SizedBox(
                           width: double.infinity,
@@ -585,6 +594,138 @@ class _EditProfileViewState extends State<EditProfileView> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Animated TextField Widget เดียวกับหน้า Login ──────────
+class _AnimatedTextField extends StatefulWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final IconData? icon;
+  final bool obscure;
+  final VoidCallback? onToggleObscure;
+  final TextInputType? keyboardType;
+  final Future<void> Function()? onTap;
+  final String? Function(String?)? validator;
+
+  const _AnimatedTextField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    this.icon,
+    this.obscure = false,
+    this.onToggleObscure,
+    this.keyboardType,
+    this.onTap,
+    this.validator,
+  });
+
+  @override
+  State<_AnimatedTextField> createState() => _AnimatedTextFieldState();
+}
+
+class _AnimatedTextFieldState extends State<_AnimatedTextField> {
+  final FocusNode _focusNode = FocusNode();
+  bool _isFocused = false;
+
+  static const Color forestGreen = Color(0xFF2D6A4F);
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      setState(() => _isFocused = _focusNode.hasFocus);
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: _isFocused
+            ? [
+                BoxShadow(
+                  color: forestGreen.withOpacity(0.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [],
+      ),
+      child: TextFormField(
+        controller: widget.controller,
+        focusNode: _focusNode,
+        obscureText: widget.obscure,
+        keyboardType: widget.keyboardType,
+        readOnly: widget.onTap != null,
+        onTap: widget.onTap,
+        validator: widget.validator,
+        decoration: InputDecoration(
+          labelText: widget.label,
+          labelStyle: TextStyle(
+            color: _isFocused ? forestGreen : Colors.black45,
+            fontSize: 14,
+          ),
+          hintText: widget.hint,
+          hintStyle: const TextStyle(color: Colors.black26),
+          prefixIcon: widget.icon != null
+              ? Icon(
+                  widget.icon,
+                  color: _isFocused ? forestGreen : Colors.black38,
+                  size: 20,
+                )
+              : null,
+          suffixIcon: widget.onToggleObscure != null
+              ? IconButton(
+                  icon: Icon(
+                    widget.obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: Colors.black38,
+                    size: 20,
+                  ),
+                  onPressed: widget.onToggleObscure,
+                )
+              : null,
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: forestGreen, width: 1.5),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Colors.red, width: 1),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Colors.red, width: 1.5),
+          ),
+          errorStyle: const TextStyle(fontSize: 11, color: Colors.red),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+        ),
       ),
     );
   }

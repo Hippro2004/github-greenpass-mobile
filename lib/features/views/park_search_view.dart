@@ -13,20 +13,29 @@ class ParkSearchView extends StatefulWidget {
 class _ParkSearchViewState extends State<ParkSearchView> {
   final ParkService _parkService = ParkService();
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
 
   List<Park> _allParks = [];
   List<Park> _filteredParks = [];
   bool _isLoading = false;
+  bool _isFocused = false;
 
+  // ── ธีมสีเดียวกับหน้า Login ────────────────────────────
   static const Color forestGreen = Color(0xFF2D6A4F);
   static const Color lightGreen = Color(0xFF74C69D);
   static const Color creamBg = Color(0xFFF8F5F0);
+  static const Color softBrown = Color(0xFF8B6F47);
+  static const Color darkGreen = Color(0xFF1B4332);
+  static const Color midGreen = Color(0xFF40916C);
 
   @override
   void initState() {
     super.initState();
     _loadAllParks();
     _searchController.addListener(_filterParks);
+    _searchFocus.addListener(() {
+      setState(() => _isFocused = _searchFocus.hasFocus);
+    });
   }
 
   void _filterParks() {
@@ -42,6 +51,7 @@ class _ParkSearchViewState extends State<ParkSearchView> {
   void dispose() {
     _searchController.removeListener(_filterParks);
     _searchController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -71,89 +81,182 @@ class _ParkSearchViewState extends State<ParkSearchView> {
         forceMaterialTransparency: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: forestGreen),
+          icon: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: const Icon(Icons.arrow_back, color: forestGreen, size: 18),
+          ),
         ),
         title: const Text(
           "ค้นหาอุทยาน",
-          style: TextStyle(color: forestGreen, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: forestGreen,
+            fontWeight: FontWeight.w600,
+            fontSize: 17,
+          ),
         ),
+        centerTitle: true,
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextField(
-              controller: _searchController,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: "ค้นหาชื่ออุทยาน...",
-                hintStyle: const TextStyle(color: Colors.black38),
-                prefixIcon: const Icon(Icons.search, color: forestGreen),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.black38),
-                        onPressed: () => _searchController.clear(),
-                      )
-                    : null,
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: forestGreen, width: 1.5),
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          // ── ลายตกแต่งพื้นหลัง เหมือนหน้า Login ─────────
+          Positioned(
+            top: -40,
+            right: -40,
+            child: Container(
+              width: 160,
+              height: 160,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: lightGreen.withOpacity(0.12),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 20,
+            left: -30,
+            child: Icon(
+              Icons.park,
+              size: 120,
+              color: forestGreen.withOpacity(0.04),
+            ),
+          ),
+          Positioned(
+            bottom: -70,
+            right: -50,
+            child: Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: forestGreen.withOpacity(0.05),
               ),
             ),
           ),
 
-          Expanded(
-            child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation(forestGreen),
-                    ),
-                  )
-                : _filteredParks.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.forest,
-                          size: 64,
-                          color: Colors.grey.shade300,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          "ไม่พบอุทยานที่ค้นหา",
-                          style: TextStyle(
-                            color: Colors.grey.shade400,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    itemCount: _filteredParks.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
-                    itemBuilder: (context, index) {
-                      final park = _filteredParks[index];
-                      return _buildParkCard(park);
-                    },
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: _isFocused
+                        ? [
+                            BoxShadow(
+                              color: forestGreen.withOpacity(0.15),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                   ),
+                  child: TextField(
+                    controller: _searchController,
+                    focusNode: _searchFocus,
+                    autofocus: true,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: "ค้นหาชื่ออุทยาน...",
+                      hintStyle: const TextStyle(color: Colors.black38),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: _isFocused ? forestGreen : Colors.black38,
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.clear,
+                                color: Colors.black38,
+                              ),
+                              onPressed: () => _searchController.clear(),
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: forestGreen,
+                          width: 1.5,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+              ),
+
+              Expanded(
+                child: _isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation(forestGreen),
+                          strokeWidth: 3,
+                        ),
+                      )
+                    : _filteredParks.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: lightGreen.withOpacity(0.12),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.forest,
+                                size: 44,
+                                color: forestGreen.withOpacity(0.5),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              "ไม่พบอุทยานที่ค้นหา",
+                              style: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                        itemCount: _filteredParks.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final park = _filteredParks[index];
+                          return _buildParkCard(park);
+                        },
+                      ),
+              ),
+            ],
           ),
         ],
       ),
@@ -184,7 +287,7 @@ class _ParkSearchViewState extends State<ParkSearchView> {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                margin: EdgeInsets.only(left: 8),
+                margin: const EdgeInsets.only(left: 8),
                 child: park.image != null
                     ? Image.asset(
                         'assets/images/${park.image}',
@@ -220,7 +323,7 @@ class _ParkSearchViewState extends State<ParkSearchView> {
                           Icon(
                             Icons.location_on_outlined,
                             size: 12,
-                            color: Colors.grey.shade400,
+                            color: softBrown.withOpacity(0.7),
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -241,8 +344,19 @@ class _ParkSearchViewState extends State<ParkSearchView> {
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.grey),
-            const SizedBox(width: 8),
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: lightGreen.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.chevron_right,
+                color: forestGreen,
+                size: 18,
+              ),
+            ),
           ],
         ),
       ),
@@ -253,7 +367,13 @@ class _ParkSearchViewState extends State<ParkSearchView> {
     return Container(
       width: 90,
       height: 90,
-      color: lightGreen.withOpacity(0.2),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [lightGreen.withOpacity(0.25), forestGreen.withOpacity(0.15)],
+        ),
+      ),
       child: Center(child: Icon(Icons.forest, color: forestGreen, size: 32)),
     );
   }
