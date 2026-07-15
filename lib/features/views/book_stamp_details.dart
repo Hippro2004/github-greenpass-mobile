@@ -20,7 +20,6 @@ class _BookStampDetailsState extends State<BookStampDetails> {
 
   static const Color forestGreen = Color(0xFF2D6A4F);
   static const Color creamBg = Color(0xFFF8F5F0);
-  static const Color lightGreen = Color(0xFF74C69D);
 
   Future<void> _loadStampDetails() async {
     try {
