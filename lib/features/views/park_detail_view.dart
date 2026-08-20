@@ -75,10 +75,7 @@ class ParkDetailView extends StatelessWidget {
                           child: park.image != null
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: Image.asset(
-                                    'assets/images/${park.image}', // ← เปลี่ยน
-                                    fit: BoxFit.cover,
-                                  ),
+                                  child: _buildParkImage(park.image!),
                                 )
                               : const Icon(
                                   Icons.forest,
@@ -202,6 +199,30 @@ class ParkDetailView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildParkImage(String image) {
+    final isNetworkImage =
+        image.startsWith('http://') || image.startsWith('https://');
+
+    final placeholder = Container(
+      color: cardGreen,
+      child: const Center(
+        child: Icon(Icons.forest, color: forestGreen, size: 32),
+      ),
+    );
+
+    return isNetworkImage
+        ? Image.network(
+            image,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => placeholder,
+          )
+        : Image.asset(
+            'assets/images/$image',
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => placeholder,
+          );
   }
 
   Widget _buildTimeSection() {

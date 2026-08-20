@@ -51,7 +51,6 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
   static const Color forestGreen = Color(0xFF2D6A4F);
   static const Color lightGreen = Color(0xFF74C69D);
   static const Color creamBg = Color(0xFFF8F5F0);
-  static const Color softBrown = Color(0xFF8B6F47);
   static const Color darkGreen = Color(0xFF1B4332);
   static const Color midGreen = Color(0xFF40916C);
 
