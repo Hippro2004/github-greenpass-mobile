@@ -381,13 +381,6 @@ class _TravelBookViewState extends State<TravelBookView> {
                           color: mutedGold.withOpacity(0.8),
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          stamp.lastStampDate,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade400,
-                          ),
-                        ),
                       ],
                     ),
                   ],

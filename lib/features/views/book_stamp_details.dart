@@ -22,6 +22,12 @@ class _BookStampDetailsState extends State<BookStampDetails> {
   static const Color creamBg = Color(0xFFF8F5F0);
 
   Future<void> _loadStampDetails() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    }
     try {
       final histories = await _stampService.getStampDetails(widget.stamp.id);
       if (!mounted) return;
@@ -139,11 +145,6 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                           widget.stamp.stampDate,
                         ),
                         const Divider(),
-                        _buildInfoRow(
-                          Icons.update_outlined,
-                          "ประทับล่าสุด",
-                          widget.stamp.lastStampDate,
-                        ),
                       ],
                     ),
                   ),

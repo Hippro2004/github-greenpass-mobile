@@ -46,14 +46,18 @@ class StampService {
     try {
       final response = await DioClient.dio.get(
         "/stamp/stamp-details",
+        queryParameters: {"parkId": id},
         options: Options(headers: {"username": Session.currentUser!.username}),
       );
+
+      List<Stamp> stamp = (response.data["result"] as List)
+          .map((e) => Stamp.fromMap(Map<String, dynamic>.from(e as Map)))
+          .toList();
+
       return ApiResponse(
         success: response.data["success"],
         message: response.data["message"],
-        result: (response.data["result"] as List)
-            .map((e) => Stamp.fromJson(e))
-            .toList(),
+        result: stamp,
       );
     } catch (e) {
       rethrow;

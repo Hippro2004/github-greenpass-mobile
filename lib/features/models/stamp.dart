@@ -4,7 +4,6 @@ class Stamp {
   final int id;
   final String? stampImage;
   final String stampDate;
-  final String lastStampDate;
   final int parkId;
   final String parkName;
   final int parkRangerId;
@@ -13,7 +12,6 @@ class Stamp {
     this.id,
     this.stampImage,
     this.stampDate,
-    this.lastStampDate,
     this.parkId,
     this.parkName,
     this.parkRangerId,
@@ -24,7 +22,6 @@ class Stamp {
       'id': id,
       'stampImage': stampImage,
       'stampDate': stampDate,
-      'lastStampDate': lastStampDate,
       'parkId': parkId,
       'parkName': parkName,
       'parkRangerId': parkRangerId,
@@ -39,7 +36,6 @@ class Stamp {
       map['lastStampDate'] ?? '',
       map['parkId']?.toInt() ?? 0,
       map['parkName'] ?? '',
-      map['parkRangerId']?.toInt() ?? 0,
     );
   }
 
