@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/features/views/more_view.dart';
+import 'package:greenpass/features/views/announcement_view.dart';
 import 'package:greenpass/features/views/park_search_view.dart';
 import 'package:greenpass/features/views/report_view.dart';
 import 'package:greenpass/features/views/show_qr_view.dart';
@@ -195,7 +196,6 @@ class _MainViewState extends State<MainView> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
@@ -204,10 +204,19 @@ class _MainViewState extends State<MainView> {
                           width: 1.2,
                         ),
                       ),
-                      child: const Icon(
-                        Icons.notifications_outlined,
-                        color: Colors.white,
-                        size: 20,
+                      child: IconButton(
+                        tooltip: "ประกาศ",
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AnnouncementView(),
+                          ),
+                        ),
+                        icon: const Icon(
+                          Icons.notifications_outlined,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ],

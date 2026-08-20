@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-class AnnoucementResponse {
+class AnnouncementResponse {
   final int annoucementId;
   final String annoucementName;
   final String postDate;
   final String description;
   final String parkName;
-  AnnoucementResponse({
+  AnnouncementResponse({
     required this.annoucementId,
     required this.annoucementName,
     required this.postDate,
@@ -24,8 +24,8 @@ class AnnoucementResponse {
     };
   }
 
-  factory AnnoucementResponse.fromMap(Map<String, dynamic> map) {
-    return AnnoucementResponse(
+  factory AnnouncementResponse.fromMap(Map<String, dynamic> map) {
+    return AnnouncementResponse(
       annoucementId: map['annoucementId']?.toInt() ?? 0,
       annoucementName: map['annoucementName'] ?? '',
       postDate: map['postDate'] ?? '',
@@ -36,8 +36,8 @@ class AnnoucementResponse {
 
   String toJson() => json.encode(toMap());
 
-  factory AnnoucementResponse.fromJson(String source) =>
-      AnnoucementResponse.fromMap(json.decode(source));
+  factory AnnouncementResponse.fromJson(String source) =>
+      AnnouncementResponse.fromMap(json.decode(source));
 
   @override
   String toString() {
@@ -48,7 +48,7 @@ class AnnoucementResponse {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is AnnoucementResponse &&
+    return other is AnnouncementResponse &&
         other.annoucementId == annoucementId &&
         other.annoucementName == annoucementName &&
         other.postDate == postDate &&

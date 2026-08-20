@@ -254,7 +254,7 @@ class _BookStampDetailsState extends State<BookStampDetails> {
             style: const TextStyle(
               fontSize: 13,
               color: Colors.black87,
-              fontWeight: FontWeight.w600,
+              // fontWeight: FontWeight.w600,
             ),
           ),
         ],

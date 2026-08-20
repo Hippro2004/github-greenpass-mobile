@@ -397,7 +397,7 @@ class _TravelBookViewState extends State<TravelBookView> {
                         parkName,
                         style: const TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          // fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
                         maxLines: 1,
