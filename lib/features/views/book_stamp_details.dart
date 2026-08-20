@@ -29,10 +29,10 @@ class _BookStampDetailsState extends State<BookStampDetails> {
       });
     }
     try {
-      final histories = await _stampService.getStampDetails(widget.stamp.id);
+      final histories = await _stampService.getStampDetails(widget.stamp.parkId);
       if (!mounted) return;
       setState(() {
-        _histories = histories.result!;
+        _histories = histories.result ?? [];
         _isLoading = false;
       });
     } catch (e) {

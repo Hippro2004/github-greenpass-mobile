@@ -33,9 +33,9 @@ class Stamp {
       map['id']?.toInt() ?? 0,
       map['stampImage'],
       map['stampDate'] ?? '',
-      map['lastStampDate'] ?? '',
       map['parkId']?.toInt() ?? 0,
       map['parkName'] ?? '',
+      map['parkRangerId']?.toInt() ?? 0,
     );
   }
 
