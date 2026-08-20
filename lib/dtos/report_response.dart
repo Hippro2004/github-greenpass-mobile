@@ -5,11 +5,15 @@ class ReportResponse {
   final String description;
   final String status;
   final String reportDate;
+  final int parkId;
+  final String parkName;
   ReportResponse({
     required this.name,
     required this.description,
     required this.status,
     required this.reportDate,
+    required this.parkId,
+    required this.parkName,
   });
 
   Map<String, dynamic> toMap() {
@@ -18,6 +22,8 @@ class ReportResponse {
       'description': description,
       'status': status,
       'reportDate': reportDate,
+      'parkId': parkId,
+      'parkName': parkName,
     };
   }
 
@@ -27,6 +33,8 @@ class ReportResponse {
       description: map['description'] ?? '',
       status: map['status'] ?? '',
       reportDate: map['reportDate'] ?? '',
+      parkId: map['parkId']?.toInt() ?? 0,
+      parkName: map['parkName'] ?? '',
     );
   }
 
@@ -34,28 +42,4 @@ class ReportResponse {
 
   factory ReportResponse.fromJson(String source) =>
       ReportResponse.fromMap(json.decode(source));
-
-  @override
-  String toString() {
-    return 'ReportResponse(name: $name, description: $description, status: $status, reportDate: $reportDate)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is ReportResponse &&
-        other.name == name &&
-        other.description == description &&
-        other.status == status &&
-        other.reportDate == reportDate;
-  }
-
-  @override
-  int get hashCode {
-    return name.hashCode ^
-        description.hashCode ^
-        status.hashCode ^
-        reportDate.hashCode;
-  }
 }
