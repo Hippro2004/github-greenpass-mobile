@@ -3,6 +3,7 @@ import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/dtos/api_response.dart';
 import 'package:greenpass/dtos/qr_response.dart';
+import 'package:greenpass/dtos/stamp_response.dart';
 import 'package:greenpass/features/models/stamp.dart';
 
 class StampService {
@@ -24,21 +25,21 @@ class StampService {
     }
   }
 
-  Future<ApiResponse<List<Stamp>>> getMyStamps() async {
+  Future<ApiResponse<List<StampResponse>>> getMyStamps() async {
     final response = await DioClient.dio.get(
       "/stamp/my-stamps",
       options: Options(headers: {"username": Session.currentUser!.username}),
     );
 
-    List<Stamp> stamp = (response.data['result'] as List)
-        .map((e) => Stamp.fromMap(Map<String, dynamic>.from(e as Map)))
+    List<StampResponse> stamps = (response.data['result'] as List)
+        .map((e) => StampResponse.fromMap(Map<String, dynamic>.from(e as Map)))
         .toList();
 
     return ApiResponse(
       message: response.data['message'],
       success: response.data['success'],
 
-      result: stamp,
+      result: stamps,
     );
   }
 

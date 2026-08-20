@@ -18,8 +18,27 @@ class _BookStampDetailsState extends State<BookStampDetails> {
   bool _isLoading = true;
   String? _error;
 
-  static const Color forestGreen = Color(0xFF2D6A4F);
-  static const Color creamBg = Color(0xFFF8F5F0);
+  static const Color deepPurple = Color(0xFF4A2E83);
+  static const Color midPurple = Color(0xFF7C4DCC);
+  static const Color lavenderBg = Color(0xFFF6F3FB);
+
+  String get _latestVisitDate {
+    final dates = [
+      widget.stamp.stampDate,
+      ..._histories.map((stamp) => stamp.stampDate),
+    ].where((date) => date.trim().isNotEmpty).toList();
+    if (dates.isEmpty) return "-";
+
+    dates.sort((first, second) {
+      final firstDate = DateTime.tryParse(first);
+      final secondDate = DateTime.tryParse(second);
+      if (firstDate != null && secondDate != null) {
+        return firstDate.compareTo(secondDate);
+      }
+      return first.compareTo(second);
+    });
+    return dates.last;
+  }
 
   Future<void> _loadStampDetails() async {
     if (mounted) {
@@ -29,7 +48,9 @@ class _BookStampDetailsState extends State<BookStampDetails> {
       });
     }
     try {
-      final histories = await _stampService.getStampDetails(widget.stamp.parkId);
+      final histories = await _stampService.getStampDetails(
+        widget.stamp.parkId,
+      );
       if (!mounted) return;
       setState(() {
         _histories = histories.result ?? [];
@@ -53,27 +74,28 @@ class _BookStampDetailsState extends State<BookStampDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: creamBg,
+      backgroundColor: lavenderBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         forceMaterialTransparency: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: forestGreen),
+          icon: const Icon(Icons.arrow_back, color: deepPurple),
         ),
         title: Text(
           widget.stamp.parkName,
           style: const TextStyle(
-            color: forestGreen,
+            color: deepPurple,
             fontWeight: FontWeight.w600,
+            fontSize: 17,
           ),
         ),
       ),
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation(forestGreen),
+                valueColor: AlwaysStoppedAnimation(deepPurple),
               ),
             )
           : _error != null
@@ -88,7 +110,7 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                   ElevatedButton.icon(
                     onPressed: _loadStampDetails, // ← แก้ตรงนี้
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: forestGreen,
+                      backgroundColor: deepPurple,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -145,6 +167,11 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                           widget.stamp.stampDate,
                         ),
                         const Divider(),
+                        _buildInfoRow(
+                          Icons.update_outlined,
+                          "ประทับล่าสุด",
+                          _latestVisitDate,
+                        ),
                       ],
                     ),
                   ),
@@ -156,7 +183,7 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: deepPurple,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -180,7 +207,7 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                               width: 8,
                               height: 8,
                               decoration: const BoxDecoration(
-                                color: forestGreen,
+                                color: midPurple,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -188,7 +215,11 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                             Expanded(
                               child: Text(
                                 history.stampDate,
-                                style: const TextStyle(fontSize: 13),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ],
@@ -207,16 +238,24 @@ class _BookStampDetailsState extends State<BookStampDetails> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, color: forestGreen, size: 18),
+          Icon(icon, color: deepPurple, size: 18),
           const SizedBox(width: 10),
           Text(
             label,
-            style: const TextStyle(fontSize: 13, color: Colors.black45),
+            style: TextStyle(
+              fontSize: 12,
+              color: deepPurple.withOpacity(0.65),
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const Spacer(),
           Text(
             value,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),

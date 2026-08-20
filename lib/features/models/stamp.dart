@@ -29,14 +29,21 @@ class Stamp {
   }
 
   factory Stamp.fromMap(Map<String, dynamic> map) {
+    final parkValue = map['parkId'] ?? map['park_id'] ?? map['park'];
+
     return Stamp(
-      map['id']?.toInt() ?? 0,
+      _toInt(map['stampId'] ?? map['stamp_id'] ?? map['id']),
       map['stampImage'],
       map['stampDate'] ?? '',
-      map['parkId']?.toInt() ?? 0,
-      map['parkName'] ?? '',
+      _toInt(parkValue),
+      map['parkName'] ?? map['name'] ?? '',
       map['parkRangerId']?.toInt() ?? 0,
     );
+  }
+
+  static int _toInt(dynamic value) {
+    if (value is int) return value;
+    return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 
   String toJson() => json.encode(toMap());

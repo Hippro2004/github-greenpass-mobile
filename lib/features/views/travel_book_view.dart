@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:greenpass/dtos/stamp_response.dart';
 import 'package:greenpass/features/models/stamp.dart';
 import 'package:greenpass/features/services/stamp_service.dart';
 import 'package:greenpass/features/views/book_stamp_details.dart';
@@ -12,7 +13,7 @@ class TravelBookView extends StatefulWidget {
 
 class _TravelBookViewState extends State<TravelBookView> {
   final StampService _stampService = StampService();
-  List<Stamp> _stamps = [];
+  List<StampResponse> _stamps = [];
   bool _isLoading = true;
   String? _error;
 
@@ -24,15 +25,15 @@ class _TravelBookViewState extends State<TravelBookView> {
   static const Color cardLavender = Color(0xFFEEE6FB);
   static const Color mutedGold = Color(0xFFB08D57);
 
-  Map<int, List<Stamp>> get _stampsByPark {
-    final grouped = <int, List<Stamp>>{};
+  Map<int, List<StampResponse>> get _stampsByPark {
+    final grouped = <int, List<StampResponse>>{};
     for (final stamp in _stamps) {
       grouped.putIfAbsent(stamp.parkId, () => []).add(stamp);
     }
     return grouped;
   }
 
-  List<Stamp> get _parks {
+  List<StampResponse> get _parks {
     return _stampsByPark.values.map((stamps) => stamps.first).toList();
   }
 
@@ -47,7 +48,7 @@ class _TravelBookViewState extends State<TravelBookView> {
       final stamps = await _stampService.getMyStamps();
       if (!mounted) return;
       setState(() {
-        _stamps = stamps.result!;
+        _stamps = stamps.result ?? [];
         _isLoading = false;
       });
     } catch (e) {
@@ -324,7 +325,11 @@ class _TravelBookViewState extends State<TravelBookView> {
     );
   }
 
-  Widget _buildParkCard(Stamp stamp, int visitCount) {
+  Widget _buildParkCard(StampResponse stamp, int visitCount) {
+    final parkName = stamp.parkName.trim().isNotEmpty
+        ? stamp.parkName
+        : "อุทยาน #${stamp.parkId}";
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -333,7 +338,16 @@ class _TravelBookViewState extends State<TravelBookView> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => BookStampDetails(stamp: stamp),
+              builder: (context) => BookStampDetails(
+                stamp: Stamp(
+                  stamp.stampId,
+                  null,
+                  stamp.stampDate,
+                  stamp.parkId,
+                  stamp.parkName,
+                  0,
+                ),
+              ),
             ),
           );
         },
@@ -357,15 +371,7 @@ class _TravelBookViewState extends State<TravelBookView> {
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8),
-                  child: stamp.stampImage != null
-                      ? Image.network(
-                          stamp.stampImage!,
-                          height: 70,
-                          width: 70,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                        )
-                      : _buildPlaceholder(),
+                  child: _buildPlaceholder(),
                 ),
               ),
               Expanded(
@@ -379,7 +385,16 @@ class _TravelBookViewState extends State<TravelBookView> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        stamp.parkName,
+                        "อุทยาน",
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: deepPurple.withOpacity(0.65),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        parkName,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,

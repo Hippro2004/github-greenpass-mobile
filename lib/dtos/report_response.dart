@@ -12,20 +12,6 @@ class ReportResponse {
     required this.reportDate,
   });
 
-  ReportResponse copyWith({
-    String? name,
-    String? description,
-    String? status,
-    String? reportDate,
-  }) {
-    return ReportResponse(
-      name: name ?? this.name,
-      description: description ?? this.description,
-      status: status ?? this.status,
-      reportDate: reportDate ?? this.reportDate,
-    );
-  }
-
   Map<String, dynamic> toMap() {
     return {
       'name': name,
