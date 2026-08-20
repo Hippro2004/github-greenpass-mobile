@@ -24,6 +24,18 @@ class _TravelBookViewState extends State<TravelBookView> {
   static const Color cardLavender = Color(0xFFEEE6FB);
   static const Color mutedGold = Color(0xFFB08D57);
 
+  Map<int, List<Stamp>> get _stampsByPark {
+    final grouped = <int, List<Stamp>>{};
+    for (final stamp in _stamps) {
+      grouped.putIfAbsent(stamp.parkId, () => []).add(stamp);
+    }
+    return grouped;
+  }
+
+  List<Stamp> get _parks {
+    return _stampsByPark.values.map((stamps) => stamps.first).toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -267,7 +279,7 @@ class _TravelBookViewState extends State<TravelBookView> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "สะสมแล้ว ${_stamps.length} อุทยาน",
+                                    "สะสมแล้ว ${_parks.length} อุทยาน",
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
@@ -275,7 +287,7 @@ class _TravelBookViewState extends State<TravelBookView> {
                                     ),
                                   ),
                                   Text(
-                                    "เก็บครบทุกอุทยาน สะสมความทรงจำ",
+                                    "เข้าเยี่ยมชมทั้งหมด ${_stamps.length} ครั้ง",
                                     style: TextStyle(
                                       color: Colors.white.withOpacity(0.75),
                                       fontSize: 11,
@@ -290,18 +302,17 @@ class _TravelBookViewState extends State<TravelBookView> {
                       const SizedBox(height: 16),
 
                       Expanded(
-                        child: GridView.builder(
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                                childAspectRatio: 0.85,
-                              ),
-                          itemCount: _stamps.length,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
+                          itemCount: _parks.length,
                           itemBuilder: (context, index) {
-                            final stamp = _stamps[index];
-                            return _buildStampCard(stamp);
+                            final stamp = _parks[index];
+                            return _buildParkCard(
+                              stamp,
+                              _stampsByPark[stamp.parkId]!.length,
+                            );
                           },
                         ),
                       ),
@@ -313,7 +324,7 @@ class _TravelBookViewState extends State<TravelBookView> {
     );
   }
 
-  Widget _buildStampCard(Stamp stamp) {
+  Widget _buildParkCard(Stamp stamp, int visitCount) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -327,6 +338,7 @@ class _TravelBookViewState extends State<TravelBookView> {
           );
         },
         child: Container(
+          height: 86,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -339,51 +351,76 @@ class _TravelBookViewState extends State<TravelBookView> {
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: stamp.stampImage != null
+                      ? Image.network(
+                          stamp.stampImage!,
+                          height: 70,
+                          width: 70,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                        )
+                      : _buildPlaceholder(),
                 ),
-                child: stamp.stampImage != null
-                    ? Image.network(
-                        stamp.stampImage!,
-                        height: 100,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                      )
-                    : _buildPlaceholder(),
               ),
-
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      stamp.parkName,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_outlined,
-                          size: 11,
-                          color: mutedGold.withOpacity(0.8),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        stamp.parkName,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
                         ),
-                        const SizedBox(width: 4),
-                      ],
-                    ),
-                  ],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.directions_walk_outlined,
+                            size: 14,
+                            color: mutedGold.withOpacity(0.9),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "เข้าเยี่ยมชม $visitCount ครั้ง",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: lightPurple.withOpacity(0.16),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.chevron_right,
+                  color: deepPurple,
+                  size: 18,
                 ),
               ),
             ],
@@ -395,7 +432,8 @@ class _TravelBookViewState extends State<TravelBookView> {
 
   Widget _buildPlaceholder() {
     return Container(
-      height: 100,
+      height: 70,
+      width: 70,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
