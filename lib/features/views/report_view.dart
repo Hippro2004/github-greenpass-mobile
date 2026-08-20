@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/features/models/report.dart';
+import 'package:greenpass/dtos/report_response.dart';
 import 'package:greenpass/features/services/report_service.dart';
 import 'package:greenpass/features/views/add_report_view.dart';
 
@@ -13,7 +13,7 @@ class ReportView extends StatefulWidget {
 class _ReportViewState extends State<ReportView> {
   final ReportService _reportService = ReportService();
   bool _isLoading = true;
-  List<Report> _reports = [];
+  List<ReportResponse> _reports = [];
   String? _error;
 
   static const Color forestGreen = Color(0xFF2D6A4F);
@@ -61,11 +61,14 @@ class _ReportViewState extends State<ReportView> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final reportAdded = await Navigator.push<bool>(
             context,
             MaterialPageRoute(builder: (_) => const AddReportView()),
           );
+          if (reportAdded == true) {
+            await _loadReports();
+          }
         },
         backgroundColor: forestGreen,
         child: Icon(Icons.add, color: Colors.white),
@@ -173,7 +176,7 @@ class _ReportViewState extends State<ReportView> {
     );
   }
 
-  Widget _buildReportCard(Report report) {
+  Widget _buildReportCard(ReportResponse report) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

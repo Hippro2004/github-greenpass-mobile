@@ -3,22 +3,22 @@ import 'dart:convert';
 class AddReportRequest {
   String name;
   String description;
+  int parkId;
   String? image;
-  String? status;
 
   AddReportRequest({
     required this.name,
     required this.description,
+    required this.parkId,
     this.image,
-    this.status,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'description': description,
+      'parkId': parkId,
       'image': image,
-      'status': status,
     };
   }
 
@@ -26,8 +26,8 @@ class AddReportRequest {
     return AddReportRequest(
       name: map['name'] ?? '',
       description: map['description'] ?? '',
+      parkId: map['parkId']?.toInt() ?? 0,
       image: map['image'],
-      status: map['status'],
     );
   }
 

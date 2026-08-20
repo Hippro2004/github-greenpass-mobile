@@ -4,7 +4,9 @@ import 'package:greenpass/features/services/park_service.dart';
 import 'package:greenpass/features/views/park_detail_view.dart';
 
 class ParkSearchView extends StatefulWidget {
-  const ParkSearchView({super.key});
+  const ParkSearchView({super.key, this.onParkSelected});
+
+  final ValueChanged<Park>? onParkSelected;
 
   @override
   State<ParkSearchView> createState() => _ParkSearchViewState();
@@ -263,10 +265,17 @@ class _ParkSearchViewState extends State<ParkSearchView> {
 
   Widget _buildParkCard(Park park) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => ParkDetailView(park: park)),
-      ),
+      onTap: () {
+        if (widget.onParkSelected != null) {
+          widget.onParkSelected!(park);
+          Navigator.pop(context);
+          return;
+        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => ParkDetailView(park: park)),
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

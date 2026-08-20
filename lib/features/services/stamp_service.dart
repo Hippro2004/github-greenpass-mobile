@@ -29,12 +29,16 @@ class StampService {
       "/stamp/my-stamps",
       options: Options(headers: {"username": Session.currentUser!.username}),
     );
+
+    List<Stamp> stamp = (response.data['result'] as List)
+        .map((e) => Stamp.fromMap(Map<String, dynamic>.from(e as Map)))
+        .toList();
+
     return ApiResponse(
       message: response.data['message'],
       success: response.data['success'],
-      result: (response.data['result'] as List)
-          .map((e) => Stamp.fromJson(e))
-          .toList(),
+
+      result: stamp,
     );
   }
 
