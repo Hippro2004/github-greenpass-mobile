@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/dtos/announcement_response.dart';
 import 'package:greenpass/features/services/announcement_service.dart';
+import 'package:greenpass/features/views/announcement_detail_view.dart';
 
 class AnnouncementView extends StatefulWidget {
   const AnnouncementView({super.key});
@@ -28,6 +29,7 @@ class _AnnouncementViewState extends State<AnnouncementView> {
   }
 
   Future<void> _loadAnnouncements() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _error = null;
@@ -35,14 +37,23 @@ class _AnnouncementViewState extends State<AnnouncementView> {
     try {
       final response = await _announcementService.getAllAnnouncements();
       if (!mounted) return;
+      final announcements = response.result ?? [];
+      announcements.sort((first, second) {
+        final firstDate = DateTime.tryParse(first.postDate);
+        final secondDate = DateTime.tryParse(second.postDate);
+        if (firstDate != null && secondDate != null) {
+          return secondDate.compareTo(firstDate);
+        }
+        return second.postDate.compareTo(first.postDate);
+      });
       setState(() {
-        _announcements = response.result ?? [];
+        _announcements = announcements;
         _isLoading = false;
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
-        _error = "ไม่สามารถโหลดประกาศได้";
+        _error = "ไม่สามารถโหลดประกาศได้\n$error";
         _isLoading = false;
       });
     }
@@ -87,84 +98,100 @@ class _AnnouncementViewState extends State<AnnouncementView> {
   }
 
   Widget _buildAnnouncementCard(AnnouncementResponse announcement) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AnnouncementDetailView(
+            announcementId: announcement.announcementId,
           ),
-        ],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: lightGreen,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.campaign_outlined, color: darkGreen),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  announcement.annoucementName,
-                  style: const TextStyle(
-                    color: darkGreen,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Icon(Icons.forest_outlined, size: 14, color: forestGreen),
-              const SizedBox(width: 5),
-              Expanded(
-                child: Text(
-                  announcement.parkName,
-                  style: const TextStyle(
-                    color: forestGreen,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const Icon(
-                Icons.calendar_today_outlined,
-                size: 13,
-                color: warmGold,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                announcement.postDate,
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            announcement.description,
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 13,
-              height: 1.45,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: lightGreen,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.campaign_outlined, color: darkGreen),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        announcement.parkName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: forestGreen,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        announcement.announcementTitle.trim().isEmpty
+                            ? "ประกาศจากอุทยาน"
+                            : announcement.announcementTitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: darkGreen,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 13,
+                    color: warmGold,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    announcement.postDate,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -184,13 +211,29 @@ class _AnnouncementViewState extends State<AnnouncementView> {
 
   Widget _buildError() {
     return Center(
-      child: ElevatedButton.icon(
-        onPressed: _loadAnnouncements,
-        icon: const Icon(Icons.refresh),
-        label: const Text("ลองใหม่"),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: forestGreen,
-          foregroundColor: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 44),
+            const SizedBox(height: 12),
+            Text(
+              _error ?? "ไม่สามารถโหลดประกาศได้",
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _loadAnnouncements,
+              icon: const Icon(Icons.refresh),
+              label: const Text("ลองใหม่"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: forestGreen,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );

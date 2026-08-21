@@ -1,20 +1,18 @@
 import 'dart:convert';
 
-class AnnouncementResponse {
+class Announcement {
   final int announcementId;
   final String announcementTitle;
   final String postDate;
-  final String? description;
-  final String parkName;
-  final String? parkRangerName;
+  final String description;
+  final int parkId;
 
-  AnnouncementResponse({
+  Announcement({
     required this.announcementId,
     required this.announcementTitle,
     required this.postDate,
-    this.description,
-    required this.parkName,
-    this.parkRangerName,
+    required this.description,
+    required this.parkId,
   });
 
   Map<String, dynamic> toMap() {
@@ -23,43 +21,40 @@ class AnnouncementResponse {
       'announcementTitle': announcementTitle,
       'postDate': postDate,
       'description': description,
-      'parkName': parkName,
-      'parkRangerName': parkRangerName,
+      'parkId': parkId,
     };
   }
 
-  factory AnnouncementResponse.fromMap(Map<String, dynamic> map) {
-    return AnnouncementResponse(
+  factory Announcement.fromMap(Map<String, dynamic> map) {
+    return Announcement(
       announcementId: map['announcementId']?.toInt() ?? 0,
       announcementTitle: map['announcementTitle'] ?? '',
       postDate: map['postDate'] ?? '',
-      description: map['description'],
-      parkName: map['parkName'] ?? '',
-      parkRangerName: map['parkRangerName'],
+      description: map['description'] ?? '',
+      parkId: map['parkId']?.toInt() ?? 0,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory AnnouncementResponse.fromJson(String source) =>
-      AnnouncementResponse.fromMap(json.decode(source));
+  factory Announcement.fromJson(String source) =>
+      Announcement.fromMap(json.decode(source));
 
   @override
   String toString() {
-    return 'AnnouncementResponse(announcementId: $announcementId, announcementTitle: $announcementTitle, postDate: $postDate, description: $description, parkName: $parkName, parkRangerName: $parkRangerName)';
+    return 'Announcement(announcementId: $announcementId, announcementTitle: $announcementTitle, postDate: $postDate, description: $description, parkId: $parkId)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is AnnouncementResponse &&
+    return other is Announcement &&
         other.announcementId == announcementId &&
         other.announcementTitle == announcementTitle &&
         other.postDate == postDate &&
         other.description == description &&
-        other.parkName == parkName &&
-        other.parkRangerName == parkRangerName;
+        other.parkId == parkId;
   }
 
   @override
@@ -68,7 +63,6 @@ class AnnouncementResponse {
         announcementTitle.hashCode ^
         postDate.hashCode ^
         description.hashCode ^
-        parkName.hashCode ^
-        parkRangerName.hashCode;
+        parkId.hashCode;
   }
 }

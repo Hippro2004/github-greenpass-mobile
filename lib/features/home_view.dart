@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
+import 'package:greenpass/dtos/announcement_response.dart';
+import 'package:greenpass/features/services/announcement_service.dart';
+import 'package:greenpass/features/views/announcement_detail_view.dart';
 import 'package:greenpass/features/views/more_view.dart';
 import 'package:greenpass/features/views/announcement_view.dart';
 import 'package:greenpass/features/views/park_search_view.dart';
@@ -16,6 +21,13 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   late final TextEditingController locationGPSController;
+  final AnnoucementService _announcementService = AnnoucementService();
+  final PageController _announcementController = PageController();
+  Timer? _announcementTimer;
+  List<AnnouncementResponse> _announcements = [];
+  bool _announcementLoading = true;
+  String? _announcementError;
+  int _announcementIndex = 0;
   int _currentIndex = 0;
 
   List<Widget> get _page => [_buildHomePage(), MoreView()];
@@ -33,12 +45,62 @@ class _MainViewState extends State<MainView> {
   void initState() {
     super.initState();
     locationGPSController = TextEditingController(text: "ที่อยู่ปัจจุบัน");
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAnnouncements());
   }
 
   @override
   void dispose() {
     locationGPSController.dispose();
+    _announcementTimer?.cancel();
+    _announcementController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadAnnouncements() async {
+    if (!mounted) return;
+    setState(() {
+      _announcementLoading = true;
+      _announcementError = null;
+    });
+    try {
+      final response = await _announcementService.getAllAnnouncements();
+      if (!mounted) return;
+      final announcements = response.result ?? [];
+      announcements.sort((first, second) {
+        final firstDate = DateTime.tryParse(first.postDate);
+        final secondDate = DateTime.tryParse(second.postDate);
+        if (firstDate != null && secondDate != null) {
+          return secondDate.compareTo(firstDate);
+        }
+        return second.postDate.compareTo(first.postDate);
+      });
+      setState(() {
+        _announcements = announcements.take(4).toList();
+        _announcementLoading = false;
+      });
+      _startAnnouncementRotation();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _announcements = [];
+        _announcementLoading = false;
+        _announcementError = error.toString();
+      });
+    }
+  }
+
+  void _startAnnouncementRotation() {
+    _announcementTimer?.cancel();
+    if (_announcements.length < 2) return;
+    _announcementTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted || !_announcementController.hasClients) return;
+      _announcementIndex = (_announcementIndex + 1) % _announcements.length;
+      _announcementController.animateToPage(
+        _announcementIndex,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   @override
@@ -317,65 +379,7 @@ class _MainViewState extends State<MainView> {
                       ),
                       const SizedBox(height: 16),
 
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: Colors.grey.shade100),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.campaign_outlined,
-                                  size: 16,
-                                  color: softBrown,
-                                ),
-                                const SizedBox(width: 6),
-                                const Text(
-                                  "ข่าวสาร",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(
-                                3,
-                                (i) => Container(
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 3,
-                                  ),
-                                  width: i == 0 ? 16 : 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: i == 0
-                                        ? forestGreen
-                                        : Colors.grey.shade300,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      _buildAnnouncementCarousel(),
                     ],
                   ),
                 ),
@@ -384,6 +388,165 @@ class _MainViewState extends State<MainView> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildAnnouncementCarousel() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: _announcementLoading
+          ? Row(
+              children: [
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(forestGreen),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "กำลังโหลดข่าวสาร...",
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                ),
+              ],
+            )
+          : _announcementError != null
+          ? InkWell(
+              onTap: _loadAnnouncements,
+              child: Row(
+                children: [
+                  Icon(Icons.refresh, size: 18, color: softBrown),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "โหลดข่าวสารไม่สำเร็จ แตะเพื่อลองใหม่",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : _announcements.isEmpty
+          ? Row(
+              children: [
+                Icon(Icons.campaign_outlined, size: 18, color: softBrown),
+                const SizedBox(width: 8),
+                Text(
+                  "ยังไม่มีข่าวสาร",
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                ),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.campaign_outlined, size: 16, color: softBrown),
+                    const SizedBox(width: 6),
+                    const Text(
+                      "ข่าวสาร",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 74,
+                  child: PageView.builder(
+                    controller: _announcementController,
+                    itemCount: _announcements.length,
+                    onPageChanged: (index) =>
+                        setState(() => _announcementIndex = index),
+                    itemBuilder: (context, index) {
+                      final announcement = _announcements[index];
+                      return InkWell(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AnnouncementDetailView(
+                              announcementId: announcement.announcementId,
+                            ),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              announcement.parkName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: forestGreen,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              announcement.announcementTitle.trim().isEmpty
+                                  ? "ประกาศจากอุทยาน"
+                                  : announcement.announcementTitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                if (_announcements.length > 1) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      _announcements.length,
+                      (index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: index == _announcementIndex ? 16 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: index == _announcementIndex
+                              ? forestGreen
+                              : Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
     );
   }
 
