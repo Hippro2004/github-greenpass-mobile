@@ -2,9 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/dtos/api_response.dart';
-import 'package:greenpass/dtos/qr_response.dart';
-import 'package:greenpass/dtos/stamp_response.dart';
-import 'package:greenpass/features/models/stamp.dart';
+import 'package:greenpass/features/stamp/dtos/qr_response.dart';
+import 'package:greenpass/features/stamp/dtos/stamp_response.dart';
+import 'package:greenpass/features/stamp/models/stamp.dart';
 
 class StampService {
   Future<ApiResponse<QrResponse>> getQr() async {

@@ -7,12 +7,12 @@ import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
 import 'package:greenpass/features/announcement/services/announcement_service.dart';
 import 'package:greenpass/features/announcement/views/announcement_detail_view.dart';
-import 'package:greenpass/features/views/more_view.dart';
+import 'package:greenpass/features/user/views/more_view.dart';
 import 'package:greenpass/features/announcement/views/announcement_view.dart';
-import 'package:greenpass/features/views/park_search_view.dart';
-import 'package:greenpass/features/views/report_view.dart';
-import 'package:greenpass/features/views/show_qr_view.dart';
-import 'package:greenpass/features/views/travel_book_view.dart';
+import 'package:greenpass/features/park/views/park_search_view.dart';
+import 'package:greenpass/features/report/views/report_view.dart';
+import 'package:greenpass/features/stamp/views/show_qr_view.dart';
+import 'package:greenpass/features/stamp/views/travel_book_view.dart';
 
 class MainView extends StatefulWidget {
   const MainView({super.key});

@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
-import 'package:greenpass/dtos/update_request.dart';
-import 'package:greenpass/features/services/user_service.dart';
+import 'package:greenpass/features/user/dtos/update_request.dart';
+import 'package:greenpass/features/user/services/user_service.dart';
 import 'package:intl/intl.dart';
 
 class EditProfileView extends StatefulWidget {

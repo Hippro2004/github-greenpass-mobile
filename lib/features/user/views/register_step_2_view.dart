@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:greenpass/dtos/register_request.dart';
-import 'package:greenpass/features/services/user_service.dart';
-import 'package:greenpass/features/views/login_view.dart';
+import 'package:greenpass/features/user/dtos/register_request.dart';
+import 'package:greenpass/features/user/services/user_service.dart';
+import 'package:greenpass/features/user/views/login_view.dart';
 import 'package:intl/intl.dart';
 
 class RegisterStep2View extends StatefulWidget {

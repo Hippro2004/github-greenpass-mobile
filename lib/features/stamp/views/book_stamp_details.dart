@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/features/models/stamp.dart';
-import 'package:greenpass/features/services/stamp_service.dart';
+import 'package:greenpass/features/stamp/models/stamp.dart';
+import 'package:greenpass/features/stamp/services/stamp_service.dart';
 
 class BookStampDetails extends StatefulWidget {
   final Stamp stamp;

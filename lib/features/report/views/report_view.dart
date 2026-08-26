@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/dtos/report_response.dart';
-import 'package:greenpass/features/services/report_service.dart';
-import 'package:greenpass/features/views/add_report_view.dart';
+import 'package:greenpass/features/report/dtos/report_response.dart';
+import 'package:greenpass/features/report/services/report_service.dart';
+import 'package:greenpass/features/report/views/add_report_view.dart';
 
 class ReportView extends StatefulWidget {
   const ReportView({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/features/models/park.dart';
+import 'package:greenpass/features/park/models/park.dart';
 
 class ParkDetailView extends StatelessWidget {
   final Park park;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/dtos/stamp_response.dart';
-import 'package:greenpass/features/models/stamp.dart';
-import 'package:greenpass/features/services/stamp_service.dart';
-import 'package:greenpass/features/views/book_stamp_details.dart';
+import 'package:greenpass/features/stamp/dtos/stamp_response.dart';
+import 'package:greenpass/features/stamp/models/stamp.dart';
+import 'package:greenpass/features/stamp/services/stamp_service.dart';
+import 'package:greenpass/features/stamp/views/book_stamp_details.dart';
 
 class TravelBookView extends StatefulWidget {
   const TravelBookView({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/features/models/park.dart';
-import 'package:greenpass/features/services/park_service.dart';
-import 'package:greenpass/features/views/park_detail_view.dart';
+import 'package:greenpass/features/park/models/park.dart';
+import 'package:greenpass/features/park/services/park_service.dart';
+import 'package:greenpass/features/park/views/park_detail_view.dart';
 
 class ParkSearchView extends StatefulWidget {
   const ParkSearchView({super.key, this.onParkSelected});

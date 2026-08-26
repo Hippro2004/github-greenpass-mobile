@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:greenpass/features/views/login_view.dart';
+import 'package:greenpass/features/user/views/login_view.dart';
 
 void main() {
   runApp(const MyApp());

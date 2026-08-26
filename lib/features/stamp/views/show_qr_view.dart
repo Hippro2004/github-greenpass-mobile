@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
-import 'package:greenpass/dtos/qr_response.dart';
-import 'package:greenpass/features/services/stamp_service.dart';
+import 'package:greenpass/features/stamp/dtos/qr_response.dart';
+import 'package:greenpass/features/stamp/services/stamp_service.dart';
 
 class StampQrView extends StatefulWidget {
   const StampQrView({super.key});
