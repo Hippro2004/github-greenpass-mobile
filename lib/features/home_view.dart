@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
 import 'package:greenpass/features/announcement/services/announcement_service.dart';
@@ -27,6 +29,8 @@ class _MainViewState extends State<MainView> {
   List<AnnouncementResponse> _announcements = [];
   bool _announcementLoading = true;
   String? _announcementError;
+  bool _locationLoading = true;
+  String? _locationError;
   int _announcementIndex = 0;
   int _currentIndex = 0;
 
@@ -45,7 +49,10 @@ class _MainViewState extends State<MainView> {
   void initState() {
     super.initState();
     locationGPSController = TextEditingController(text: "ที่อยู่ปัจจุบัน");
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAnnouncements());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadAnnouncements();
+      _loadCurrentLocation();
+    });
   }
 
   @override
@@ -89,6 +96,86 @@ class _MainViewState extends State<MainView> {
         _announcementError = error.toString();
       });
     }
+  }
+
+  Future<void> _loadCurrentLocation() async {
+    if (!mounted) return;
+    setState(() {
+      _locationLoading = true;
+      _locationError = null;
+    });
+
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        throw const LocationServiceDisabledException();
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        throw const PermissionDeniedException("ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง");
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      String address = "";
+      try {
+        final placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+        final place = placemarks.isNotEmpty ? placemarks.first : null;
+        final district = place?.subAdministrativeArea ?? place?.locality;
+        final subdistrict = place?.subLocality;
+        final province = place?.administrativeArea;
+        address = [
+          if (district != null && district.trim().isNotEmpty)
+            "อำเภอ/เขต $district",
+          if (subdistrict != null && subdistrict.trim().isNotEmpty)
+            "ตำบล $subdistrict",
+          if (province != null && province.trim().isNotEmpty)
+            "จังหวัด $province",
+        ].join(", ");
+
+        if (address.isEmpty && place != null) {
+          address = [
+            place.name,
+            place.locality,
+            place.administrativeArea,
+            place.postalCode,
+          ].where((part) => part != null && part.trim().isNotEmpty).join(", ");
+        }
+      } catch (_) {}
+
+      if (!mounted) return;
+      setState(() {
+        locationGPSController.text = address.isEmpty
+            ? "ตำแหน่งปัจจุบัน (${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)})"
+            : address;
+        _locationLoading = false;
+      });
+    } on LocationServiceDisabledException {
+      _setLocationError("กรุณาเปิด GPS แล้วลองใหม่");
+    } on PermissionDeniedException catch (error) {
+      _setLocationError(error.message ?? "ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง");
+    } catch (_) {
+      _setLocationError("ไม่สามารถอ่านตำแหน่งปัจจุบันได้");
+    }
+  }
+
+  void _setLocationError(String message) {
+    if (!mounted) return;
+    setState(() {
+      locationGPSController.text = message;
+      _locationError = message;
+      _locationLoading = false;
+    });
   }
 
   void _startAnnouncementRotation() {
@@ -296,6 +383,7 @@ class _MainViewState extends State<MainView> {
                       TextFormField(
                         controller: locationGPSController,
                         readOnly: true,
+                        onTap: _loadCurrentLocation,
                         style: const TextStyle(
                           fontSize: 13,
                           color: Colors.black54,
@@ -315,6 +403,30 @@ class _MainViewState extends State<MainView> {
                           contentPadding: const EdgeInsets.symmetric(
                             vertical: 12,
                           ),
+                          suffixIcon: _locationLoading
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation(
+                                        forestGreen,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : IconButton(
+                                  tooltip: "อัปเดตตำแหน่ง",
+                                  onPressed: _loadCurrentLocation,
+                                  icon: Icon(
+                                    _locationError == null
+                                        ? Icons.my_location_outlined
+                                        : Icons.refresh,
+                                    color: forestGreen,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 16),
