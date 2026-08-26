@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
-import 'package:greenpass/dtos/announcement_response.dart';
-import 'package:greenpass/features/services/announcement_service.dart';
-import 'package:greenpass/features/views/announcement_detail_view.dart';
+import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
+import 'package:greenpass/features/announcement/services/announcement_service.dart';
+import 'package:greenpass/features/announcement/views/announcement_detail_view.dart';
 import 'package:greenpass/features/views/more_view.dart';
-import 'package:greenpass/features/views/announcement_view.dart';
+import 'package:greenpass/features/announcement/views/announcement_view.dart';
 import 'package:greenpass/features/views/park_search_view.dart';
 import 'package:greenpass/features/views/report_view.dart';
 import 'package:greenpass/features/views/show_qr_view.dart';

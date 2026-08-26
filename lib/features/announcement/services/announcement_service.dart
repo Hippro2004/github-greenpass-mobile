@@ -1,7 +1,7 @@
 import 'package:greenpass/core/network/dio_client.dart';
-import 'package:greenpass/dtos/announcement_response.dart';
+import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
 import 'package:greenpass/dtos/api_response.dart';
-import 'package:greenpass/features/models/announcement.dart';
+import 'package:greenpass/features/announcement/models/announcement.dart';
 
 class AnnoucementService {
   Future<ApiResponse<List<AnnouncementResponse>>> getAllAnnouncements() async {

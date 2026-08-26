@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/dtos/announcement_response.dart';
-import 'package:greenpass/features/services/announcement_service.dart';
+import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
+import 'package:greenpass/features/announcement/services/announcement_service.dart';
 
 class AnnouncementDetailView extends StatefulWidget {
   final int announcementId;
