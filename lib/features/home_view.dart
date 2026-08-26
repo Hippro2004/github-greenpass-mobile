@@ -37,13 +37,15 @@ class _MainViewState extends State<MainView> {
   List<Widget> get _page => [_buildHomePage(), MoreView()];
 
   // ── ธีมสีเดียวกับหน้า Login ────────────────────────────
-  static const Color forestGreen = Color(0xFF2D6A4F);
-  static const Color lightGreen = Color(0xFF74C69D);
-  static const Color creamBg = Color(0xFFF8F5F0);
-  static const Color softBrown = Color(0xFF8B6F47);
-  static const Color darkGreen = Color(0xFF1B4332);
-  static const Color midGreen = Color(0xFF40916C);
-  static const Color cardGreen = Color(0xFFE8F5EE);
+  static const Color indigo = Color(0xFF53658F);
+  static const Color softBlue = Color(0xFF7B9BC2);
+  static const Color forestGreen = Color(0xFF5F927A);
+  static const Color lightGreen = Color(0xFFC9E2D3);
+  static const Color creamBg = Color(0xFFF5F7FB);
+  static const Color softBrown = Color(0xFF8D806D);
+  static const Color darkGreen = Color(0xFF2E3B57);
+  static const Color midGreen = Color(0xFF7194B8);
+  static const Color cardGreen = Color(0xFFE8F1EC);
 
   @override
   void initState() {
@@ -192,6 +194,10 @@ class _MainViewState extends State<MainView> {
     });
   }
 
+  Future<void> _refreshHome() async {
+    await Future.wait([_loadAnnouncements(), _loadCurrentLocation()]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -211,7 +217,7 @@ class _MainViewState extends State<MainView> {
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
-          selectedItemColor: forestGreen,
+          selectedItemColor: indigo,
           unselectedItemColor: Colors.black38,
           backgroundColor: Colors.white,
           elevation: 0,
@@ -235,6 +241,9 @@ class _MainViewState extends State<MainView> {
   Widget _buildHomePage() {
     return Stack(
       children: [
+        Positioned.fill(
+          child: DecoratedBox(decoration: BoxDecoration(color: creamBg)),
+        ),
         // ── ลายตกแต่งพื้นหลัง ให้เข้าธีมเดียวกับหน้า Login
         Positioned(
           top: -60,
@@ -251,11 +260,7 @@ class _MainViewState extends State<MainView> {
         Positioned(
           top: 30,
           right: 10,
-          child: Icon(
-            Icons.forest,
-            size: 90,
-            color: Colors.white.withOpacity(0.07),
-          ),
+          child: Icon(Icons.forest, size: 90, color: indigo.withOpacity(0.07)),
         ),
         Positioned(
           bottom: -80,
@@ -272,17 +277,13 @@ class _MainViewState extends State<MainView> {
         Positioned(
           bottom: 140,
           right: -30,
-          child: Icon(
-            Icons.eco,
-            size: 60,
-            color: forestGreen.withOpacity(0.06),
-          ),
+          child: Icon(Icons.eco, size: 60, color: softBlue.withOpacity(0.1)),
         ),
 
         SafeArea(
           child: Column(
             children: [
-              // ── การ์ด gradient ด้านบน (ต่างจาก Login ตรงที่เป็นการ์ดโค้งมนลอย ไม่ใช่พื้นหลังเต็มจอ)
+              // ── การ์ดต้อนรับด้านบน
               Container(
                 margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                 padding: const EdgeInsets.symmetric(
@@ -290,15 +291,11 @@ class _MainViewState extends State<MainView> {
                   vertical: 18,
                 ),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [darkGreen, midGreen, forestGreen],
-                  ),
+                  color: forestGreen,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: forestGreen.withOpacity(0.25),
+                      color: forestGreen.withOpacity(0.22),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -375,126 +372,150 @@ class _MainViewState extends State<MainView> {
               ),
 
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextFormField(
-                        controller: locationGPSController,
-                        readOnly: true,
-                        onTap: _loadCurrentLocation,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.black54,
-                        ),
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(
-                            Icons.location_on_rounded,
-                            color: forestGreen,
-                            size: 20,
+                child: RefreshIndicator(
+                  color: forestGreen,
+                  backgroundColor: Colors.white,
+                  onRefresh: _refreshHome,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: locationGPSController,
+                          readOnly: true,
+                          onTap: _loadCurrentLocation,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.black54,
                           ),
-                          filled: true,
-                          fillColor: cardGreen,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                          ),
-                          suffixIcon: _locationLoading
-                              ? const Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation(
-                                        forestGreen,
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(
+                              Icons.location_on_rounded,
+                              color: forestGreen,
+                              size: 20,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: cardGreen,
+                                width: 1.2,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: forestGreen,
+                                width: 1.5,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                            ),
+                            suffixIcon: _locationLoading
+                                ? const Padding(
+                                    padding: EdgeInsets.all(12),
+                                    child: SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation(
+                                          forestGreen,
+                                        ),
                                       ),
                                     ),
+                                  )
+                                : IconButton(
+                                    tooltip: "อัปเดตตำแหน่ง",
+                                    onPressed: _loadCurrentLocation,
+                                    icon: Icon(
+                                      _locationError == null
+                                          ? Icons.my_location_outlined
+                                          : Icons.refresh,
+                                      color: forestGreen,
+                                    ),
                                   ),
-                                )
-                              : IconButton(
-                                  tooltip: "อัปเดตตำแหน่ง",
-                                  onPressed: _loadCurrentLocation,
-                                  icon: Icon(
-                                    _locationError == null
-                                        ? Icons.my_location_outlined
-                                        : Icons.refresh,
-                                    color: forestGreen,
-                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        Row(
+                          children: [
+                            _buildMenuButton(
+                              icon: Icons.search,
+                              label: "ค้นหาอุทยาน",
+                              accentColor: const Color(0xFF6F9F7D),
+                              tileColor: const Color(0xFFE8F2E8),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ParkSearchView(),
                                 ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            _buildMenuButton(
+                              icon: Icons.menu_book_outlined,
+                              label: "สมุดบันทึก\nการเดินทาง",
+                              accentColor: const Color(0xFF9B6F4A),
+                              tileColor: const Color(0xFFF3E7D6),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const TravelBookView(),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 12),
 
-                      Row(
-                        children: [
-                          _buildMenuButton(
-                            icon: Icons.search,
-                            label: "ค้นหาอุทยาน",
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ParkSearchView(),
-                              ),
+                        _buildWideButton(
+                          icon: Icons.collections_bookmark_outlined,
+                          label: "รับแสตมป์",
+                          accentColor: const Color(0xFF53658F),
+                          tileColor: const Color(0xFFE5EAF5),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const StampQrView(),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          _buildMenuButton(
-                            icon: Icons.menu_book_outlined,
-                            label: "สมุดบันทึก\nการเดินทาง",
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const TravelBookView(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      _buildWideButton(
-                        icon: Icons.collections_bookmark_outlined,
-                        label: "รับแสตมป์",
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const StampQrView(),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
+                        const SizedBox(height: 12),
 
-                      Row(
-                        children: [
-                          _buildMenuButton(
-                            icon: Icons.flag_outlined,
-                            label: "รายงาน",
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ReportView(),
+                        Row(
+                          children: [
+                            _buildMenuButton(
+                              icon: Icons.flag_outlined,
+                              label: "รายงาน",
+                              accentColor: const Color(0xFFC95858),
+                              tileColor: const Color(0xFFF8E1E1),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ReportView(),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          _buildMenuButton(
-                            icon: Icons.warning_amber_rounded,
-                            label: "เหตุฉุกเฉิน",
-                            onTap: () {},
-                            isRed: true,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
+                            const SizedBox(width: 12),
+                            _buildMenuButton(
+                              icon: Icons.warning_amber_rounded,
+                              label: "เหตุฉุกเฉิน",
+                              onTap: () {},
+                              isRed: true,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
 
-                      _buildAnnouncementCarousel(),
-                    ],
+                        _buildAnnouncementCarousel(),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -580,7 +601,7 @@ class _MainViewState extends State<MainView> {
                       "ข่าวสาร",
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: Colors.black87,
                       ),
                     ),
@@ -629,7 +650,7 @@ class _MainViewState extends State<MainView> {
                               style: const TextStyle(
                                 color: Colors.black87,
                                 fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
@@ -669,6 +690,8 @@ class _MainViewState extends State<MainView> {
     required String label,
     required VoidCallback onTap,
     bool isRed = false,
+    Color? accentColor,
+    Color? tileColor,
   }) {
     return Expanded(
       child: GestureDetector(
@@ -692,7 +715,20 @@ class _MainViewState extends State<MainView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: isRed ? Colors.white : forestGreen, size: 24),
+              Container(
+                padding: const EdgeInsets.all(9),
+                decoration: BoxDecoration(
+                  color: isRed
+                      ? Colors.white.withOpacity(0.2)
+                      : (tileColor ?? cardGreen),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: isRed ? Colors.white : (accentColor ?? forestGreen),
+                  size: 22,
+                ),
+              ),
               const SizedBox(height: 6),
               Text(
                 label,
@@ -700,7 +736,7 @@ class _MainViewState extends State<MainView> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: isRed ? Colors.white : Colors.black87,
+                  color: isRed ? Colors.white : darkGreen,
                   height: 1.3,
                 ),
               ),
@@ -715,6 +751,8 @@ class _MainViewState extends State<MainView> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    Color? accentColor,
+    Color? tileColor,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -736,7 +774,14 @@ class _MainViewState extends State<MainView> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: forestGreen, size: 22),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: tileColor ?? cardGreen,
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(icon, color: accentColor ?? forestGreen, size: 22),
+            ),
             const SizedBox(width: 8),
             Text(
               label,
