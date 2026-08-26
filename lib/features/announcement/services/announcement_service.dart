@@ -1,11 +1,18 @@
 import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
 import 'package:greenpass/dtos/api_response.dart';
-import 'package:greenpass/features/announcement/models/announcement.dart';
 
 class AnnoucementService {
   Future<ApiResponse<List<AnnouncementResponse>>> getAllAnnouncements() async {
     final res = await DioClient.dio.get("/announcement/all-announcement");
+
+    if (res.statusCode == 204 || res.data == null) {
+      return const ApiResponse(
+        success: true,
+        message: "No announcements",
+        result: [],
+      );
+    }
 
     if (res.data is! Map) {
       throw const FormatException("รูปแบบข้อมูลประกาศไม่ถูกต้อง");

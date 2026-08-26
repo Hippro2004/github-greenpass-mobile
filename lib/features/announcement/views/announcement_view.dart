@@ -37,7 +37,9 @@ class _AnnouncementViewState extends State<AnnouncementView> {
     try {
       final response = await _announcementService.getAllAnnouncements();
       if (!mounted) return;
-      final announcements = response.result ?? [];
+      final announcements = List<AnnouncementResponse>.from(
+        response.result ?? const <AnnouncementResponse>[],
+      );
       announcements.sort((first, second) {
         final firstDate = DateTime.tryParse(first.postDate);
         final secondDate = DateTime.tryParse(second.postDate);
