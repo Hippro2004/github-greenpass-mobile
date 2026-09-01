@@ -35,7 +35,7 @@ class Announcement {
     );
   }
 
-  String toJson() => json.encode(toMap());
+  Map<String, dynamic> toJson() => toMap();
 
   factory Announcement.fromJson(String source) =>
       Announcement.fromMap(json.decode(source));

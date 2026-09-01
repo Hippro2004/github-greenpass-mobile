@@ -26,21 +26,24 @@ class StampService {
   }
 
   Future<ApiResponse<List<StampResponse>>> getMyStamps() async {
-    final response = await DioClient.dio.get(
-      "/stamp/my-stamps",
-      options: Options(headers: {"username": Session.currentUser!.username}),
-    );
+    try {
+      final response = await DioClient.dio.get(
+        "/stamp/my-stamps",
+        options: Options(headers: {"username": Session.currentUser!.username}),
+      );
 
-    List<StampResponse> stamps = (response.data['result'] as List)
-        .map((e) => StampResponse.fromMap(Map<String, dynamic>.from(e as Map)))
-        .toList();
+      List<StampResponse> stamps = (response.data['result'] as List)
+          .map((stamp) => StampResponse.fromMap(stamp as Map<String, dynamic>))
+          .toList();
 
-    return ApiResponse(
-      message: response.data['message'],
-      success: response.data['success'],
-
-      result: stamps,
-    );
+      return ApiResponse(
+        message: response.data['message'],
+        success: response.data['success'],
+        result: stamps,
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<ApiResponse<List<Stamp>>> getStampDetails(int id) async {

@@ -54,7 +54,7 @@ class _TravelBookViewState extends State<TravelBookView> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = "ไม่สามารถโหลดข้อมูลแสตมป์ได้ กรุณาลองอีกครั้ง";
+        _error = "ไม่สามารถโหลดข้อมูลแสตมป์ได้ กรุณาลองอีกครั้ง\n$e";
         _isLoading = false;
       });
     }
@@ -343,6 +343,7 @@ class _TravelBookViewState extends State<TravelBookView> {
                   stamp.stampId,
                   null,
                   stamp.stampDate,
+                  stamp.time,
                   stamp.parkId,
                   stamp.parkName,
                   0,

@@ -38,7 +38,7 @@ class ReportResponse {
     );
   }
 
-  String toJson() => json.encode(toMap());
+  Map<String, dynamic> toJson() => toMap();
 
   factory ReportResponse.fromJson(String source) =>
       ReportResponse.fromMap(json.decode(source));

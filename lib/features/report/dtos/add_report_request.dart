@@ -31,7 +31,7 @@ class AddReportRequest {
     );
   }
 
-  String toJson() => json.encode(toMap());
+  Map<String, dynamic> toJson() => toMap();
 
   factory AddReportRequest.fromJson(String source) =>
       AddReportRequest.fromMap(json.decode(source));
