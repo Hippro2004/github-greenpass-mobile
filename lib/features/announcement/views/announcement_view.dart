@@ -70,7 +70,11 @@ class _AnnouncementViewState extends State<AnnouncementView> {
         elevation: 0,
         forceMaterialTransparency: true,
         leading: IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+          },
           icon: const Icon(Icons.arrow_back, color: forestGreen),
         ),
         title: const Text(

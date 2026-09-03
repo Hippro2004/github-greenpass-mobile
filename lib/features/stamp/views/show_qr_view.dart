@@ -54,10 +54,7 @@ class _StampQrViewState extends State<StampQrView> {
       final qrResponse = await _stampService.getQr();
       if (!mounted) return;
 
-      final expireAt = DateTime.fromMillisecondsSinceEpoch(
-        qrResponse.result!.expireAt,
-      );
-      final secondsLeft = expireAt.difference(DateTime.now()).inSeconds;
+      final secondsLeft = qrResponse.result!.remainingSecondsAt(DateTime.now());
 
       setState(() {
         _qrResponse = qrResponse.result;
@@ -71,13 +68,19 @@ class _StampQrViewState extends State<StampQrView> {
           timer.cancel();
           return;
         }
+
+        final remaining = _qrResponse?.remainingSecondsAt(DateTime.now()) ?? 0;
+
+        if (remaining <= 0) {
+          setState(() {
+            _secondsLeft = 0;
+          });
+          timer.cancel();
+          return;
+        }
+
         setState(() {
-          if (_secondsLeft > 0) {
-            _secondsLeft--;
-          } else {
-            timer.cancel();
-            _loadQr();
-          }
+          _secondsLeft = remaining;
         });
       });
     } catch (e) {
@@ -89,7 +92,11 @@ class _StampQrViewState extends State<StampQrView> {
     }
   }
 
-  Color get _timerColor => _secondsLeft > 120
+  bool get _isExpired => _secondsLeft <= 0;
+
+  Color get _timerColor => _isExpired
+      ? Colors.red
+      : _secondsLeft > 120
       ? forestGreen
       : _secondsLeft > 60
       ? Colors.orange
@@ -338,7 +345,9 @@ class _StampQrViewState extends State<StampQrView> {
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
-                                      "หมดอายุใน ${(_secondsLeft ~/ 60).toString().padLeft(2, '0')}:${(_secondsLeft % 60).toString().padLeft(2, '0')}",
+                                      _isExpired
+                                          ? "หมดอายุแล้ว"
+                                          : "หมดอายุใน ${(_secondsLeft ~/ 60).toString().padLeft(2, '0')}:${(_secondsLeft % 60).toString().padLeft(2, '0')}",
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
@@ -348,6 +357,28 @@ class _StampQrViewState extends State<StampQrView> {
                                   ],
                                 ),
                               ),
+                              if (_isExpired) ...[
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: _loadQr,
+                                    icon: const Icon(Icons.refresh, size: 16),
+                                    label: const Text("สร้าง QR ใหม่"),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: forestGreen,
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),

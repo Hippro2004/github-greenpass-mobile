@@ -54,28 +54,22 @@ class MoreView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: creamBg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        forceMaterialTransparency: true,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back, color: forestGreen),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: forestGreen.withOpacity(0.1),
-                    child: const Icon(Icons.person_outline, color: forestGreen),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    "คุณ ${Session.currentUser!.firstname}",
-                    style: const TextStyle(fontSize: 16, color: Colors.black45),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
+              const SizedBox(height: 4),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,

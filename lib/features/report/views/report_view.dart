@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:greenpass/features/report/dtos/report_response.dart';
 import 'package:greenpass/features/report/services/report_service.dart';
 import 'package:greenpass/features/report/views/add_report_view.dart';
+import 'package:greenpass/features/report/views/park_reports_view.dart';
 
 class ReportView extends StatefulWidget {
   const ReportView({super.key});
@@ -22,7 +23,17 @@ class _ReportViewState extends State<ReportView> {
   static const Color creamBg = Color(0xFFF8F5F0);
   static const Color warmGold = Color(0xFFB7791F);
 
-  int get _parkCount => _reports.map((report) => report.parkId).toSet().length;
+  Map<int, List<ReportResponse>> get _reportsByPark {
+    final grouped = <int, List<ReportResponse>>{};
+    for (final report in _reports) {
+      grouped.putIfAbsent(report.parkId, () => []).add(report);
+    }
+    return grouped;
+  }
+
+  List<ReportResponse> get _parks {
+    return _reportsByPark.values.map((reports) => reports.first).toList();
+  }
 
   @override
   void initState() {
@@ -169,7 +180,7 @@ class _ReportViewState extends State<ReportView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "รายงานจาก $_parkCount อุทยาน",
+                                "รายงานจาก ${_parks.length} อุทยาน",
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
@@ -194,10 +205,14 @@ class _ReportViewState extends State<ReportView> {
 
                   Expanded(
                     child: ListView.separated(
-                      itemCount: _reports.length,
+                      itemCount: _parks.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
-                        return _buildReportCard(_reports[index]);
+                        final parkReport = _parks[index];
+                        return _buildParkCard(
+                          parkReport,
+                          _reportsByPark[parkReport.parkId]!,
+                        );
                       },
                     ),
                   ),
@@ -207,163 +222,99 @@ class _ReportViewState extends State<ReportView> {
     );
   }
 
-  Widget _buildReportCard(ReportResponse report) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
+  Widget _buildParkCard(
+    ReportResponse report,
+    List<ReportResponse> parkReports,
+  ) {
+    final parkName = report.parkName.trim().isEmpty
+        ? "อุทยาน #${report.parkId}"
+        : report.parkName;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: softGreen,
-              borderRadius: BorderRadius.circular(14),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  ParkReportsView(parkName: parkName, reports: parkReports),
             ),
-            child: const Icon(Icons.report_outlined, color: forestGreen),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: forestGreen.withOpacity(0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  report.parkName.trim().isEmpty
-                      ? "อุทยาน #${report.parkId}"
-                      : report.parkName,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: forestGreen,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: softGreen,
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  report.name,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Row(
+                child: const Icon(Icons.forest_outlined, color: forestGreen),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.calendar_today_outlined,
-                      size: 11,
-                      color: warmGold,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      report.reportDate,
+                    const Text(
+                      "อุทยาน",
                       style: TextStyle(
                         fontSize: 11,
+                        color: forestGreen,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      parkName,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      "มีรายงาน ${parkReports.length} รายการ",
+                      style: TextStyle(
+                        fontSize: 12,
                         color: Colors.grey.shade500,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                _buildStatusProgress(report.status),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(color: softGreen, shape: BoxShape.circle),
-            child: const Icon(Icons.chevron_right, color: forestGreen),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusProgress(String status) {
-    final statusColor = _statusColor(status);
-
-    return Row(
-      children: [
-        Icon(_statusIcon(status), size: 14, color: statusColor),
-        const SizedBox(width: 4),
-        Text(
-          _statusLabel(status),
-          style: TextStyle(
-            color: statusColor,
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
+              ),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: softGreen,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.chevron_right, color: forestGreen),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
-  }
-
-  String _statusLabel(String status) {
-    switch (status.trim().toUpperCase()) {
-      case "ACKNOWLEDGED":
-        return "รับเรื่องแล้ว";
-      case "IN_PROGRESS":
-        return "กำลังดำเนินการ";
-      case "RESOLVED":
-        return "แก้ไขแล้ว";
-      case "CLOSED":
-        return "ปิดเรื่องแล้ว";
-      case "REJECTED":
-        return "ไม่รับเรื่อง";
-      case "NEEDS_INFO":
-        return "รอข้อมูลเพิ่มเติม";
-      default:
-        return "รอตอบรับ";
-    }
-  }
-
-  Color _statusColor(String status) {
-    switch (status.trim().toUpperCase()) {
-      case "IN_PROGRESS":
-        return const Color(0xFF2563EB);
-      case "RESOLVED":
-      case "CLOSED":
-        return forestGreen;
-      case "REJECTED":
-        return const Color(0xFFDC2626);
-      case "NEEDS_INFO":
-        return warmGold;
-      default:
-        return warmGold;
-    }
-  }
-
-  IconData _statusIcon(String status) {
-    switch (status.trim().toUpperCase()) {
-      case "ACKNOWLEDGED":
-        return Icons.mark_email_read_outlined;
-      case "IN_PROGRESS":
-        return Icons.engineering_outlined;
-      case "RESOLVED":
-        return Icons.task_alt_outlined;
-      case "CLOSED":
-        return Icons.verified_outlined;
-      case "REJECTED":
-        return Icons.block_outlined;
-      case "NEEDS_INFO":
-        return Icons.help_outline;
-      default:
-        return Icons.hourglass_empty_outlined;
-    }
   }
 }

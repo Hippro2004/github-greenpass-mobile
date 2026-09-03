@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
@@ -9,6 +10,8 @@ import 'package:greenpass/features/announcement/services/announcement_service.da
 import 'package:greenpass/features/announcement/views/announcement_detail_view.dart';
 import 'package:greenpass/features/user/views/more_view.dart';
 import 'package:greenpass/features/announcement/views/announcement_view.dart';
+import 'package:greenpass/features/park/models/park.dart';
+import 'package:greenpass/features/park/services/park_service.dart';
 import 'package:greenpass/features/park/views/park_search_view.dart';
 import 'package:greenpass/features/report/views/report_view.dart';
 import 'package:greenpass/features/stamp/views/show_qr_view.dart';
@@ -24,9 +27,11 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> {
   late final TextEditingController locationGPSController;
   final AnnoucementService _announcementService = AnnoucementService();
+  final ParkService _parkService = ParkService();
   final PageController _announcementController = PageController();
   Timer? _announcementTimer;
   List<AnnouncementResponse> _announcements = [];
+  Park? _nearestPark;
   bool _announcementLoading = true;
   String? _announcementError;
   bool _locationLoading = true;
@@ -34,7 +39,7 @@ class _MainViewState extends State<MainView> {
   int _announcementIndex = 0;
   int _currentIndex = 0;
 
-  List<Widget> get _page => [_buildHomePage(), MoreView()];
+  List<Widget> get _page => [_buildHomePage(), const AnnouncementView()];
 
   // ── ธีมสีเดียวกับหน้า Login ────────────────────────────
   static const Color indigo = Color(0xFF53658F);
@@ -155,11 +160,17 @@ class _MainViewState extends State<MainView> {
         }
       } catch (_) {}
 
+      final nearestPark = await _findNearestPark(
+        position.latitude,
+        position.longitude,
+      );
+
       if (!mounted) return;
       setState(() {
-        locationGPSController.text = address.isEmpty
-            ? "ตำแหน่งปัจจุบัน (${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)})"
-            : address;
+        _nearestPark = nearestPark;
+        locationGPSController.text =
+            nearestPark?.name ??
+            (address.isEmpty ? "กำลังค้นหาอุทยานใกล้ที่สุด..." : address);
         _locationLoading = false;
       });
     } on LocationServiceDisabledException {
@@ -179,6 +190,75 @@ class _MainViewState extends State<MainView> {
       _locationLoading = false;
     });
   }
+
+  Future<Park?> _findNearestPark(double latitude, double longitude) async {
+    try {
+      final parks = await _parkService.searchParks('');
+      if (parks.isEmpty) return null;
+
+      Park? nearestPark;
+      double? nearestDistance;
+
+      for (final park in parks) {
+        final coordinates = _parseCoordinates(park.location);
+        if (coordinates == null) continue;
+
+        final distanceKm = _distanceInKm(
+          latitude,
+          longitude,
+          coordinates.$1,
+          coordinates.$2,
+        );
+
+        if (nearestDistance == null || distanceKm < nearestDistance) {
+          nearestDistance = distanceKm;
+          nearestPark = park;
+        }
+      }
+
+      return nearestPark;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  (double, double)? _parseCoordinates(String? rawLocation) {
+    if (rawLocation == null || rawLocation.trim().isEmpty) return null;
+
+    final cleaned = rawLocation.replaceAll(RegExp(r'[^0-9.,\-]'), ' ');
+    final numbers = cleaned
+        .split(RegExp(r'\s+'))
+        .where((value) => value.isNotEmpty)
+        .map((value) => value.replaceAll(',', '.'))
+        .map(double.tryParse)
+        .whereType<double>()
+        .toList();
+
+    if (numbers.length < 2) return null;
+
+    final first = numbers[0];
+    final second = numbers[1];
+
+    final lat = first.abs() <= 90 ? first : second;
+    final lng = first.abs() <= 90 ? second : first;
+    return (lat, lng);
+  }
+
+  double _distanceInKm(double lat1, double lon1, double lat2, double lon2) {
+    const radius = 6371.0;
+    final dLat = _toRadians(lat2 - lat1);
+    final dLon = _toRadians(lon2 - lon1);
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_toRadians(lat1)) *
+            math.cos(_toRadians(lat2)) *
+            math.sin(dLon / 2) *
+            math.sin(dLon / 2);
+    final c = 2 * math.asin(math.sqrt(a));
+    return radius * c;
+  }
+
+  double _toRadians(double value) => value * math.pi / 180;
 
   void _startAnnouncementRotation() {
     _announcementTimer?.cancel();
@@ -224,13 +304,14 @@ class _MainViewState extends State<MainView> {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: "หน้าแรก",
+              icon: Icon(Icons.explore_outlined),
+              activeIcon: Icon(Icons.explore_rounded),
+              label: "สำรวจ",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.more_horiz),
-              label: "เพิ่มเติม",
+              icon: Icon(Icons.campaign_outlined),
+              activeIcon: Icon(Icons.campaign_rounded),
+              label: "ดูข่าวสาร",
             ),
           ],
         ),
@@ -244,7 +325,6 @@ class _MainViewState extends State<MainView> {
         Positioned.fill(
           child: DecoratedBox(decoration: BoxDecoration(color: creamBg)),
         ),
-        // ── ลายตกแต่งพื้นหลัง ให้เข้าธีมเดียวกับหน้า Login
         Positioned(
           top: -60,
           right: -60,
@@ -258,11 +338,6 @@ class _MainViewState extends State<MainView> {
           ),
         ),
         Positioned(
-          top: 30,
-          right: 10,
-          child: Icon(Icons.forest, size: 90, color: indigo.withOpacity(0.07)),
-        ),
-        Positioned(
           bottom: -80,
           left: -50,
           child: Container(
@@ -274,252 +349,405 @@ class _MainViewState extends State<MainView> {
             ),
           ),
         ),
-        Positioned(
-          bottom: 140,
-          right: -30,
-          child: Icon(Icons.eco, size: 60, color: softBlue.withOpacity(0.1)),
-        ),
-
         SafeArea(
-          child: Column(
-            children: [
-              // ── การ์ดต้อนรับด้านบน
-              Container(
-                margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 18,
-                ),
-                decoration: BoxDecoration(
-                  color: forestGreen,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: forestGreen.withOpacity(0.22),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                          width: 1.2,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.person_outline,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "สวัสดี,",
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.white.withOpacity(0.75),
-                            ),
-                          ),
-                          Text(
-                            "คุณ ${Session.currentUser!.firstname}",
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                          width: 1.2,
-                        ),
-                      ),
-                      child: IconButton(
-                        tooltip: "ประกาศ",
-                        onPressed: () => Navigator.push(
+          child: RefreshIndicator(
+            color: forestGreen,
+            backgroundColor: Colors.white,
+            onRefresh: _refreshHome,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProfileCard(),
+                  const SizedBox(height: 18),
+                  _buildHeroSection(),
+                  const SizedBox(height: 18),
+                  _buildLocationPill(),
+                  const SizedBox(height: 18),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 1.6,
+                    children: [
+                      _buildMenuButton(
+                        icon: Icons.explore_rounded,
+                        label: "ค้นหาอุทยาน",
+                        accentColor: Colors.white,
+                        tileColor: const Color(0xFF2D6A4F),
+                        iconBgColor: const Color(0xFF2D6A4F),
+                        onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const AnnouncementView(),
+                            builder: (_) => const ParkSearchView(),
                           ),
-                        ),
-                        icon: const Icon(
-                          Icons.notifications_outlined,
-                          color: Colors.white,
-                          size: 20,
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                      _buildMenuButton(
+                        icon: Icons.menu_book_rounded,
+                        label: "สมุดบันทึก",
+                        accentColor: Colors.white,
+                        tileColor: const Color(0xFFB97732),
+                        iconBgColor: const Color(0xFFB97732),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const TravelBookView(),
+                          ),
+                        ),
+                      ),
+                      _buildMenuButton(
+                        icon: Icons.bookmark_rounded,
+                        label: "รับแสตมป์",
+                        accentColor: Colors.white,
+                        tileColor: const Color(0xFF8A5A3B),
+                        iconBgColor: const Color(0xFF8A5A3B),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const StampQrView(),
+                          ),
+                        ),
+                      ),
+                      _buildMenuButton(
+                        icon: Icons.warning_amber_rounded,
+                        label: "รายงาน",
+                        accentColor: const Color(0xFF2D6A4F),
+                        tileColor: const Color(0xFFEAF3F5),
+                        iconBgColor: const Color(0xFFEAF3F5),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ReportView()),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  _buildWideButton(
+                    icon: Icons.warning_amber_rounded,
+                    label: "เหตุฉุกเฉิน",
+                    accentColor: Colors.white,
+                    tileColor: const Color(0xFFD94C5F),
+                    onTap: () {},
+                  ),
+                  const SizedBox(height: 22),
+                  _buildSectionTitle(),
+                  const SizedBox(height: 12),
+                  _buildAnnouncementCarousel(),
+                ],
               ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-              Expanded(
-                child: RefreshIndicator(
-                  color: forestGreen,
-                  backgroundColor: Colors.white,
-                  onRefresh: _refreshHome,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextFormField(
-                          controller: locationGPSController,
-                          readOnly: true,
-                          onTap: _loadCurrentLocation,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black54,
-                          ),
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.location_on_rounded,
-                              color: forestGreen,
-                              size: 20,
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color: cardGreen,
-                                width: 1.2,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: forestGreen,
-                                width: 1.5,
-                              ),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                            ),
-                            suffixIcon: _locationLoading
-                                ? const Padding(
-                                    padding: EdgeInsets.all(12),
-                                    child: SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation(
-                                          forestGreen,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                : IconButton(
-                                    tooltip: "อัปเดตตำแหน่ง",
-                                    onPressed: _loadCurrentLocation,
-                                    icon: Icon(
-                                      _locationError == null
-                                          ? Icons.my_location_outlined
-                                          : Icons.refresh,
-                                      color: forestGreen,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        Row(
-                          children: [
-                            _buildMenuButton(
-                              icon: Icons.search,
-                              label: "ค้นหาอุทยาน",
-                              accentColor: const Color(0xFF6F9F7D),
-                              tileColor: const Color(0xFFE8F2E8),
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const ParkSearchView(),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            _buildMenuButton(
-                              icon: Icons.menu_book_outlined,
-                              label: "สมุดบันทึก\nการเดินทาง",
-                              accentColor: const Color(0xFF9B6F4A),
-                              tileColor: const Color(0xFFF3E7D6),
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const TravelBookView(),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-
-                        _buildWideButton(
-                          icon: Icons.collections_bookmark_outlined,
-                          label: "รับแสตมป์",
-                          accentColor: const Color(0xFF53658F),
-                          tileColor: const Color(0xFFE5EAF5),
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const StampQrView(),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        Row(
-                          children: [
-                            _buildMenuButton(
-                              icon: Icons.flag_outlined,
-                              label: "รายงาน",
-                              accentColor: const Color(0xFFC95858),
-                              tileColor: const Color(0xFFF8E1E1),
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const ReportView(),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            _buildMenuButton(
-                              icon: Icons.warning_amber_rounded,
-                              label: "เหตุฉุกเฉิน",
-                              onTap: () {},
-                              isRed: true,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        _buildAnnouncementCarousel(),
-                      ],
+  Widget _buildProfileCard() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const MoreView()),
+        ),
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: Colors.grey.shade100),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: forestGreen.withOpacity(0.4)),
+                  image: const DecorationImage(
+                    image: NetworkImage(
+                      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
                     ),
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'สวัสดี,',
+                      style: TextStyle(color: Colors.black54, fontSize: 11),
+                    ),
+                    Text(
+                      'คุณ ${Session.currentUser!.firstname}',
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: Colors.grey),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroSection() {
+    return Container(
+      height: 260,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.network(
+                'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(color: forestGreen),
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.18),
+                      Colors.black.withOpacity(0.34),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 22,
+              right: 22,
+              bottom: 28,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: const Text(
+                      'จุดหมายปลายทาง',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'ค้นพบความงาม\nของธรรมชาติ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _nearestPark != null
+                        ? _nearestPark!.name
+                        : (_locationLoading
+                              ? 'กำลังค้นหาอุทยานที่ใกล้ที่สุด...'
+                              : 'อุทยานที่ใกล้ที่สุด'),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AnnouncementView(),
+                        ),
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.28),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.notifications_none_rounded,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'ดูประกาศ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.white,
+                              size: 12,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationPill() {
+    return InkWell(
+      onTap: _loadCurrentLocation,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F5EE),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.location_on_rounded,
+                size: 18,
+                color: forestGreen,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _locationLoading
+                  ? const Text(
+                      'กำลังหาตำแหน่งปัจจุบัน...',
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    )
+                  : Text(
+                      locationGPSController.text,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.refresh_rounded, size: 18, color: forestGreen),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'ข่าวสารล่าสุด',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        TextButton(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AnnouncementView()),
+          ),
+          style: TextButton.styleFrom(padding: EdgeInsets.zero),
+          child: const Text(
+            'ดูทั้งหมด',
+            style: TextStyle(
+              color: forestGreen,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -692,52 +920,49 @@ class _MainViewState extends State<MainView> {
     bool isRed = false,
     Color? accentColor,
     Color? tileColor,
+    Color? iconBgColor,
   }) {
-    return Expanded(
-      child: GestureDetector(
+    final buttonColor = isRed
+        ? const Color(0xFFB35D47)
+        : (tileColor ?? Colors.white);
+    final iconColor = accentColor ?? Colors.white;
+    final iconBackground =
+        iconBgColor ?? (tileColor ?? const Color(0xFFE8F5EE));
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
           decoration: BoxDecoration(
-            color: isRed ? const Color(0xFFE53935) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: isRed ? null : Border.all(color: Colors.grey.shade100),
-            boxShadow: [
-              BoxShadow(
-                color: isRed
-                    ? Colors.red.withOpacity(0.2)
-                    : Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            color: buttonColor,
+            borderRadius: BorderRadius.circular(24),
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(9),
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
-                  color: isRed
-                      ? Colors.white.withOpacity(0.2)
-                      : (tileColor ?? cardGreen),
-                  shape: BoxShape.circle,
+                  color: iconBackground,
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(
-                  icon,
-                  color: isRed ? Colors.white : (accentColor ?? forestGreen),
-                  size: 22,
-                ),
+                child: Icon(icon, color: iconColor, size: 22),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
                 label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: isRed ? Colors.white : darkGreen,
-                  height: 1.3,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: buttonColor == const Color(0xFFEAF3F5)
+                      ? const Color(0xFF2D6A4F)
+                      : Colors.white,
+                  height: 1.2,
                 ),
               ),
             ],
@@ -754,44 +979,56 @@ class _MainViewState extends State<MainView> {
     Color? accentColor,
     Color? tileColor,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade100),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFD85863), Color(0xFFB72E4C)],
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: tileColor ?? cardGreen,
-                borderRadius: BorderRadius.circular(11),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFB72E4C).withOpacity(0.25),
+                blurRadius: 14,
+                offset: const Offset(0, 8),
               ),
-              child: Icon(icon, color: accentColor ?? forestGreen, size: 22),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: accentColor ?? Colors.white, size: 20),
               ),
-            ),
-          ],
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white,
+                size: 17,
+              ),
+            ],
+          ),
         ),
       ),
     );
