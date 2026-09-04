@@ -3,10 +3,11 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:greenpass/features/report/dtos/add_report_request.dart';
-import 'package:greenpass/features/report/dtos/repory_type_request.dart';
+import 'package:greenpass/features/report/dtos/report_type_request.dart';
 import 'package:greenpass/features/park/models/park.dart';
 import 'package:greenpass/features/report/services/report_service.dart';
 import 'package:greenpass/features/park/views/park_search_view.dart';
+import 'package:greenpass/features/report/services/report_type_service.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AddReportView extends StatefulWidget {
@@ -18,6 +19,7 @@ class AddReportView extends StatefulWidget {
 
 class _AddReportViewState extends State<AddReportView> {
   final ReportService reportSerivce = ReportService();
+  final ReportTypeService reportTypeService = ReportTypeService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _isLoadingTypes = false;
@@ -72,7 +74,7 @@ class _AddReportViewState extends State<AddReportView> {
   Future<void> _loadReportTypes() async {
     try {
       setState(() => _isLoadingTypes = true);
-      final response = await reportSerivce.getAllReportType();
+      final response = await reportTypeService.getAllReportType();
       if (!mounted) return;
 
       if (response.success && response.result != null) {
@@ -403,6 +405,7 @@ class _AddReportViewState extends State<AddReportView> {
                 height: 52,
                 child: ElevatedButton.icon(
                   onPressed: () async {
+                    if (_isLoading) return;
                     if (!_formKey.currentState!.validate()) return;
                     try {
                       setState(() => _isLoading = true);
@@ -439,7 +442,7 @@ class _AddReportViewState extends State<AddReportView> {
                           apiMessage == "Failed to add report") {
                         message = "เกิดข้อผิดพลาด กรุณาลองใหม่";
                       } else {
-                        message = "เพิ่มรายการรายการสำเร็จ";
+                        message = "ไม่สามารถบันทึกรายงานได้ กรุณาลองใหม่";
                       }
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -459,10 +462,22 @@ class _AddReportViewState extends State<AddReportView> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  icon: const Icon(Icons.save_outlined),
-                  label: const Text(
-                    "บันทึกรายงาน",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  icon: _isLoading
+                      ? const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.save_outlined),
+                  label: Text(
+                    _isLoading ? "กำลังบันทึก..." : "บันทึกรายงาน",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),

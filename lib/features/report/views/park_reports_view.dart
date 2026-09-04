@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/features/report/dtos/report_response.dart';
+import 'package:greenpass/features/report/views/report_view_detail.dart';
 
 class ParkReportsView extends StatelessWidget {
   const ParkReportsView({
@@ -40,12 +41,12 @@ class ParkReportsView extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         itemCount: reports.length,
         separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (_, index) => _buildReportCard(reports[index]),
+        itemBuilder: (_, index) => _buildReportCard(context, reports[index]),
       ),
     );
   }
 
-  Widget _buildReportCard(ReportResponse report) {
+  Widget _buildReportCard(BuildContext context, ReportResponse report) {
     final statusColor = _statusColor(report.status);
 
     return Container(
@@ -62,47 +63,63 @@ class ParkReportsView extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            report.name,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => ReportViewDetail(report: report)),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              report.name,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            report.description,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Icon(Icons.calendar_today_outlined, size: 13, color: warmGold),
-              const SizedBox(width: 5),
-              Text(
-                report.reportDate,
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-              ),
-              const Spacer(),
-              Icon(Icons.circle, size: 9, color: statusColor),
-              const SizedBox(width: 5),
-              Text(
-                _statusLabel(report.status),
-                style: TextStyle(
-                  color: statusColor,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+            const SizedBox(height: 8),
+            Text(
+              report.description,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(Icons.calendar_today_outlined, size: 13, color: warmGold),
+                const SizedBox(width: 5),
+                Text(
+                  report.reportDate,
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                 ),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(width: 10),
+                Icon(Icons.access_time, size: 13, color: warmGold),
+                const SizedBox(width: 5),
+                Text(
+                  report.reportTime,
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                ),
+                const Spacer(),
+                Icon(Icons.circle, size: 9, color: statusColor),
+                const SizedBox(width: 5),
+                Text(
+                  _statusLabel(report.status),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
