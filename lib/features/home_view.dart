@@ -16,6 +16,11 @@ import 'package:greenpass/features/park/views/park_search_view.dart';
 import 'package:greenpass/features/report/views/report_view.dart';
 import 'package:greenpass/features/stamp/views/show_qr_view.dart';
 import 'package:greenpass/features/stamp/views/travel_book_view.dart';
+import 'package:greenpass/features/notification/services/notification_service.dart';
+import 'package:greenpass/features/notification/views/notification_view.dart';
+import 'package:greenpass/features/notification/models/notification_model.dart';
+import 'package:greenpass/features/notification/services/notification_websocket_service.dart';
+import 'package:greenpass/features/report/views/report_view_detail.dart';
 
 class MainView extends StatefulWidget {
   const MainView({super.key});
@@ -39,6 +44,9 @@ class _MainViewState extends State<MainView> {
   int _announcementIndex = 0;
   int _currentIndex = 0;
 
+  final NotificationService _notificationService = NotificationService();
+  int _unreadNotificationCount = 0;
+
   List<Widget> get _page => [_buildHomePage(), const AnnouncementView()];
 
   // ── ธีมสีเดียวกับหน้า Login ────────────────────────────
@@ -59,11 +67,152 @@ class _MainViewState extends State<MainView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadAnnouncements();
       _loadCurrentLocation();
+      _loadUnreadNotifications();
+      _initWebSocketNotifications();
     });
+  }
+
+  StreamSubscription<NotificationModel>? _notificationSub;
+
+  void _initWebSocketNotifications() {
+    final username = Session.currentUser?.username;
+    if (username == null || username.isEmpty) return;
+
+    _notificationSub?.cancel();
+    NotificationWebSocketService.instance.connect(username: username);
+
+    _notificationSub = NotificationWebSocketService
+        .instance.notificationStream
+        .listen((notification) {
+      if (!mounted) return;
+      setState(() {
+        _unreadNotificationCount += 1;
+      });
+      _showRealtimeNotificationPopup(notification);
+    });
+  }
+
+  void _showRealtimeNotificationPopup(NotificationModel notification) {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogCtx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        elevation: 12,
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 58,
+                height: 58,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE8F5E9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.notifications_active_rounded,
+                  color: Color(0xFF2D6A4F),
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                notification.title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2E3B57),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                notification.message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade700,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 22),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(dialogCtx),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      child: const Text(
+                        'ปิด',
+                        style: TextStyle(color: Colors.black54),
+                      ),
+                    ),
+                  ),
+                  if (notification.report != null) ...[
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(dialogCtx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ReportViewDetail(
+                                report: notification.report!,
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: const Color(0xFF2D6A4F),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('ดูรายงาน'),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _loadUnreadNotifications() async {
+    try {
+      final response = await _notificationService.getMyNotifications();
+      if (!mounted) return;
+      if (response.success && response.result != null) {
+        setState(() {
+          _unreadNotificationCount =
+              response.result!.where((n) => !n.isRead).length;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
   void dispose() {
+    _notificationSub?.cancel();
+    NotificationWebSocketService.instance.disconnect();
     locationGPSController.dispose();
     _announcementTimer?.cancel();
     _announcementController.dispose();
@@ -275,7 +424,11 @@ class _MainViewState extends State<MainView> {
   }
 
   Future<void> _refreshHome() async {
-    await Future.wait([_loadAnnouncements(), _loadCurrentLocation()]);
+    await Future.wait([
+      _loadAnnouncements(),
+      _loadCurrentLocation(),
+      _loadUnreadNotifications(),
+    ]);
   }
 
   @override
@@ -448,17 +601,100 @@ class _MainViewState extends State<MainView> {
   }
 
   Widget _buildProfileCard() {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MoreView()),
+                ),
+                borderRadius: BorderRadius.circular(22),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: Colors.grey.shade100),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: forestGreen.withOpacity(0.4)),
+                          image: const DecorationImage(
+                            image: NetworkImage(
+                              'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+                            ),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'สวัสดี,',
+                              style: TextStyle(color: Colors.black54, fontSize: 11),
+                            ),
+                            Text(
+                              'คุณ ${Session.currentUser!.firstname}',
+                              style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          _buildNotificationBell(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationBell() {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const MoreView()),
-        ),
+        onTap: () async {
+          final refreshed = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NotificationView()),
+          );
+          if (refreshed == true || mounted) {
+            _loadUnreadNotifications();
+          }
+        },
         borderRadius: BorderRadius.circular(22),
         child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          width: 58,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(22),
@@ -471,43 +707,42 @@ class _MainViewState extends State<MainView> {
               ),
             ],
           ),
-          child: Row(
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: forestGreen.withOpacity(0.4)),
-                  image: const DecorationImage(
-                    image: NetworkImage(
-                      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
-                    ),
-                    fit: BoxFit.cover,
-                  ),
-                ),
+              const Icon(
+                Icons.notifications_outlined,
+                color: darkGreen,
+                size: 26,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'สวัสดี,',
-                      style: TextStyle(color: Colors.black54, fontSize: 11),
+              if (_unreadNotificationCount > 0)
+                Positioned(
+                  top: 14,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFD94C5F),
+                      shape: BoxShape.circle,
                     ),
-                    Text(
-                      'คุณ ${Session.currentUser!.firstname}',
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Center(
+                      child: Text(
+                        _unreadNotificationCount > 99
+                            ? '99+'
+                            : '$_unreadNotificationCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              const Icon(Icons.chevron_right_rounded, color: Colors.grey),
             ],
           ),
         ),

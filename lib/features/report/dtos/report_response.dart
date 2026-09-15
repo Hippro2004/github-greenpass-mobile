@@ -35,15 +35,29 @@ class ReportResponse {
   }
 
   factory ReportResponse.fromMap(Map<String, dynamic> map) {
+    int parsedParkId = 0;
+    if (map['parkId'] != null) {
+      parsedParkId = (map['parkId'] as num).toInt();
+    } else if (map['park'] != null && map['park'] is Map) {
+      parsedParkId = (map['park']['parkId'] as num?)?.toInt() ?? 0;
+    }
+
+    String parsedParkName = '';
+    if (map['parkName'] != null) {
+      parsedParkName = map['parkName'].toString();
+    } else if (map['park'] != null && map['park'] is Map) {
+      parsedParkName = (map['park']['name'] ?? '').toString();
+    }
+
     return ReportResponse(
       reportId: (map['reportId'] ?? map['id'])?.toInt() ?? 0,
       name: map['name'] ?? '',
       description: map['description'] ?? '',
       status: map['status'] ?? '',
-      reportDate: map['reportDate'] ?? '',
-      reportTime: map['reportTime'] ?? map['reporttime'] ?? '',
-      parkId: map['parkId']?.toInt() ?? 0,
-      parkName: map['parkName'] ?? '',
+      reportDate: map['reportDate']?.toString() ?? '',
+      reportTime: (map['reportTime'] ?? map['reporttime'])?.toString() ?? '',
+      parkId: parsedParkId,
+      parkName: parsedParkName,
     );
   }
 

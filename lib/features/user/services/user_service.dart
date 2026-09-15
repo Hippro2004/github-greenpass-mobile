@@ -56,4 +56,27 @@ class UserSevice {
       rethrow;
     }
   }
+
+  Future<ApiResponse<void>> updateFcmToken(String fcmToken) async {
+    try {
+      final username = Session.currentUser?.username;
+      if (username == null) {
+        return ApiResponse(
+          success: false,
+          message: 'No current user in session',
+        );
+      }
+      final response = await DioClient.dio.put(
+        "/user/$username/fcm-token",
+        data: {"fcmToken": fcmToken},
+      );
+      return ApiResponse(
+        success: response.data['success'] ?? true,
+        message: response.data['message'] ?? 'FCM Token updated successfully',
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
+

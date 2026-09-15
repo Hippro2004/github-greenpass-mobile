@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:greenpass/features/notification/models/notification_model.dart';
+import 'package:greenpass/features/notification/services/notification_websocket_service.dart';
 import 'package:greenpass/features/report/dtos/reply_report_response.dart';
 import 'package:greenpass/features/report/dtos/report_response.dart';
 import 'package:greenpass/features/report/services/reply_report_service.dart';
@@ -14,7 +17,9 @@ class ReportViewDetail extends StatefulWidget {
 
 class _ReportViewDetailState extends State<ReportViewDetail> {
   final ReplyReportService _replyReportService = ReplyReportService();
+  StreamSubscription<NotificationModel>? _wsSub;
   List<ReplyReportResponse> _replies = [];
+  late String _currentStatus;
   bool _isLoading = true;
   String? _error;
 
@@ -25,7 +30,34 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
   @override
   void initState() {
     super.initState();
+    _currentStatus = widget.report.status;
     _loadReplies();
+
+    _wsSub = NotificationWebSocketService.instance.notificationStream.listen((notif) {
+      if (!mounted) return;
+      if (notif.reportId == widget.report.reportId ||
+          (notif.report != null && notif.report!.reportId == widget.report.reportId)) {
+        setState(() {
+          if (notif.report?.status != null && notif.report!.status.isNotEmpty) {
+            _currentStatus = notif.report!.status;
+          }
+        });
+        _loadReplies();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(notif.message),
+            backgroundColor: forestGreen,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _wsSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadReplies() async {
@@ -179,7 +211,7 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
   @override
   Widget build(BuildContext context) {
     final report = widget.report;
-    final statusColor = _statusColor(report.status);
+    final statusColor = _statusColor(_currentStatus);
 
     return Scaffold(
       backgroundColor: creamBg,
@@ -232,7 +264,7 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          _statusLabel(report.status),
+                          _statusLabel(_currentStatus),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 11,

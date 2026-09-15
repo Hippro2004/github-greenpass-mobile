@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:greenpass/features/report/dtos/report_response.dart';
 import 'package:greenpass/features/report/services/report_service.dart';
 import 'package:greenpass/features/report/views/add_report_view.dart';
 import 'package:greenpass/features/report/views/park_reports_view.dart';
+import 'package:greenpass/features/notification/services/notification_websocket_service.dart';
 
 class ReportView extends StatefulWidget {
   const ReportView({super.key});
@@ -13,6 +15,7 @@ class ReportView extends StatefulWidget {
 
 class _ReportViewState extends State<ReportView> {
   final ReportService _reportService = ReportService();
+  StreamSubscription? _wsSub;
   bool _isLoading = true;
   List<ReportResponse> _reports = [];
   String? _error;
@@ -39,6 +42,16 @@ class _ReportViewState extends State<ReportView> {
   void initState() {
     super.initState();
     _loadReports();
+    _wsSub = NotificationWebSocketService.instance.notificationStream.listen((_) {
+      if (!mounted) return;
+      _loadReports();
+    });
+  }
+
+  @override
+  void dispose() {
+    _wsSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadReports() async {
