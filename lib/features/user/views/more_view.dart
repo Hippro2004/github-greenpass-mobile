@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
+import 'package:greenpass/features/Reward/views/reward_view.dart';
 import 'package:greenpass/features/user/views/edit_profile_view.dart';
 import 'package:greenpass/features/user/views/login_view.dart';
 
@@ -86,6 +87,15 @@ class MoreView extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (_) => const EditProfileView(),
                         ),
+                      ),
+                    ),
+                    Divider(height: 1, color: Colors.grey.shade100),
+                    _buildMenuItem(
+                      icon: Icons.card_giftcard_rounded,
+                      label: "ดูของรางวัล",
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RewardView()),
                       ),
                     ),
                     Divider(height: 1, color: Colors.grey.shade100),

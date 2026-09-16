@@ -145,7 +145,11 @@ class _NotificationViewState extends State<NotificationView> {
     } else if (difference.inDays < 7) {
       return '${difference.inDays} วันที่แล้ว';
     } else {
-      return DateFormat('d MMM yyyy HH:mm', 'th_TH').format(dateTime);
+      try {
+        return DateFormat('d MMM yyyy HH:mm', 'th_TH').format(dateTime);
+      } catch (_) {
+        return DateFormat('d MMM yyyy HH:mm').format(dateTime);
+      }
     }
   }
 
