@@ -637,25 +637,22 @@ class _MainViewState extends State<MainView> {
                           shape: BoxShape.circle,
                           color: const Color(0xFFE8F5E9),
                           border: Border.all(
-                            color: forestGreen.withValues(alpha: 0.4),
+                            color: forestGreen.withValues(alpha: 0.35),
                             width: 1.5,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: forestGreen.withValues(alpha: 0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        child: ClipOval(
-                          child: Image.network(
-                            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: const Color(0xFFE8F5E9),
-                                alignment: Alignment.center,
-                                child: const Icon(
-                                  Icons.person_rounded,
-                                  color: forestGreen,
-                                  size: 28,
-                                ),
-                              );
-                            },
+                        child: const Center(
+                          child: Icon(
+                            Icons.person_rounded,
+                            color: forestGreen,
+                            size: 26,
                           ),
                         ),
                       ),
