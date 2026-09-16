@@ -68,6 +68,12 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
       if (!mounted) return;
       setState(() {
         _replies = response.result ?? [];
+        if (_replies.isNotEmpty) {
+          final latestStatus = _replies.last.currentStatus;
+          if (latestStatus.trim().isNotEmpty) {
+            _currentStatus = latestStatus;
+          }
+        }
         _isLoading = false;
       });
     } catch (_) {
@@ -80,35 +86,82 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
   }
 
   String _statusLabel(String status) {
-    switch (status.trim().toUpperCase()) {
+    final s = status
+        .trim()
+        .toUpperCase()
+        .replaceAll('_', '')
+        .replaceAll(' ', '')
+        .replaceAll('-', '');
+    switch (s) {
       case 'ACKNOWLEDGED':
+      case 'รับเรื่องแล้ว':
         return 'รับเรื่องแล้ว';
-      case 'IN_PROGRESS':
+      case 'INPROGRESS':
+      case 'กำลังดำเนินการ':
         return 'กำลังดำเนินการ';
+      case 'COMPLETED':
       case 'RESOLVED':
-        return 'แก้ไขแล้ว';
       case 'CLOSED':
-        return 'ปิดเรื่องแล้ว';
+      case 'DONE':
+      case 'แก้ไขแล้ว':
+      case 'เสร็จสิ้น':
+      case 'ปิดเรื่องแล้ว':
+        return 'เสร็จสิ้น';
       case 'REJECTED':
+      case 'CANCELLED':
+      case 'CANCELED':
+      case 'ไม่รับเรื่อง':
         return 'ไม่รับเรื่อง';
-      case 'NEEDS_INFO':
+      case 'NEEDSINFO':
+      case 'รอข้อมูลเพิ่มเติม':
         return 'รอข้อมูลเพิ่มเติม';
+      case 'PENDING':
+      case 'รอตอบรับ':
+      case 'รอการตอบรับ':
+        return 'รอตอบรับ';
       default:
+        if (status.trim().isNotEmpty) {
+          return status.trim();
+        }
         return 'รอตอบรับ';
     }
   }
 
   Color _statusColor(String status) {
-    switch (status.trim().toUpperCase()) {
-      case 'IN_PROGRESS':
-        return const Color(0xFF2563EB);
+    final s = status
+        .trim()
+        .toUpperCase()
+        .replaceAll('_', '')
+        .replaceAll(' ', '')
+        .replaceAll('-', '');
+    switch (s) {
+      case 'INPROGRESS':
+      case 'กำลังดำเนินการ':
+        return const Color(0xFF2563EB); // Blue
+      case 'COMPLETED':
       case 'RESOLVED':
       case 'CLOSED':
-        return forestGreen;
+      case 'DONE':
+      case 'แก้ไขแล้ว':
+      case 'เสร็จสิ้น':
+      case 'ปิดเรื่องแล้ว':
+        return forestGreen; // Green
+      case 'ACKNOWLEDGED':
+      case 'รับเรื่องแล้ว':
+        return const Color(0xFF0284C7); // Sky blue
       case 'REJECTED':
-        return const Color(0xFFDC2626);
+      case 'CANCELLED':
+      case 'CANCELED':
+      case 'ไม่รับเรื่อง':
+        return const Color(0xFFDC2626); // Red
+      case 'NEEDSINFO':
+      case 'รอข้อมูลเพิ่มเติม':
+        return const Color(0xFFD97706); // Orange
+      case 'PENDING':
+      case 'รอตอบรับ':
+      case 'รอการตอบรับ':
       default:
-        return warmGold;
+        return warmGold; // Gold/Amber
     }
   }
 
@@ -139,6 +192,9 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
   }
 
   Widget _replyItem(ReplyReportResponse reply, bool isLast) {
+    final statusColor = _statusColor(reply.currentStatus);
+    final statusLabel = _statusLabel(reply.currentStatus);
+
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -150,8 +206,8 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                 Container(
                   width: 12,
                   height: 12,
-                  decoration: const BoxDecoration(
-                    color: forestGreen,
+                  decoration: BoxDecoration(
+                    color: statusColor,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -168,13 +224,29 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    reply.currentStatus.isEmpty
-                        ? 'อัปเดตรายงาน'
-                        : _statusLabel(reply.currentStatus),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          statusLabel,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     '${reply.updateDate} ${reply.updateTime}'.trim(),
                     style: TextStyle(fontSize: 11, color: Colors.grey.shade500),

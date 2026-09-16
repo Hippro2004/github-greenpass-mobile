@@ -125,35 +125,82 @@ class ParkReportsView extends StatelessWidget {
   }
 
   String _statusLabel(String status) {
-    switch (status.trim().toUpperCase()) {
+    final s = status
+        .trim()
+        .toUpperCase()
+        .replaceAll('_', '')
+        .replaceAll(' ', '')
+        .replaceAll('-', '');
+    switch (s) {
       case "ACKNOWLEDGED":
+      case "รับเรื่องแล้ว":
         return "รับเรื่องแล้ว";
-      case "IN_PROGRESS":
+      case "INPROGRESS":
+      case "กำลังดำเนินการ":
         return "กำลังดำเนินการ";
+      case "COMPLETED":
       case "RESOLVED":
-        return "แก้ไขแล้ว";
       case "CLOSED":
-        return "ปิดเรื่องแล้ว";
+      case "DONE":
+      case "แก้ไขแล้ว":
+      case "เสร็จสิ้น":
+      case "ปิดเรื่องแล้ว":
+        return "เสร็จสิ้น";
       case "REJECTED":
+      case "CANCELLED":
+      case "CANCELED":
+      case "ไม่รับเรื่อง":
         return "ไม่รับเรื่อง";
-      case "NEEDS_INFO":
+      case "NEEDSINFO":
+      case "รอข้อมูลเพิ่มเติม":
         return "รอข้อมูลเพิ่มเติม";
+      case "PENDING":
+      case "รอตอบรับ":
+      case "รอการตอบรับ":
+        return "รอตอบรับ";
       default:
+        if (status.trim().isNotEmpty) {
+          return status.trim();
+        }
         return "รอตอบรับ";
     }
   }
 
   Color _statusColor(String status) {
-    switch (status.trim().toUpperCase()) {
-      case "IN_PROGRESS":
-        return const Color(0xFF2563EB);
+    final s = status
+        .trim()
+        .toUpperCase()
+        .replaceAll('_', '')
+        .replaceAll(' ', '')
+        .replaceAll('-', '');
+    switch (s) {
+      case "INPROGRESS":
+      case "กำลังดำเนินการ":
+        return const Color(0xFF2563EB); // Blue
+      case "COMPLETED":
       case "RESOLVED":
       case "CLOSED":
-        return forestGreen;
+      case "DONE":
+      case "แก้ไขแล้ว":
+      case "เสร็จสิ้น":
+      case "ปิดเรื่องแล้ว":
+        return forestGreen; // Green
+      case "ACKNOWLEDGED":
+      case "รับเรื่องแล้ว":
+        return const Color(0xFF0284C7); // Sky blue
       case "REJECTED":
-        return const Color(0xFFDC2626);
+      case "CANCELLED":
+      case "CANCELED":
+      case "ไม่รับเรื่อง":
+        return const Color(0xFFDC2626); // Red
+      case "NEEDSINFO":
+      case "รอข้อมูลเพิ่มเติม":
+        return const Color(0xFFD97706); // Orange
+      case "PENDING":
+      case "รอตอบรับ":
+      case "รอการตอบรับ":
       default:
-        return warmGold;
+        return warmGold; // Gold/Amber
     }
   }
 }
