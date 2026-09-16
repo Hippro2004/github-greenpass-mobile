@@ -235,7 +235,7 @@ class _AddReportViewState extends State<AddReportView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     DropdownButtonFormField<String>(
-                      value: _selectedReportTypeName,
+                      initialValue: _selectedReportTypeName,
                       isExpanded: true,
                       decoration:
                           _inputDecoration(

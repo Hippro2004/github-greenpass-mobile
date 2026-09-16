@@ -259,8 +259,9 @@ class _LoginViewState extends State<LoginView> {
                                   hint: "กรอกชื่อผู้ใช้งาน",
                                   icon: Icons.person_outline,
                                   validator: (value) {
-                                    if (value == null || value.isEmpty)
+                                    if (value == null || value.isEmpty) {
                                       return "กรุณากรอกชื่อผู้ใช้งาน";
+                                    }
                                     return null;
                                   },
                                 ),
@@ -277,8 +278,9 @@ class _LoginViewState extends State<LoginView> {
                                     () => _obscurePassword = !_obscurePassword,
                                   ),
                                   validator: (value) {
-                                    if (value!.isEmpty)
+                                    if (value!.isEmpty) {
                                       return "กรุณากรอกรหัสผ่าน";
+                                    }
                                     if (!(value.length >= 4 &&
                                         value.length <= 16)) {
                                       return "ต้องมีความยาวตั้งเเต่ 4 - 16 ตัวอักษร";
@@ -338,8 +340,9 @@ class _LoginViewState extends State<LoginView> {
                                   height: 52,
                                   child: ElevatedButton(
                                     onPressed: () async {
-                                      if (!formKey.currentState!.validate())
+                                      if (!formKey.currentState!.validate()) {
                                         return;
+                                      }
                                       try {
                                         setState(() => isLoading = true);
                                         final user = await userSevice.login(

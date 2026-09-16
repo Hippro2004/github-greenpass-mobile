@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/dtos/api_response.dart';
 import 'package:greenpass/features/report/dtos/reply_report_response.dart';

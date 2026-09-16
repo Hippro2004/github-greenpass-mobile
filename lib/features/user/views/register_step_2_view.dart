@@ -325,8 +325,9 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                       hint: "กรอกวันเดือนปีเกิด",
                                       icon: Icons.calendar_today_outlined,
                                       validator: (value) {
-                                        if (value == null || value.isEmpty)
+                                        if (value == null || value.isEmpty) {
                                           return "กรุณาเลือกวันเดือนปีเกิด";
+                                        }
                                         return null;
                                       },
                                       onTap: () async {
@@ -358,8 +359,9 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                     // เพศ
                                     FormField<int>(
                                       validator: (value) {
-                                        if (gender == null)
+                                        if (gender == null) {
                                           return "กรุณาเลือกเพศ";
+                                        }
                                         return null;
                                       },
                                       builder: (field) => Column(
@@ -573,8 +575,10 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                       height: 52,
                                       child: ElevatedButton.icon(
                                         onPressed: () async {
-                                          if (!formkey.currentState!.validate())
+                                          if (!formkey.currentState!
+                                              .validate()) {
                                             return;
+                                          }
                                           try {
                                             setState(() => isLoading = true);
                                             await userservice.register(
@@ -769,8 +773,6 @@ class _AnimatedTextField extends StatefulWidget {
   final String label;
   final String hint;
   final IconData? icon;
-  final bool obscure;
-  final VoidCallback? onToggleObscure;
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final Future<void> Function()? onTap;
@@ -780,8 +782,6 @@ class _AnimatedTextField extends StatefulWidget {
     required this.label,
     required this.hint,
     this.icon,
-    this.obscure = false,
-    this.onToggleObscure,
     this.validator,
     this.keyboardType,
     this.onTap,
@@ -831,7 +831,6 @@ class _AnimatedTextFieldState extends State<_AnimatedTextField> {
       child: TextFormField(
         controller: widget.controller,
         focusNode: _focusNode,
-        obscureText: widget.obscure,
         keyboardType: widget.keyboardType,
         readOnly: widget.onTap != null,
         onTap: widget.onTap,
@@ -849,18 +848,6 @@ class _AnimatedTextFieldState extends State<_AnimatedTextField> {
                   widget.icon,
                   color: _isFocused ? forestGreen : Colors.black38,
                   size: 20,
-                )
-              : null,
-          suffixIcon: widget.onToggleObscure != null
-              ? IconButton(
-                  icon: Icon(
-                    widget.obscure
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    color: Colors.black38,
-                    size: 20,
-                  ),
-                  onPressed: widget.onToggleObscure,
                 )
               : null,
           filled: true,

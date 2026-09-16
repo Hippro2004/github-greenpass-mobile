@@ -294,11 +294,13 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                                       hint: "กรอกชื่อผู้ใช้งาน",
                                       icon: Icons.person_outline,
                                       validator: (value) {
-                                        if (value == null || value.isEmpty)
+                                        if (value == null || value.isEmpty) {
                                           return "กรุณากรอกชื่อผู้ใช้งาน";
+                                        }
                                         if (!(value.length >= 4 &&
-                                            value.length <= 16))
+                                            value.length <= 16)) {
                                           return "ความยาว 4 - 16 ตัวอักษร";
+                                        }
                                         return null;
                                       },
                                     ),
@@ -314,11 +316,13 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                                             icon: Icons.badge_outlined,
                                             validator: (value) {
                                               if (value == null ||
-                                                  value.isEmpty)
+                                                  value.isEmpty) {
                                                 return "กรุณากรอกชื่อจริง";
+                                              }
                                               if (!(value.length >= 2 &&
-                                                  value.length <= 25))
+                                                  value.length <= 25)) {
                                                 return "ความยาว 2 - 25";
+                                              }
                                               return null;
                                             },
                                           ),
@@ -331,11 +335,13 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                                             hint: "กรอกนามสกุล",
                                             validator: (value) {
                                               if (value == null ||
-                                                  value.isEmpty)
+                                                  value.isEmpty) {
                                                 return "กรุณากรอกนามสกุล";
+                                              }
                                               if (!(value.length >= 2 &&
-                                                  value.length <= 25))
+                                                  value.length <= 25)) {
                                                 return "ความยาว 2 - 25";
+                                              }
                                               return null;
                                             },
                                           ),
@@ -351,12 +357,14 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                                       icon: Icons.email_outlined,
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
-                                        if (value == null || value.isEmpty)
+                                        if (value == null || value.isEmpty) {
                                           return "กรุณากรอกอีเมล";
+                                        }
                                         if (!RegExp(
                                           r'^[\w.-]+@[\w.-]+\.\w+$',
-                                        ).hasMatch(value))
+                                        ).hasMatch(value)) {
                                           return "รูปแบบอีเมลไม่ถูกต้อง";
+                                        }
                                         return null;
                                       },
                                     ),
@@ -369,8 +377,9 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                                       icon: Icons.phone_outlined,
                                       keyboardType: TextInputType.phone,
                                       validator: (value) {
-                                        if (value!.length != 10)
+                                        if (value!.length != 10) {
                                           return "กรุณากรอกหมายเลข 10 หลัก";
+                                        }
                                         return null;
                                       },
                                     ),
@@ -387,8 +396,9 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                                             !_obscurePassword,
                                       ),
                                       validator: (value) {
-                                        if (value == null || value.isEmpty)
+                                        if (value == null || value.isEmpty) {
                                           return "กรุณากรอกรหัสผ่าน";
+                                        }
                                         return null;
                                       },
                                     ),
@@ -405,13 +415,16 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                                             !_obscureConfirmPassword,
                                       ),
                                       validator: (value) {
-                                        if (value == null || value.isEmpty)
+                                        if (value == null || value.isEmpty) {
                                           return "กรุณากรอกรหัสผ่าน";
+                                        }
                                         if (!(value.length >= 4 &&
-                                            value.length <= 16))
+                                            value.length <= 16)) {
                                           return "ความยาวตั้งแต่ 4 - 16";
-                                        if (value != _passwordController.text)
+                                        }
+                                        if (value != _passwordController.text) {
                                           return "รหัสผ่านไม่ตรงกัน";
+                                        }
                                         return null;
                                       },
                                     ),
