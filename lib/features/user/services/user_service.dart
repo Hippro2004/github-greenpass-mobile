@@ -31,7 +31,7 @@ class UserSevice {
         "/user/profile",
         options: Options(headers: {"username": Session.currentUser!.username}),
       );
-      return response.data["result"];
+      return UpdateRequest.fromJson(response.data["result"]);
     } catch (e) {
       rethrow;
     }

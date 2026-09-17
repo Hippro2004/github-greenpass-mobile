@@ -16,6 +16,7 @@ class _EditProfileViewState extends State<EditProfileView> {
   final UserSevice _userService = UserSevice();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _isFetchingProfile = true;
 
   late final TextEditingController _firstnameController;
   late final TextEditingController _lastnameController;
@@ -47,22 +48,84 @@ class _EditProfileViewState extends State<EditProfileView> {
   @override
   void initState() {
     super.initState();
-    final user = Session.currentUser!;
-    _firstnameController = TextEditingController(text: user.firstname);
-    _lastnameController = TextEditingController(text: user.lastname);
-    _emailController = TextEditingController(text: user.email);
-    _phoneController = TextEditingController(text: user.phone);
-    _birthDateController = TextEditingController(text: user.birthDay ?? '');
-    _districtController = TextEditingController(text: user.district ?? '');
+    final user = Session.currentUser;
+    _firstnameController = TextEditingController(text: user?.firstname ?? '');
+    _lastnameController = TextEditingController(text: user?.lastname ?? '');
+    _emailController = TextEditingController(text: user?.email ?? '');
+    _phoneController = TextEditingController(text: user?.phone ?? '');
+    _birthDateController = TextEditingController(text: user?.birthDay ?? '');
+    _districtController = TextEditingController(text: user?.district ?? '');
     _subDistrictController = TextEditingController(
-      text: user.subDistrict ?? '',
+      text: user?.subDistrict ?? '',
     );
-    _provinceController = TextEditingController(text: user.province ?? '');
-    _zipcodeController = TextEditingController(text: user.zipcode ?? '');
+    _provinceController = TextEditingController(text: user?.province ?? '');
+    _zipcodeController = TextEditingController(text: user?.zipcode ?? '');
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
-    _gender = user.gender;
-    _isForeigner = user.isForeigner ?? false;
+    _gender = user?.gender;
+    _isForeigner = user?.isForeigner ?? false;
+
+    _fetchProfile();
+  }
+
+  Future<void> _fetchProfile({bool showLoading = true}) async {
+    if (showLoading) {
+      setState(() => _isFetchingProfile = true);
+    }
+    try {
+      final profile = await _userService.getProfile();
+
+      if (Session.currentUser != null) {
+        Session.currentUser!
+          ..firstname = profile.firstname
+          ..lastname = profile.lastname
+          ..email = profile.email
+          ..phone = profile.phone
+          ..birthDay = profile.birthDate
+          ..gender = profile.gender
+          ..isForeigner = profile.isForeigner
+          ..district = profile.district
+          ..subDistrict = profile.subDistrict
+          ..province = profile.province
+          ..zipcode = profile.zipcode;
+      }
+
+      _firstnameController.text = profile.firstname;
+      _lastnameController.text = profile.lastname;
+      _emailController.text = profile.email;
+      _phoneController.text = profile.phone;
+      _birthDateController.text = profile.birthDate;
+      _districtController.text = profile.district;
+      _subDistrictController.text = profile.subDistrict;
+      _provinceController.text = profile.province;
+      _zipcodeController.text = profile.zipcode;
+      _gender = profile.gender;
+      _isForeigner = profile.isForeigner;
+    } on DioException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.response?.data?['message'] ?? "ไม่สามารถดึงข้อมูลส่วนตัวได้",
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("เกิดข้อผิดพลาด: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isFetchingProfile = false);
+      }
+    }
   }
 
   @override
@@ -94,7 +157,7 @@ class _EditProfileViewState extends State<EditProfileView> {
           email: _emailController.text,
           phone: _phoneController.text,
           birthDate: _birthDateController.text,
-          gender: _gender!,
+          gender: _gender ?? 0,
           isForeigner: _isForeigner,
           district: _districtController.text,
           subDistrict: _subDistrictController.text,
@@ -106,8 +169,11 @@ class _EditProfileViewState extends State<EditProfileView> {
         ),
       );
 
-      Session.currentUser = Session.currentUser!
-        ..firstname = _firstnameController.text;
+      // ยิง API ดึงข้อมูลล่าสุดมาแสดง
+      await _fetchProfile(showLoading: false);
+
+      _passwordController.clear();
+      _confirmPasswordController.clear();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -116,16 +182,18 @@ class _EditProfileViewState extends State<EditProfileView> {
           backgroundColor: forestGreen,
         ),
       );
-      Navigator.pop(context);
     } on DioException catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.response?.data['message'] ?? "เกิดข้อผิดพลาด"),
+          content: Text(e.response?.data?['message'] ?? "เกิดข้อผิดพลาด"),
           backgroundColor: Colors.red,
         ),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -213,8 +281,30 @@ class _EditProfileViewState extends State<EditProfileView> {
                 ),
                 centerTitle: true,
               ),
-              SliverToBoxAdapter(
-                child: Padding(
+              if (_isFetchingProfile)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(color: forestGreen),
+                        SizedBox(height: 16),
+                        Text(
+                          "กำลังโหลดข้อมูลส่วนตัว...",
+                          style: TextStyle(
+                            color: forestGreen,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                SliverToBoxAdapter(
+                  child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 16,

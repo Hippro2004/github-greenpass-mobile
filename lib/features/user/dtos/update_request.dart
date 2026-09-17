@@ -27,6 +27,23 @@ class UpdateRequest {
     this.password,
   });
 
+  factory UpdateRequest.fromJson(Map<String, dynamic> json) => UpdateRequest(
+    firstname: (json['firstname'] as String?) ?? '',
+    lastname: (json['lastname'] as String?) ?? '',
+    email: (json['email'] as String?) ?? '',
+    phone: (json['phone'] as String?) ?? '',
+    birthDate: (json['birthDate'] as String?) ?? '',
+    gender: json['gender'] is int
+        ? json['gender'] as int
+        : int.tryParse(json['gender']?.toString() ?? '0') ?? 0,
+    isForeigner: (json['isForeigner'] ?? json['foreigner']) as bool? ?? false,
+    district: (json['district'] as String?) ?? '',
+    subDistrict: (json['subDistrict'] as String?) ?? '',
+    province: (json['province'] as String?) ?? '',
+    zipcode: (json['zipcode'] as String?) ?? '',
+    password: json['password'] as String?,
+  );
+
   Map<String, dynamic> toJson() => {
     'firstname': firstname,
     'lastname': lastname,
