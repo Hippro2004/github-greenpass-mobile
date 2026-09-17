@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/dtos/api_response.dart';
@@ -19,6 +20,18 @@ class UserSevice {
         message: response.data['message'],
         result: User.fromJson(response.data['result']),
       );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<UpdateRequest> getProfile() async {
+    try {
+      final response = await DioClient.dio.get(
+        "/user/profile",
+        options: Options(headers: {"username": Session.currentUser!.username}),
+      );
+      return response.data["result"];
     } catch (e) {
       rethrow;
     }
@@ -79,4 +92,3 @@ class UserSevice {
     }
   }
 }
-
