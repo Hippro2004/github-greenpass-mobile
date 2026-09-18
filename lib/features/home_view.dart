@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math' as math;
+// import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
@@ -10,8 +10,8 @@ import 'package:greenpass/features/announcement/services/announcement_service.da
 import 'package:greenpass/features/announcement/views/announcement_detail_view.dart';
 import 'package:greenpass/features/user/views/more_view.dart';
 import 'package:greenpass/features/announcement/views/announcement_view.dart';
-import 'package:greenpass/features/park/models/park.dart';
-import 'package:greenpass/features/park/services/park_service.dart';
+// import 'package:greenpass/features/park/models/park.dart';
+// import 'package:greenpass/features/park/services/park_service.dart';
 import 'package:greenpass/features/park/views/park_search_view.dart';
 import 'package:greenpass/features/report/views/report_view.dart';
 import 'package:greenpass/features/stamp/views/show_qr_view.dart';
@@ -32,11 +32,10 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> {
   late final TextEditingController locationGPSController;
   final AnnoucementService _announcementService = AnnoucementService();
-  final ParkService _parkService = ParkService();
+  // final ParkService _parkService = ParkService();
   final PageController _announcementController = PageController();
   Timer? _announcementTimer;
   List<AnnouncementResponse> _announcements = [];
-  Park? _nearestPark;
   bool _announcementLoading = true;
   String? _announcementError;
   bool _locationLoading = true;
@@ -81,15 +80,14 @@ class _MainViewState extends State<MainView> {
     _notificationSub?.cancel();
     NotificationWebSocketService.instance.connect(username: username);
 
-    _notificationSub = NotificationWebSocketService
-        .instance.notificationStream
+    _notificationSub = NotificationWebSocketService.instance.notificationStream
         .listen((notification) {
-      if (!mounted) return;
-      setState(() {
-        _unreadNotificationCount += 1;
-      });
-      _showRealtimeNotificationPopup(notification);
-    });
+          if (!mounted) return;
+          setState(() {
+            _unreadNotificationCount += 1;
+          });
+          _showRealtimeNotificationPopup(notification);
+        });
   }
 
   void _showRealtimeNotificationPopup(NotificationModel notification) {
@@ -202,8 +200,9 @@ class _MainViewState extends State<MainView> {
       if (!mounted) return;
       if (response.success && response.result != null) {
         setState(() {
-          _unreadNotificationCount =
-              response.result!.where((n) => !n.isRead).length;
+          _unreadNotificationCount = response.result!
+              .where((n) => !n.isRead)
+              .length;
         });
       }
     } catch (_) {}
@@ -309,17 +308,11 @@ class _MainViewState extends State<MainView> {
         }
       } catch (_) {}
 
-      final nearestPark = await _findNearestPark(
-        position.latitude,
-        position.longitude,
-      );
-
       if (!mounted) return;
       setState(() {
-        _nearestPark = nearestPark;
-        locationGPSController.text =
-            nearestPark?.name ??
-            (address.isEmpty ? "กำลังค้นหาอุทยานใกล้ที่สุด..." : address);
+        locationGPSController.text = address.isEmpty
+            ? "ตำแหน่งปัจจุบัน"
+            : address;
         _locationLoading = false;
       });
     } on LocationServiceDisabledException {
@@ -340,6 +333,8 @@ class _MainViewState extends State<MainView> {
     });
   }
 
+  // ── ปิดส่วนค้นหาอุทยานใกล้ที่สุดไว้ชั่วคราว ──
+  /*
   Future<Park?> _findNearestPark(double latitude, double longitude) async {
     try {
       final parks = await _parkService.searchParks('');
@@ -408,6 +403,7 @@ class _MainViewState extends State<MainView> {
   }
 
   double _toRadians(double value) => value * math.pi / 180;
+  */
 
   void _startAnnouncementRotation() {
     _announcementTimer?.cancel();
@@ -515,8 +511,8 @@ class _MainViewState extends State<MainView> {
                 children: [
                   _buildProfileCard(),
                   const SizedBox(height: 18),
-                  _buildHeroSection(),
-                  const SizedBox(height: 18),
+                  // _buildHeroSection(),
+                  // const SizedBox(height: 18),
                   _buildLocationPill(),
                   const SizedBox(height: 18),
                   GridView.count(
@@ -615,7 +611,10 @@ class _MainViewState extends State<MainView> {
                 ),
                 borderRadius: BorderRadius.circular(22),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(22),
@@ -664,10 +663,13 @@ class _MainViewState extends State<MainView> {
                           children: [
                             const Text(
                               'สวัสดี,',
-                              style: TextStyle(color: Colors.black54, fontSize: 11),
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 11,
+                              ),
                             ),
                             Text(
-                              'คุณ ${Session.currentUser!.firstname}',
+                              'คุณ ${Session.currentUser?.firstname ?? ''}',
                               style: const TextStyle(
                                 color: Colors.black87,
                                 fontSize: 18,
@@ -677,7 +679,10 @@ class _MainViewState extends State<MainView> {
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.grey,
+                      ),
                     ],
                   ),
                 ),
@@ -837,22 +842,7 @@ class _MainViewState extends State<MainView> {
                       height: 1.1,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    _nearestPark != null
-                        ? _nearestPark!.name
-                        : (_locationLoading
-                              ? 'กำลังค้นหาอุทยานที่ใกล้ที่สุด...'
-                              : 'อุทยานที่ใกล้ที่สุด'),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   Material(
                     color: Colors.transparent,
                     child: InkWell(

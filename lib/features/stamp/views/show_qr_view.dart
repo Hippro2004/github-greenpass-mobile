@@ -317,7 +317,7 @@ class _StampQrViewState extends State<StampQrView> {
                               const SizedBox(height: 18),
 
                               Text(
-                                "${Session.currentUser!.firstname} ${Session.currentUser!.lastname}",
+                                "${Session.currentUser?.firstname ?? ''} ${Session.currentUser?.lastname ?? ''}".trim(),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
