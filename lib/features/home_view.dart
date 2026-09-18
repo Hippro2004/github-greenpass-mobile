@@ -93,6 +93,31 @@ class _MainViewState extends State<MainView> {
   void _showRealtimeNotificationPopup(NotificationModel notification) {
     if (!mounted) return;
 
+    final isReport = notification.report != null;
+    final isWarning = !isReport &&
+        (notification.title.contains("เตือน") ||
+            notification.message.contains("ซ้ำ") ||
+            notification.message.contains("ไม่สามารถ") ||
+            notification.message.contains("หมดอายุ"));
+
+    Color badgeBg;
+    Color iconColor;
+    IconData iconData;
+
+    if (isReport) {
+      badgeBg = const Color(0xFFE8F5E9);
+      iconColor = const Color(0xFF2D6A4F);
+      iconData = Icons.notifications_active_rounded;
+    } else if (isWarning) {
+      badgeBg = const Color(0xFFFFF3E0);
+      iconColor = const Color(0xFFE65100);
+      iconData = Icons.info_outline_rounded;
+    } else {
+      badgeBg = const Color(0xFFE8F5EE);
+      iconColor = const Color(0xFF2D6A4F);
+      iconData = Icons.check_circle_rounded;
+    }
+
     showDialog(
       context: context,
       useRootNavigator: true,
@@ -106,21 +131,25 @@ class _MainViewState extends State<MainView> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 58,
-                height: 58,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE8F5E9),
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: badgeBg,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.notifications_active_rounded,
-                  color: Color(0xFF2D6A4F),
-                  size: 32,
+                child: Icon(
+                  iconData,
+                  color: iconColor,
+                  size: 34,
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                notification.title,
+                notification.title.isNotEmpty
+                    ? notification.title
+                    : (isReport
+                        ? "การแจ้งเตือน"
+                        : (isWarning ? "แจ้งเตือนการสแกน" : "สำเร็จ")),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 16,
@@ -139,25 +168,25 @@ class _MainViewState extends State<MainView> {
                 ),
               ),
               const SizedBox(height: 22),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(dialogCtx),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+              if (isReport)
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(dialogCtx),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          side: BorderSide(color: Colors.grey.shade300),
                         ),
-                        side: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      child: const Text(
-                        'ปิด',
-                        style: TextStyle(color: Colors.black54),
+                        child: const Text(
+                          'ปิด',
+                          style: TextStyle(color: Colors.black54),
+                        ),
                       ),
                     ),
-                  ),
-                  if (notification.report != null) ...[
                     const SizedBox(width: 10),
                     Expanded(
                       child: ElevatedButton(
@@ -185,8 +214,30 @@ class _MainViewState extends State<MainView> {
                       ),
                     ),
                   ],
-                ],
-              ),
+                )
+              else
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(dialogCtx),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      backgroundColor: const Color(0xFF2D6A4F),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'รับทราบ',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

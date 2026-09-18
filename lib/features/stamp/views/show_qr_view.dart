@@ -246,13 +246,17 @@ class _StampQrViewState extends State<StampQrView> {
                       ),
                     ),
                   )
-                : Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    physics: const BouncingScrollPhysics(),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(24),
@@ -299,7 +303,7 @@ class _StampQrViewState extends State<StampQrView> {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 14),
 
                               Container(
                                 padding: const EdgeInsets.all(12),
@@ -307,29 +311,32 @@ class _StampQrViewState extends State<StampQrView> {
                                   color: cardGreen,
                                   borderRadius: BorderRadius.circular(18),
                                 ),
-                                child: Image.memory(
-                                  base64Decode(_qrResponse!.qrBase64),
-                                  width: 260,
-                                  height: 260,
-                                  gaplessPlayback: true,
+                                child: Opacity(
+                                  opacity: _isExpired ? 0.35 : 1.0,
+                                  child: Image.memory(
+                                    base64Decode(_qrResponse!.qrBase64),
+                                    width: 220,
+                                    height: 220,
+                                    gaplessPlayback: true,
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 14),
 
                               Text(
                                 "${Session.currentUser?.firstname ?? ''} ${Session.currentUser?.lastname ?? ''}".trim(),
                                 style: const TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.black87,
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 8),
 
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 14,
-                                  vertical: 8,
+                                  vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
                                   color: _timerColor.withOpacity(0.1),
@@ -358,7 +365,7 @@ class _StampQrViewState extends State<StampQrView> {
                                 ),
                               ),
                               if (_isExpired) ...[
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 14),
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
@@ -382,7 +389,7 @@ class _StampQrViewState extends State<StampQrView> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
 
                         Container(
                           padding: const EdgeInsets.symmetric(

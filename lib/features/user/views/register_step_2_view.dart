@@ -36,6 +36,7 @@ class RegisterStep2View extends StatefulWidget {
 class _RegisterStep2ViewState extends State<RegisterStep2View> {
   final UserSevice userservice = UserSevice();
   final GlobalKey<FormState> formkey = GlobalKey<FormState>();
+  AutovalidateMode autovalidateMode = AutovalidateMode.disabled;
   bool isLoading = false;
   int? gender;
   bool isForeigner = false;
@@ -297,6 +298,7 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                               ),
                               child: Form(
                                 key: formkey,
+                                autovalidateMode: autovalidateMode,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -577,6 +579,10 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                         onPressed: () async {
                                           if (!formkey.currentState!
                                               .validate()) {
+                                            setState(
+                                              () => autovalidateMode =
+                                                  AutovalidateMode.always,
+                                            );
                                             return;
                                           }
                                           try {

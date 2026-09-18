@@ -12,6 +12,7 @@ class RegisterStep1View extends StatefulWidget {
 class _RegisterStep1ViewState extends State<RegisterStep1View> {
   final GlobalKey<FormState> formkey = GlobalKey<FormState>();
   bool isLoading = false;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   DateTime? _savedBirthDate;
   int? _savedGender;
@@ -267,6 +268,7 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                               ),
                               child: Form(
                                 key: formkey,
+                                autovalidateMode: _autovalidateMode,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -305,49 +307,42 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                                       },
                                     ),
                                     const SizedBox(height: 12),
-
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: _AnimatedTextField(
-                                            controller: _firstnameController,
-                                            label: "ชื่อจริง",
-                                            hint: "กรอกชื่อจริง",
-                                            icon: Icons.badge_outlined,
-                                            validator: (value) {
-                                              if (value == null ||
-                                                  value.isEmpty) {
-                                                return "กรุณากรอกชื่อจริง";
-                                              }
-                                              if (!(value.length >= 2 &&
-                                                  value.length <= 25)) {
-                                                return "ความยาว 2 - 25";
-                                              }
-                                              return null;
-                                            },
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: _AnimatedTextField(
-                                            controller: _lastnameController,
-                                            label: "นามสกุล",
-                                            hint: "กรอกนามสกุล",
-                                            validator: (value) {
-                                              if (value == null ||
-                                                  value.isEmpty) {
-                                                return "กรุณากรอกนามสกุล";
-                                              }
-                                              if (!(value.length >= 2 &&
-                                                  value.length <= 25)) {
-                                                return "ความยาว 2 - 25";
-                                              }
-                                              return null;
-                                            },
-                                          ),
-                                        ),
-                                      ],
+                                    _AnimatedTextField(
+                                      controller: _firstnameController,
+                                      label: "ชื่อจริง",
+                                      hint: "กรอกชื่อจริง",
+                                      icon: Icons.badge_outlined,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "กรุณากรอกชื่อจริง";
+                                        }
+                                        if (!(value.length >= 2 &&
+                                            value.length <= 25)) {
+                                          return "ความยาว 2 - 25";
+                                        }
+                                        return null;
+                                      },
                                     ),
+
+                                    const SizedBox(height: 12),
+
+                                    _AnimatedTextField(
+                                      controller: _lastnameController,
+                                      label: "นามสกุล",
+                                      hint: "กรอกนามสกุล",
+                                      icon: Icons.badge_outlined,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "กรุณากรอกนามสกุล";
+                                        }
+                                        if (!(value.length >= 2 &&
+                                            value.length <= 25)) {
+                                          return "ความยาว 2 - 25";
+                                        }
+                                        return null;
+                                      },
+                                    ),
+
                                     const SizedBox(height: 12),
 
                                     _AnimatedTextField(
@@ -492,6 +487,12 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                                               _savedProvince = data['province'];
                                               _savedZipcode = data['zipcode'];
                                             }
+                                          } else {
+                                            setState(() {
+                                              _autovalidateMode =
+                                                  AutovalidateMode
+                                                      .onUserInteraction;
+                                            });
                                           }
                                         },
                                         style: ElevatedButton.styleFrom(

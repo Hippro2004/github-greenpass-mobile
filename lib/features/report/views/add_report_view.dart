@@ -173,6 +173,8 @@ class _AddReportViewState extends State<AddReportView> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "กรุณากรอกชื่อรายงาน";
+                  } else if (!(value.length >= 2 && value.length <= 25)) {
+                    return "ชื่อรายงานต้องมีตัวอักษรตั้งแต่ 2 - 25 ตัวอักษร";
                   }
                   return null;
                 },
