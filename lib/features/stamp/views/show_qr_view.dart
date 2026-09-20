@@ -54,7 +54,9 @@ class _StampQrViewState extends State<StampQrView> {
       final qrResponse = await _stampService.getQr();
       if (!mounted) return;
 
-      final secondsLeft = qrResponse.remainingSecondsAt(DateTime.now());
+      final secondsLeft = qrResponse.expiresInSeconds > 0
+          ? qrResponse.expiresInSeconds
+          : 300;
 
       setState(() {
         _qrResponse = qrResponse;
@@ -69,9 +71,7 @@ class _StampQrViewState extends State<StampQrView> {
           return;
         }
 
-        final remaining = _qrResponse?.remainingSecondsAt(DateTime.now()) ?? 0;
-
-        if (remaining <= 0) {
+        if (_secondsLeft <= 1) {
           setState(() {
             _secondsLeft = 0;
           });
@@ -80,7 +80,7 @@ class _StampQrViewState extends State<StampQrView> {
         }
 
         setState(() {
-          _secondsLeft = remaining;
+          _secondsLeft--;
         });
       });
     } catch (e) {

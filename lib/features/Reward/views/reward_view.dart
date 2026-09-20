@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/core/network/dio_client.dart';
+import 'package:greenpass/core/network/image_helper.dart';
 import 'package:greenpass/features/reward/dtos/reward_response.dart';
 import 'package:greenpass/features/reward/services/reward_service.dart';
 import 'package:greenpass/features/reward/views/reward_detail_view.dart';
@@ -107,13 +107,7 @@ class _RewardViewState extends State<RewardView> {
   }
 
   String _resolveImageUrl(String image) {
-    if (image.isEmpty) return '';
-    if (image.startsWith('http://') || image.startsWith('https://')) {
-      return image;
-    }
-    final rawBase = DioClient.dio.options.baseUrl;
-    final origin = rawBase.replaceAll('/api/v1', '');
-    return '$origin/images/$image';
+    return resolveImageUrl(image, defaultCategory: 'rewards');
   }
 
   @override
@@ -340,45 +334,45 @@ class _RewardViewState extends State<RewardView> {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const TravelBookView(),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 9,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                "สมุดแสตมป์",
-                                style: TextStyle(
-                                  color: forestGreen,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(width: 2),
-                              Icon(
-                                Icons.chevron_right_rounded,
-                                color: forestGreen,
-                                size: 14,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         builder: (_) => const TravelBookView(),
+                      //       ),
+                      //     );
+                      //   },
+                      //   child: Container(
+                      //     padding: const EdgeInsets.symmetric(
+                      //       horizontal: 9,
+                      //       vertical: 4,
+                      //     ),
+                      //     decoration: BoxDecoration(
+                      //       color: Colors.white,
+                      //       borderRadius: BorderRadius.circular(20),
+                      //     ),
+                      //     child: const Row(
+                      //       mainAxisSize: MainAxisSize.min,
+                      //       children: [
+                      //         Text(
+                      //           "สมุดแสตมป์",
+                      //           style: TextStyle(
+                      //             color: forestGreen,
+                      //             fontSize: 11,
+                      //             fontWeight: FontWeight.bold,
+                      //           ),
+                      //         ),
+                      //         SizedBox(width: 2),
+                      //         Icon(
+                      //           Icons.chevron_right_rounded,
+                      //           color: forestGreen,
+                      //           size: 14,
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),

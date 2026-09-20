@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/core/network/dio_client.dart';
+import 'package:greenpass/core/network/image_helper.dart';
 import 'package:greenpass/features/reward/dtos/reward_response.dart';
 import 'package:greenpass/features/park/views/park_search_view.dart';
 import 'package:greenpass/features/stamp/views/travel_book_view.dart';
@@ -18,13 +18,7 @@ class RewardDetailView extends StatelessWidget {
   static const Color warmGold = Color(0xFFB08D57);
 
   String _resolveImageUrl(String image) {
-    if (image.isEmpty) return '';
-    if (image.startsWith('http://') || image.startsWith('https://')) {
-      return image;
-    }
-    final rawBase = DioClient.dio.options.baseUrl;
-    final origin = rawBase.replaceAll('/api/v1', '');
-    return '$origin/images/$image';
+    return resolveImageUrl(image, defaultCategory: 'rewards');
   }
 
   @override
@@ -342,74 +336,74 @@ class RewardDetailView extends StatelessWidget {
                   const SizedBox(height: 28),
 
                   // CTA Buttons
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const TravelBookView(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.menu_book_rounded,
-                        color: Colors.white,
-                      ),
-                      label: const Text(
-                        "เปิดสมุดแสตมป์เพื่อดูสิทธิ์",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: forestGreen,
-                        elevation: 3,
-                        shadowColor: forestGreen.withValues(alpha: 0.4),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   height: 52,
+                  //   child: ElevatedButton.icon(
+                  //     onPressed: () {
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(
+                  //           builder: (_) => const TravelBookView(),
+                  //         ),
+                  //       );
+                  //     },
+                  //     icon: const Icon(
+                  //       Icons.menu_book_rounded,
+                  //       color: Colors.white,
+                  //     ),
+                  //     label: const Text(
+                  //       "เปิดสมุดแสตมป์เพื่อดูสิทธิ์",
+                  //       style: TextStyle(
+                  //         color: Colors.white,
+                  //         fontSize: 15,
+                  //         fontWeight: FontWeight.bold,
+                  //       ),
+                  //     ),
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: forestGreen,
+                  //       elevation: 3,
+                  //       shadowColor: forestGreen.withValues(alpha: 0.4),
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(16),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
 
-                  const SizedBox(height: 12),
+                  // const SizedBox(height: 12),
 
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ParkSearchView(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.park_outlined, color: forestGreen),
-                      label: const Text(
-                        "ค้นหาอุทยานแห่งชาติ",
-                        style: TextStyle(
-                          color: forestGreen,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: forestGreen, width: 1.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                    ),
-                  ),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   height: 50,
+                  //   child: OutlinedButton.icon(
+                  //     onPressed: () {
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(
+                  //           builder: (_) => const ParkSearchView(),
+                  //         ),
+                  //       );
+                  //     },
+                  //     icon: const Icon(Icons.park_outlined, color: forestGreen),
+                  //     label: const Text(
+                  //       "ค้นหาอุทยานแห่งชาติ",
+                  //       style: TextStyle(
+                  //         color: forestGreen,
+                  //         fontSize: 14,
+                  //         fontWeight: FontWeight.w600,
+                  //       ),
+                  //     ),
+                  //     style: OutlinedButton.styleFrom(
+                  //       side: const BorderSide(color: forestGreen, width: 1.5),
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(16),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
 
-                  const SizedBox(height: 32),
+                  // const SizedBox(height: 32),
                 ],
               ),
             ),
