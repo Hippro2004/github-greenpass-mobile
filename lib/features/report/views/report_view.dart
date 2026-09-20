@@ -26,16 +26,40 @@ class _ReportViewState extends State<ReportView> {
   static const Color creamBg = Color(0xFFF8F5F0);
   static const Color warmGold = Color(0xFFB7791F);
 
+  static int _compareReportsDesc(ReportResponse a, ReportResponse b) {
+    final timeA =
+        a.reportTime.trim().isNotEmpty ? a.reportTime.trim() : "00:00:00";
+    final timeB =
+        b.reportTime.trim().isNotEmpty ? b.reportTime.trim() : "00:00:00";
+    final dtA =
+        DateTime.tryParse('${a.reportDate} $timeA') ??
+        DateTime.tryParse(a.reportDate) ??
+        DateTime(1970);
+    final dtB =
+        DateTime.tryParse('${b.reportDate} $timeB') ??
+        DateTime.tryParse(b.reportDate) ??
+        DateTime(1970);
+    final cmp = dtB.compareTo(dtA);
+    if (cmp != 0) return cmp;
+    return b.reportId.compareTo(a.reportId);
+  }
+
   Map<int, List<ReportResponse>> get _reportsByPark {
     final grouped = <int, List<ReportResponse>>{};
     for (final report in _reports) {
       grouped.putIfAbsent(report.parkId, () => []).add(report);
     }
+    for (final list in grouped.values) {
+      list.sort(_compareReportsDesc);
+    }
     return grouped;
   }
 
   List<ReportResponse> get _parks {
-    return _reportsByPark.values.map((reports) => reports.first).toList();
+    final parkList =
+        _reportsByPark.values.map((reports) => reports.first).toList();
+    parkList.sort(_compareReportsDesc);
+    return parkList;
   }
 
   @override

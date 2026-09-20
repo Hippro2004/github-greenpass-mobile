@@ -32,16 +32,38 @@ class _TravelBookViewState extends State<TravelBookView> {
   static const Color textPrimary = Color(0xFF0F172A);
   static const Color textSecondary = Color(0xFF64748B);
 
+  static int _compareStampsDesc(StampResponse a, StampResponse b) {
+    final timeA = a.time.trim().isNotEmpty ? a.time.trim() : "00:00:00";
+    final timeB = b.time.trim().isNotEmpty ? b.time.trim() : "00:00:00";
+    final dtA =
+        DateTime.tryParse('${a.stampDate} $timeA') ??
+        DateTime.tryParse(a.stampDate) ??
+        DateTime(1970);
+    final dtB =
+        DateTime.tryParse('${b.stampDate} $timeB') ??
+        DateTime.tryParse(b.stampDate) ??
+        DateTime(1970);
+    final cmp = dtB.compareTo(dtA);
+    if (cmp != 0) return cmp;
+    return b.stampId.compareTo(a.stampId);
+  }
+
   Map<int, List<StampResponse>> get _stampsByPark {
     final grouped = <int, List<StampResponse>>{};
     for (final stamp in _stamps) {
       grouped.putIfAbsent(stamp.parkId, () => []).add(stamp);
     }
+    for (final list in grouped.values) {
+      list.sort(_compareStampsDesc);
+    }
     return grouped;
   }
 
   List<StampResponse> get _parks {
-    return _stampsByPark.values.map((stamps) => stamps.first).toList();
+    final parkList =
+        _stampsByPark.values.map((stamps) => stamps.first).toList();
+    parkList.sort(_compareStampsDesc);
+    return parkList;
   }
 
   @override
