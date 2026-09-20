@@ -52,7 +52,10 @@ class _ParkDetailViewState extends State<ParkDetailView> {
             _buildHoursCard(park),
 
             // ── Section 3: งานอีเว้นท์ประจำฤดูกาล & จุดเข้าชม ──────────
-            _buildEventsCard(park),
+            if (park.eventNote != null ||
+                park.isSeasonalPark == true ||
+                park.name.contains("เขาใหญ่"))
+              _buildEventsCard(park),
 
             // ── Section 4: เกี่ยวกับอุทยาน ────────────────────────
             _buildAboutCard(park),
@@ -191,6 +194,10 @@ class _ParkDetailViewState extends State<ParkDetailView> {
   }
 
   Widget _buildHeroCard(Park park) {
+    final isWorldHeritage = park.name.contains("เขาใหญ่") ||
+        park.name.contains("แก่งกระจาน") ||
+        (park.description?.contains("มรดกโลก") ?? false);
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 10),
       padding: const EdgeInsets.all(18),
@@ -218,7 +225,7 @@ class _ParkDetailViewState extends State<ParkDetailView> {
         children: [
           Row(
             children: [
-              // Park Icon Squircle
+              // Park Image / Icon Squircle
               Container(
                 width: 64,
                 height: 64,
@@ -227,12 +234,29 @@ class _ParkDetailViewState extends State<ParkDetailView> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: emeraldTint, width: 1.5),
                 ),
-                child: const Center(
-                  child: Icon(
-                    Icons.park_rounded,
-                    color: emeraldTint,
-                    size: 34,
-                  ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: park.image != null
+                      ? Image.asset(
+                          'assets/images/${park.image}',
+                          width: 64,
+                          height: 64,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, exception, stackTrace) => const Center(
+                            child: Icon(
+                              Icons.park_rounded,
+                              color: emeraldTint,
+                              size: 34,
+                            ),
+                          ),
+                        )
+                      : const Center(
+                          child: Icon(
+                            Icons.park_rounded,
+                            color: emeraldTint,
+                            size: 34,
+                          ),
+                        ),
                 ),
               ),
 
@@ -264,7 +288,7 @@ class _ParkDetailViewState extends State<ParkDetailView> {
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            park.location ?? "14.3109229, 101.5304415",
+                            park.location ?? "อุทยานแห่งชาติ",
                             style: const TextStyle(
                               color: paleEmerald,
                               fontSize: 11.5,
@@ -283,27 +307,35 @@ class _ParkDetailViewState extends State<ParkDetailView> {
 
           const SizedBox(height: 14),
 
-          // Badge 1: World Heritage / Status
+          // Badge 1: World Heritage or Park Status
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.22),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: starAmber.withValues(alpha: 0.35)),
+              border: Border.all(
+                color: isWorldHeritage
+                    ? starAmber.withValues(alpha: 0.35)
+                    : emeraldTint.withValues(alpha: 0.35),
+              ),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.star_rounded,
-                  color: starAmber,
+                  isWorldHeritage ? Icons.star_rounded : Icons.eco_rounded,
+                  color: isWorldHeritage ? starAmber : emeraldTint,
                   size: 14,
                 ),
-                SizedBox(width: 5),
+                const SizedBox(width: 5),
                 Text(
-                  "มรดกโลกทางธรรมชาติ (UNESCO)",
+                  isWorldHeritage
+                      ? "มรดกโลกทางธรรมชาติ (UNESCO)"
+                      : (park.status ?? "อุทยานแห่งชาติ"),
                   style: TextStyle(
-                    color: Color(0xFFFDE047),
+                    color: isWorldHeritage
+                        ? const Color(0xFFFDE047)
+                        : const Color(0xFFD1FAE5),
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -564,6 +596,8 @@ class _ParkDetailViewState extends State<ParkDetailView> {
   }
 
   Widget _buildEventsCard(Park park) {
+    final isKhaoYai = park.name.contains("เขาใหญ่");
+
     return _buildCardContainer(
       iconContainerColor: const Color(0xFFE0F2FE),
       iconColor: const Color(0xFF0284C7),
@@ -572,24 +606,44 @@ class _ParkDetailViewState extends State<ParkDetailView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            park.eventNote ??
-                "ด่านศาลเจ้าพ่อเขาใหญ่ (กม.23 ฝั่งปากช่อง) & ด่านเนินหอม (กม.41 ฝั่งปราจีนบุรี)",
-            style: const TextStyle(
-              fontSize: 12.5,
-              color: Color(0xFF475569),
-              height: 1.4,
+          if (park.eventNote != null)
+            Text(
+              park.eventNote!,
+              style: const TextStyle(
+                fontSize: 12.5,
+                color: Color(0xFF475569),
+                height: 1.4,
+              ),
+            )
+          else if (isKhaoYai)
+            const Text(
+              "ด่านศาลเจ้าพ่อเขาใหญ่ (กม.23 ฝั่งปากช่อง) & ด่านเนินหอม (กม.41 ฝั่งปราจีนบุรี)",
+              style: TextStyle(
+                fontSize: 12.5,
+                color: Color(0xFF475569),
+                height: 1.4,
+              ),
             ),
-          ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: [
-              _buildTagChip("🔭 ส่องสัตว์กลางคืน (Night Safari)", mintLight, primaryGreen),
-              _buildTagChip("🛶 เส้นทางผากล้วยไม้", mintLight, primaryGreen),
-              _buildTagChip("⛺ ลานกางเต็นท์ลำตะคอง", const Color(0xFFFEF3C7), const Color(0xFF92400E)),
-            ],
+            children: isKhaoYai
+                ? [
+                    _buildTagChip("🔭 ส่องสัตว์กลางคืน (Night Safari)", mintLight, primaryGreen),
+                    _buildTagChip("🛶 เส้นทางผากล้วยไม้", mintLight, primaryGreen),
+                    _buildTagChip("⛺ ลานกางเต็นท์ลำตะคอง", const Color(0xFFFEF3C7), const Color(0xFF92400E)),
+                  ]
+                : [
+                    if (park.isSeasonalPark == true)
+                      _buildTagChip(
+                        "📅 เปิด ${park.seasonOpenDate ?? ''} - ${park.seasonCloseDate ?? ''}",
+                        const Color(0xFFFEF3C7),
+                        const Color(0xFF92400E),
+                      ),
+                    _buildTagChip("🌿 จุดท่องเที่ยวธรรมชาติ", mintLight, primaryGreen),
+                    _buildTagChip("📷 จุดชมทัศนียภาพ", const Color(0xFFE0F2FE), const Color(0xFF0284C7)),
+                  ],
           ),
         ],
       ),
@@ -616,14 +670,19 @@ class _ParkDetailViewState extends State<ParkDetailView> {
   }
 
   Widget _buildAboutCard(Park park) {
+    final description = park.description != null && park.description!.trim().isNotEmpty
+        ? park.description!
+        : (park.name.contains("เขาใหญ่")
+            ? "อุทยานแห่งชาติเขาใหญ่ เป็นอุทยานแห่งชาติแห่งแรกของประเทศไทย จัดตั้งขึ้นเมื่อปี พ.ศ. 2505 และได้รับการยกย่องเป็นมรดกโลกทางธรรมชาติ อุดมสมบูรณ์ด้วยผืนป่าดงพญาเย็น-เขาใหญ่ แหล่งต้นน้ำลำธารสำคัญและที่อยู่อาศัยของสัตว์ป่านานาชนิด"
+            : "ข้อมูลประวัติและความเป็นมาของอุทยานแห่งชาตินี้ เป็นแหล่งอนุรักษ์ทรัพยากรธรรมชาติและสิ่งแวดล้อมที่สำคัญ");
+
     return _buildCardContainer(
       iconContainerColor: mintLight,
       iconColor: emeraldTint,
       icon: Icons.menu_book_outlined,
       title: "เกี่ยวกับอุทยาน",
       child: Text(
-        park.description ??
-            "อุทยานแห่งชาติเขาใหญ่ เป็นอุทยานแห่งชาติแห่งแรกของประเทศไทย จัดตั้งขึ้นเมื่อปี พ.ศ. 2505 และได้รับการยกย่องเป็นมรดกโลกทางธรรมชาติ อุดมสมบูรณ์ด้วยผืนป่าดงพญาเย็น-เขาใหญ่ แหล่งต้นน้ำลำธารสำคัญและที่อยู่อาศัยของสัตว์ป่านานาชนิด",
+        description,
         style: const TextStyle(
           fontSize: 12.5,
           color: Color(0xFF475569),
