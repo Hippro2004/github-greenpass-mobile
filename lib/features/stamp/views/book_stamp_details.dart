@@ -178,14 +178,18 @@ class _BookStampDetailsState extends State<BookStampDetails> {
     super.initState();
   }
 
-  String _getParkSubtitle(String parkName) {
-    if (parkName.contains("เขาใหญ่")) {
-      return "Khao Yai National Park • World Heritage Site";
-    }
-    return "$parkName • Thailand National Park";
-  }
+  // String _getParkSubtitle(String parkName) {
+  //   if (parkName.contains("เขาใหญ่")) {
+  //     return "Khao Yai National Park • World Heritage Site";
+  //   }
+  //   return "$parkName • Thailand National Park";
+  // }
 
-  void _showSignatureDialog(BuildContext context, String signatureUrl, String rangerName) {
+  void _showSignatureDialog(
+    BuildContext context,
+    String signatureUrl,
+    String rangerName,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -227,16 +231,26 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                         signatureUrl,
                         fit: BoxFit.contain,
                         errorBuilder: (_, _, _) => const Center(
-                          child: Icon(Icons.draw_outlined, size: 48, color: Colors.black26),
+                          child: Icon(
+                            Icons.draw_outlined,
+                            size: 48,
+                            color: Colors.black26,
+                          ),
                         ),
                       )
                     : const Center(
-                        child: Icon(Icons.draw_outlined, size: 48, color: Colors.black26),
+                        child: Icon(
+                          Icons.draw_outlined,
+                          size: 48,
+                          color: Colors.black26,
+                        ),
                       ),
               ),
               const SizedBox(height: 14),
               Text(
-                rangerName.trim().isNotEmpty ? "เจ้าหน้าที่: $rangerName" : "เจ้าหน้าที่อุทยานแห่งชาติ",
+                rangerName.trim().isNotEmpty
+                    ? "เจ้าหน้าที่: $rangerName"
+                    : "เจ้าหน้าที่อุทยานแห่งชาติ",
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -302,7 +316,9 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                           shape: BoxShape.circle,
                           color: const Color(0xFF063A27),
                           border: Border.all(
-                            color: const Color(0xFF22C55E).withValues(alpha: 0.35),
+                            color: const Color(
+                              0xFF22C55E,
+                            ).withValues(alpha: 0.35),
                             width: 3,
                           ),
                           boxShadow: [
@@ -351,7 +367,10 @@ class _BookStampDetailsState extends State<BookStampDetails> {
 
                   // Pill: OFFICIAL PASSPORT STAMP
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(20),
@@ -399,15 +418,15 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                   const SizedBox(height: 4),
 
                   // Subtitle
-                  Text(
-                    _getParkSubtitle(parkTitle),
-                    style: TextStyle(
-                      color: const Color(0xFFE2E8F0).withValues(alpha: 0.85),
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  // Text(
+                  //   _getParkSubtitle(parkTitle),
+                  //   style: TextStyle(
+                  //     color: const Color(0xFFE2E8F0).withValues(alpha: 0.85),
+                  //     fontSize: 12.5,
+                  //     fontWeight: FontWeight.w500,
+                  //   ),
+                  //   textAlign: TextAlign.center,
+                  // ),
                 ],
               ),
             ),
@@ -564,7 +583,7 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                   // การ์ดข้อมูล Stamp 4 แถวตาม screen.png
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
+                      horizontal: 16,
                       vertical: 16,
                     ),
                     decoration: BoxDecoration(
@@ -592,6 +611,9 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                               fontWeight: FontWeight.w800,
                               color: textPrimary,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
                           ),
                         ),
                         const Divider(
@@ -743,7 +765,9 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                                     borderRadius: BorderRadius.circular(14),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: amberBadge.withValues(alpha: 0.35),
+                                        color: amberBadge.withValues(
+                                          alpha: 0.35,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 3),
                                       ),
@@ -946,25 +970,31 @@ class _BookStampDetailsState extends State<BookStampDetails> {
     return Row(
       children: [
         Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: iconBg,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: iconColor, size: 20),
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
+          child: Icon(icon, color: iconColor, size: 19),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 10),
         Text(
           label,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 13.5,
             color: textSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),
-        const Spacer(),
-        valueWidget,
+        const SizedBox(width: 8),
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: valueWidget,
+            ),
+          ),
+        ),
       ],
     );
   }

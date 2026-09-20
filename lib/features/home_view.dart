@@ -571,7 +571,7 @@ class _MainViewState extends State<MainView> {
                         label: "ค้นหาอุทยาน",
                         accentColor: Colors.white,
                         tileColor: const Color(0xFF2D6A4F),
-                        iconBgColor: const Color(0xFF2D6A4F),
+                        iconBgColor: Colors.white.withValues(alpha: 0.16),
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -580,11 +580,28 @@ class _MainViewState extends State<MainView> {
                         ),
                       ),
                       _buildMenuButton(
-                        icon: Icons.menu_book_rounded,
+                        icon: Icons.auto_stories_rounded,
                         label: "สมุดบันทึก",
-                        accentColor: Colors.white,
-                        tileColor: const Color(0xFFB97732),
-                        iconBgColor: const Color(0xFFB97732),
+                        accentColor: const Color.fromARGB(255, 255, 255, 255),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFF064E3B),
+                            Color(0xFF0F5A3E),
+                            Color(0xFF78350F),
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFF064E3B,
+                            ).withValues(alpha: 0.28),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                        iconBgColor: Colors.white.withValues(alpha: 0.16),
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -593,11 +610,24 @@ class _MainViewState extends State<MainView> {
                         ),
                       ),
                       _buildMenuButton(
-                        icon: Icons.bookmark_rounded,
+                        icon: Icons.qr_code_2_rounded,
                         label: "รับแสตมป์",
                         accentColor: Colors.white,
-                        tileColor: const Color(0xFF8A5A3B),
-                        iconBgColor: const Color(0xFF8A5A3B),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFFD97706,
+                            ).withValues(alpha: 0.28),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                        iconBgColor: Colors.white.withValues(alpha: 0.20),
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -1224,13 +1254,20 @@ class _MainViewState extends State<MainView> {
     Color? accentColor,
     Color? tileColor,
     Color? iconBgColor,
+    Gradient? gradient,
+    List<BoxShadow>? boxShadow,
   }) {
     final buttonColor = isRed
         ? const Color(0xFFB35D47)
         : (tileColor ?? Colors.white);
     final iconColor = accentColor ?? Colors.white;
     final iconBackground =
-        iconBgColor ?? (tileColor ?? const Color(0xFFE8F5EE));
+        iconBgColor ??
+        (gradient != null
+            ? Colors.white.withValues(alpha: 0.18)
+            : (buttonColor == const Color(0xFFEAF3F5)
+                  ? const Color(0xFFEAF3F5)
+                  : Colors.white.withValues(alpha: 0.18)));
 
     return Material(
       color: Colors.transparent,
@@ -1240,8 +1277,18 @@ class _MainViewState extends State<MainView> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
           decoration: BoxDecoration(
-            color: buttonColor,
+            color: gradient == null ? buttonColor : null,
+            gradient: gradient,
             borderRadius: BorderRadius.circular(24),
+            boxShadow:
+                boxShadow ??
+                [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1262,7 +1309,8 @@ class _MainViewState extends State<MainView> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: buttonColor == const Color(0xFFEAF3F5)
+                  color:
+                      buttonColor == const Color(0xFFEAF3F5) && gradient == null
                       ? const Color(0xFF2D6A4F)
                       : Colors.white,
                   height: 1.2,

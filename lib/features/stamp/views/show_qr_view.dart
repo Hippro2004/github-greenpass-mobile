@@ -21,14 +21,21 @@ class _StampQrViewState extends State<StampQrView> {
   Timer? _timer;
   int _secondsLeft = 0;
 
-  // ── ธีมสีเดียวกับไอคอน รับแสตมป์ (0xFF8A5A3B) ───────────────
-  static const Color primaryBrown = Color(0xFF8A5A3B);
-  static const Color lightBrown = Color(0xFFD4A373);
-  static const Color creamBg = Color(0xFFFAF7F2);
-  static const Color softBrown = Color(0xFF8A5A3B);
-  static const Color darkBrown = Color(0xFF5D3823);
-  static const Color midBrown = Color(0xFFA56F4E);
-  static const Color cardBrown = Color(0xFFF7EFE8);
+  // ── Vibrant Wilderness Theme Palette (ตามแบบ DESIGN.md / screen.png) ───────────
+  static const Color screenBg = Color(0xFFF3F7F5);
+  static const Color darkForest = Color(0xFF064E3B);
+  static const Color midForest = Color(0xFF0F5A3E);
+  static const Color warmEarth = Color(0xFF78350F);
+
+  static const Color mintLight = Color(0xFFE2F7ED);
+  static const Color mintAction = Color(0xFFE8F7F0);
+  static const Color iconGreen = Color(0xFF059669);
+
+  static const Color amberLight = Color(0xFFFEF3C7);
+  static const Color amberDark = Color(0xFF92400E);
+
+  static const Color textPrimary = Color(0xFF0F2E23);
+  static const Color textSecondary = Color(0xFF64748B);
 
   @override
   void initState() {
@@ -95,7 +102,7 @@ class _StampQrViewState extends State<StampQrView> {
   Color get _timerColor => _isExpired
       ? Colors.red
       : _secondsLeft > 120
-      ? primaryBrown
+      ? amberDark
       : _secondsLeft > 60
       ? Colors.orange
       : Colors.red;
@@ -103,29 +110,39 @@ class _StampQrViewState extends State<StampQrView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: creamBg,
+      backgroundColor: screenBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         forceMaterialTransparency: true,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade200),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 14),
+          child: Center(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: mintAction,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Color(0xFF134E39),
+                  size: 18,
+                ),
+              ),
             ),
-            child: const Icon(Icons.arrow_back, color: primaryBrown, size: 18),
           ),
         ),
         title: const Text(
           "รับแสตมป์",
           style: TextStyle(
-            color: primaryBrown,
-            fontWeight: FontWeight.w600,
-            fontSize: 17,
+            color: textPrimary,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
           ),
         ),
         centerTitle: true,
@@ -141,7 +158,7 @@ class _StampQrViewState extends State<StampQrView> {
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: lightBrown.withValues(alpha: 0.12),
+                color: mintLight.withValues(alpha: 0.35),
               ),
             ),
           ),
@@ -153,7 +170,7 @@ class _StampQrViewState extends State<StampQrView> {
               height: 220,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: primaryBrown.withValues(alpha: 0.05),
+                color: iconGreen.withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -161,23 +178,23 @@ class _StampQrViewState extends State<StampQrView> {
             top: 100,
             left: 10,
             child: Icon(
-              Icons.bookmark_rounded,
+              Icons.qr_code_2_rounded,
               size: 50,
-              color: primaryBrown.withValues(alpha: 0.06),
+              color: iconGreen.withValues(alpha: 0.06),
             ),
           ),
 
           Center(
             child: _isLoading
-                ? Column(
+                ? const Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(primaryBrown),
+                        valueColor: AlwaysStoppedAnimation(iconGreen),
                         strokeWidth: 3,
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
+                      SizedBox(height: 16),
+                      Text(
                         "กำลังสร้าง QR Code...",
                         style: TextStyle(color: Colors.black45, fontSize: 13),
                       ),
@@ -231,7 +248,7 @@ class _StampQrViewState extends State<StampQrView> {
                               icon: const Icon(Icons.refresh, size: 18),
                               label: const Text("ลองใหม่"),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: primaryBrown,
+                                backgroundColor: iconGreen,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
@@ -254,10 +271,10 @@ class _StampQrViewState extends State<StampQrView> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                          padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(28),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.06),
@@ -271,12 +288,12 @@ class _StampQrViewState extends State<StampQrView> {
                               // แถบหัวการ์ด gradient เล็กๆ ให้เข้าธีม
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
+                                  horizontal: 14,
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [darkBrown, midBrown, primaryBrown],
+                                    colors: [darkForest, midForest, warmEarth],
                                   ),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -284,30 +301,33 @@ class _StampQrViewState extends State<StampQrView> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      Icons.qr_code_2,
+                                      Icons.qr_code_2_rounded,
                                       color: Colors.white,
-                                      size: 14,
+                                      size: 15,
                                     ),
                                     SizedBox(width: 6),
                                     Text(
-                                      "GreenPass Stamp",
+                                      "OFFICIAL PASSPORT STAMP",
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.4,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.8,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 14),
+                              const SizedBox(height: 16),
 
                               Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
-                                  color: cardBrown,
-                                  borderRadius: BorderRadius.circular(18),
+                                  color: screenBg,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: const Color(0xFFE2E8F0),
+                                  ),
                                 ),
                                 child: Opacity(
                                   opacity: _isExpired ? 0.35 : 1.0,
@@ -319,18 +339,18 @@ class _StampQrViewState extends State<StampQrView> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 14),
+                              const SizedBox(height: 16),
 
                               Text(
                                 "${Session.currentUser?.firstname ?? ''} ${Session.currentUser?.lastname ?? ''}"
                                     .trim(),
                                 style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: textPrimary,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 10),
 
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -338,16 +358,23 @@ class _StampQrViewState extends State<StampQrView> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: _timerColor.withValues(alpha: 0.1),
+                                  color: _isExpired
+                                      ? Colors.red.withValues(alpha: 0.1)
+                                      : amberLight,
                                   borderRadius: BorderRadius.circular(30),
+                                  border: Border.all(
+                                    color: _isExpired
+                                        ? Colors.red.withValues(alpha: 0.25)
+                                        : const Color(0xFFFDE68A),
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      Icons.timer_outlined,
+                                      Icons.access_time_filled_rounded,
                                       color: _timerColor,
-                                      size: 16,
+                                      size: 15,
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
@@ -356,7 +383,7 @@ class _StampQrViewState extends State<StampQrView> {
                                           : "หมดอายุใน ${(_secondsLeft ~/ 60).toString().padLeft(2, '0')}:${(_secondsLeft % 60).toString().padLeft(2, '0')}",
                                       style: TextStyle(
                                         fontSize: 13,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w800,
                                         color: _timerColor,
                                       ),
                                     ),
@@ -364,7 +391,7 @@ class _StampQrViewState extends State<StampQrView> {
                                 ),
                               ),
                               if (_isExpired) ...[
-                                const SizedBox(height: 14),
+                                const SizedBox(height: 16),
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
@@ -372,14 +399,14 @@ class _StampQrViewState extends State<StampQrView> {
                                     icon: const Icon(Icons.refresh, size: 16),
                                     label: const Text("สร้าง QR ใหม่"),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: primaryBrown,
+                                      backgroundColor: iconGreen,
                                       foregroundColor: Colors.white,
                                       elevation: 0,
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 12,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(14),
                                       ),
                                     ),
                                   ),
@@ -397,24 +424,25 @@ class _StampQrViewState extends State<StampQrView> {
                           ),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.grey.shade100),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFF1F5F9)),
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.info_outline,
-                                size: 15,
-                                color: softBrown,
+                                size: 16,
+                                color: iconGreen,
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8),
                               Flexible(
                                 child: Text(
                                   "แสดง QR Code นี้ให้เจ้าหน้าที่สแกน",
                                   style: TextStyle(
                                     fontSize: 12.5,
-                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w600,
+                                    color: textSecondary,
                                   ),
                                 ),
                               ),
