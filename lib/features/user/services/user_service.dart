@@ -13,7 +13,7 @@ class UserSevice {
       final fileName = file.path.split(Platform.pathSeparator).last;
       final formData = FormData.fromMap({
         "file": await MultipartFile.fromFile(file.path, filename: fileName),
-        "category": "profiles",
+        "category": "users",
       });
 
       final response = await DioClient.dio.post(
@@ -22,7 +22,9 @@ class UserSevice {
       );
 
       final result = response.data['result'];
-      return (result['fileUrl'] ?? result['fileName']) as String;
+      final rawName =
+          (result['fileName'] ?? result['image'] ?? result['fileUrl']) as String;
+      return rawName.split('/').last.split(Platform.pathSeparator).last;
     } catch (e) {
       rethrow;
     }

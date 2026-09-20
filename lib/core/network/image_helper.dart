@@ -1,6 +1,6 @@
 import 'package:greenpass/core/network/dio_client.dart';
 
-String resolveImageUrl(String? imagePath) {
+String resolveImageUrl(String? imagePath, {String defaultCategory = 'users'}) {
   if (imagePath == null) return '';
   final trimmed = imagePath.trim();
   if (trimmed.isEmpty) return '';
@@ -35,6 +35,11 @@ String resolveImageUrl(String? imagePath) {
   // ป้องกันกรณี path มี /api/v1 นำหน้าอยู่แล้วซ้ำกับ apiBaseUrl
   if (apiBaseUrl.endsWith('/api/v1') && cleanPath.startsWith('/api/v1/')) {
     cleanPath = cleanPath.substring('/api/v1'.length);
+  }
+
+  // ถ้าส่งมาเป็นชื่อไฟล์เดี่ยวๆ เช่น 1726849382_avatar.jpg ที่ยังไม่มี /uploads/
+  if (!cleanPath.startsWith('/uploads/')) {
+    cleanPath = '/uploads/$defaultCategory$cleanPath';
   }
 
   return '$apiBaseUrl$cleanPath';
