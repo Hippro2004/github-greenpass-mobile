@@ -74,32 +74,31 @@ class _AnnouncementViewState extends State<AnnouncementView> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         forceMaterialTransparency: true,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 14),
-          child: Center(
-            child: GestureDetector(
-              onTap: () {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                }
-              },
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: mintLight,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: mintBorder),
+        automaticallyImplyLeading: false,
+        leading: Navigator.canPop(context)
+            ? Padding(
+                padding: const EdgeInsets.only(left: 14),
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: mintLight,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: mintBorder),
+                      ),
+                      child: const Icon(
+                        Icons.chevron_left_rounded,
+                        color: darkForest,
+                        size: 26,
+                      ),
+                    ),
+                  ),
                 ),
-                child: const Icon(
-                  Icons.chevron_left_rounded,
-                  color: darkForest,
-                  size: 26,
-                ),
-              ),
-            ),
-          ),
-        ),
+              )
+            : null,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -496,4 +495,3 @@ class _AnnouncementViewState extends State<AnnouncementView> {
     );
   }
 }
-
