@@ -314,7 +314,21 @@ class _ParkSearchViewState extends State<ParkSearchView> {
   }
 
   Widget _buildParkCard(Park park) {
-    final styleData = _getParkStyleData(park);
+    String? statusTag;
+    Color statusBg = mintLight;
+    Color statusColor = primaryGreen;
+
+    if (park.isTemporaryClosed == true) {
+      statusTag = "ปิดชั่วคราว";
+      statusBg = const Color(0xFFFEE2E2);
+      statusColor = const Color(0xFFE11D48);
+    } else if (park.isSeasonalPark == true) {
+      statusTag = "เปิดตามฤดูกาล";
+      statusBg = const Color(0xFFFEF3C7);
+      statusColor = const Color(0xFFD97706);
+    } else if (park.status != null && park.status!.isNotEmpty) {
+      statusTag = park.status!;
+    }
 
     return GestureDetector(
       onTap: () {
@@ -344,19 +358,22 @@ class _ParkSearchViewState extends State<ParkSearchView> {
         ),
         child: Row(
           children: [
-            // ── Left Park Photo or Vibrant Emblem Badge ──────
+            // ── Left Park Photo or Clean Placeholder ─────────
             ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: park.image != null
-                  ? Image.asset(
-                      'assets/images/${park.image}',
-                      width: 76,
-                      height: 76,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, exception, stackTrace) =>
-                          _buildEmblemBadge(styleData),
-                    )
-                  : _buildEmblemBadge(styleData),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                width: 68,
+                height: 68,
+                color: mintLight,
+                child: park.image != null
+                    ? Image.asset(
+                        'assets/images/${park.image}',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, exception, stackTrace) =>
+                            _buildPlaceholder(),
+                      )
+                    : _buildPlaceholder(),
+              ),
             ),
 
             const SizedBox(width: 14),
@@ -367,27 +384,28 @@ class _ParkSearchViewState extends State<ParkSearchView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Tag pill (No review rating)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2.5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: styleData.tagBgColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      styleData.tagText,
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.bold,
-                        color: styleData.tagTextColor,
+                  // Status Tag (if any)
+                  if (statusTag != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusBg,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        statusTag,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor,
+                        ),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 5),
+                    const SizedBox(height: 5),
+                  ],
 
                   // Park Title
                   Text(
@@ -451,50 +469,12 @@ class _ParkSearchViewState extends State<ParkSearchView> {
     );
   }
 
-  Widget _buildEmblemBadge(_ParkStyleData styleData) {
-    return Container(
-      width: 76,
-      height: 76,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: styleData.gradientColors,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: styleData.gradientColors.first.withValues(alpha: 0.25),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            styleData.icon,
-            color: Colors.white,
-            size: 32,
-          ),
-          const SizedBox(height: 3),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              styleData.slug,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 8.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.6,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.clip,
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
+  Widget _buildPlaceholder() {
+    return const Center(
+      child: Icon(
+        Icons.park_rounded,
+        color: primaryGreen,
+        size: 32,
       ),
     );
   }
@@ -601,139 +581,4 @@ class _ParkSearchViewState extends State<ParkSearchView> {
       ),
     );
   }
-
-  /// Helper to return vibrant theme emblem, slug, tag based on park info
-  _ParkStyleData _getParkStyleData(Park park) {
-    final name = park.name;
-
-    if (name.contains("เขาใหญ่")) {
-      return _ParkStyleData(
-        gradientColors: const [Color(0xFF006D43), Color(0xFF00A86B)],
-        icon: Icons.park_rounded,
-        slug: "KHAO YAI",
-        tagText: "มรดกโลก",
-        tagBgColor: mintLight,
-        tagTextColor: primaryGreen,
-      );
-    } else if (name.contains("แก่งกระจาน")) {
-      return _ParkStyleData(
-        gradientColors: const [Color(0xFF00796B), Color(0xFF009688)],
-        icon: Icons.terrain_rounded,
-        slug: "KRACHAN",
-        tagText: "ป่าดิบชื้น",
-        tagBgColor: const Color(0xFFE0F2F1),
-        tagTextColor: const Color(0xFF00695C),
-      );
-    } else if (name.contains("เอราวัณ")) {
-      return _ParkStyleData(
-        gradientColors: const [Color(0xFF0284C7), Color(0xFF2563EB)],
-        icon: Icons.waves_rounded,
-        slug: "ERAWAN",
-        tagText: "น้ำตก 7 ชั้น",
-        tagBgColor: const Color(0xFFE0F2FE),
-        tagTextColor: const Color(0xFF0369A1),
-      );
-    } else if (name.contains("ดอยสุเทพ") || name.contains("สุเทพ")) {
-      return _ParkStyleData(
-        gradientColors: const [Color(0xFFEA580C), Color(0xFFD97706)],
-        icon: Icons.landscape_rounded,
-        slug: "DOI SUTHEP",
-        tagText: "ดอย & วัฒนธรรม",
-        tagBgColor: const Color(0xFFFEF3C7),
-        tagTextColor: const Color(0xFFB45309),
-      );
-    } else if (name.contains("อินทนนท์")) {
-      return _ParkStyleData(
-        gradientColors: const [Color(0xFF7C3AED), Color(0xFF6D28D9)],
-        icon: Icons.filter_hdr_rounded,
-        slug: "INTHANON",
-        tagText: "จุดสูงสุดแดนสยาม",
-        tagBgColor: const Color(0xFFEDE9FE),
-        tagTextColor: const Color(0xFF6D28D9),
-      );
-    }
-
-    // Dynamic fallback based on park status or ID
-    String defaultTag = "อุทยานแห่งชาติ";
-    if (park.isTemporaryClosed == true) {
-      defaultTag = "ปิดชั่วคราว";
-    } else if (park.isSeasonalPark == true) {
-      defaultTag = "เปิดตามฤดูกาล";
-    } else if (park.status != null && park.status!.isNotEmpty) {
-      defaultTag = park.status!;
-    }
-
-    final paletteIndex = (park.id.abs()) % 5;
-    switch (paletteIndex) {
-      case 0:
-        return _ParkStyleData(
-          gradientColors: const [Color(0xFF006D43), Color(0xFF00A86B)],
-          icon: Icons.park_rounded,
-          slug: _slugify(park.name),
-          tagText: defaultTag,
-          tagBgColor: mintLight,
-          tagTextColor: primaryGreen,
-        );
-      case 1:
-        return _ParkStyleData(
-          gradientColors: const [Color(0xFF00796B), Color(0xFF009688)],
-          icon: Icons.terrain_rounded,
-          slug: _slugify(park.name),
-          tagText: defaultTag,
-          tagBgColor: const Color(0xFFE0F2F1),
-          tagTextColor: const Color(0xFF00695C),
-        );
-      case 2:
-        return _ParkStyleData(
-          gradientColors: const [Color(0xFF0284C7), Color(0xFF2563EB)],
-          icon: Icons.water_drop_rounded,
-          slug: _slugify(park.name),
-          tagText: defaultTag,
-          tagBgColor: const Color(0xFFE0F2FE),
-          tagTextColor: const Color(0xFF0369A1),
-        );
-      case 3:
-        return _ParkStyleData(
-          gradientColors: const [Color(0xFFEA580C), Color(0xFFD97706)],
-          icon: Icons.landscape_rounded,
-          slug: _slugify(park.name),
-          tagText: defaultTag,
-          tagBgColor: const Color(0xFFFEF3C7),
-          tagTextColor: const Color(0xFFB45309),
-        );
-      default:
-        return _ParkStyleData(
-          gradientColors: const [Color(0xFF7C3AED), Color(0xFF6D28D9)],
-          icon: Icons.filter_hdr_rounded,
-          slug: _slugify(park.name),
-          tagText: defaultTag,
-          tagBgColor: const Color(0xFFEDE9FE),
-          tagTextColor: const Color(0xFF6D28D9),
-        );
-    }
-  }
-
-  String _slugify(String name) {
-    final cleaned = name.replaceAll("อุทยานแห่งชาติ", "").trim();
-    if (cleaned.isEmpty) return "PARK";
-    return cleaned.toUpperCase();
-  }
-}
-
-class _ParkStyleData {
-  final List<Color> gradientColors;
-  final IconData icon;
-  final String slug;
-  final String tagText;
-  final Color tagBgColor;
-  final Color tagTextColor;
-
-  _ParkStyleData({
-    required this.gradientColors,
-    required this.icon,
-    required this.slug,
-    required this.tagText,
-    required this.tagBgColor,
-    required this.tagTextColor,
-  });
 }
