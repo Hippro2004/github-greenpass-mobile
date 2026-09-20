@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/features/report/dtos/report_response.dart';
@@ -6,6 +7,27 @@ import '../../../core/storage/session_strorage.dart';
 import '../dtos/add_report_request.dart';
 
 class ReportService {
+  Future<String> uploadReportImage(File file) async {
+    try {
+      final fileName = file.path.split(Platform.pathSeparator).last;
+      final formData = FormData.fromMap({
+        "file": await MultipartFile.fromFile(file.path, filename: fileName),
+        "category": "reports",
+      });
+
+      final response = await DioClient.dio.post(
+        "/upload",
+        data: formData,
+      );
+
+      final result = response.data['result'];
+      final rawName =
+          (result['fileName'] ?? result['image'] ?? result['fileUrl']) as String;
+      return rawName.split('/').last.split(Platform.pathSeparator).last;
+    } catch (e) {
+      rethrow;
+    }
+  }
   Future<List<ReportResponse>> getMyReport() async {
     try {
       final response = await DioClient.dio.get(

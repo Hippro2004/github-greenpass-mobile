@@ -51,11 +51,75 @@ class _AddReportViewState extends State<AddReportView> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
-    final picked = await _picker.pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      setState(() => _image = File(picked.path));
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final picked = await _picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      if (picked != null) {
+        setState(() => _image = File(picked.path));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("ไม่สามารถเลือกรูปภาพได้: $e")));
+      }
     }
+  }
+
+  void _showImagePickerBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "แนบรูปภาพรายงาน",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: forestGreen,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // ListTile(
+              //   leading: const CircleAvatar(
+              //     backgroundColor: Color(0xFFE8F5E9),
+              //     child: Icon(Icons.camera_alt, color: forestGreen),
+              //   ),
+              //   title: const Text("ถ่ายรูปด้วยกล้อง"),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     _pickImage(ImageSource.camera);
+              //   },
+              // ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFE8F5E9),
+                  child: Icon(Icons.photo_library, color: forestGreen),
+                ),
+                title: const Text("เลือกจากคลังรูปภาพ"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _selectPark() async {
@@ -181,7 +245,7 @@ class _AddReportViewState extends State<AddReportView> {
 
               // อัพโหลดรูป
               GestureDetector(
-                onTap: _pickImage,
+                onTap: _showImagePickerBottomSheet,
                 child: Container(
                   width: double.infinity,
                   height: 160,
@@ -191,14 +255,39 @@ class _AddReportViewState extends State<AddReportView> {
                     border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: _image != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: Image.file(
-                            _image!,
-                            width: double.infinity,
-                            height: 160,
-                            fit: BoxFit.cover,
-                          ),
+                      ? Stack(
+                          children: [
+                            Positioned.fill(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: Image.file(
+                                  _image!,
+                                  width: double.infinity,
+                                  height: 160,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () => setState(() => _image = null),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         )
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -409,6 +498,13 @@ class _AddReportViewState extends State<AddReportView> {
                     if (!_formKey.currentState!.validate()) return;
                     try {
                       setState(() => _isLoading = true);
+
+                      String? uploadedImageName;
+                      if (_image != null) {
+                        uploadedImageName = await reportSerivce
+                            .uploadReportImage(_image!);
+                      }
+
                       await reportSerivce.addReport(
                         AddReportRequest(
                           name: _nameController.text,
@@ -416,6 +512,7 @@ class _AddReportViewState extends State<AddReportView> {
                           parkId: _selectedPark!.id,
                           typeName: _selectedReportTypeName ?? '',
                           reportType: _selectedReportTypeName,
+                          image: uploadedImageName,
                         ),
                         _selectedPark!.id,
                       );

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:greenpass/features/notification/models/notification_model.dart';
 import 'package:greenpass/features/notification/services/notification_websocket_service.dart';
+import 'package:greenpass/core/network/image_helper.dart';
 import 'package:greenpass/features/report/dtos/reply_report_response.dart';
 import 'package:greenpass/features/report/dtos/report_response.dart';
 import 'package:greenpass/features/report/services/reply_report_service.dart';
@@ -363,6 +364,20 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                     color: Colors.grey.shade700,
                   ),
                 ),
+                if (report.image != null && report.image!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      resolveImageUrl(report.image, defaultCategory: 'reports'),
+                      width: double.infinity,
+                      height: 200,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox.shrink(),
+                    ),
+                  ),
+                ],
                 const Divider(height: 28),
                 _infoRow(Icons.forest_outlined, 'อุทยาน', report.parkName),
                 const SizedBox(height: 14),

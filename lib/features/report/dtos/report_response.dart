@@ -9,6 +9,7 @@ class ReportResponse {
   final String reportTime;
   final int parkId;
   final String parkName;
+  final String? image;
 
   ReportResponse({
     required this.reportId,
@@ -19,6 +20,7 @@ class ReportResponse {
     required this.reportTime,
     required this.parkId,
     required this.parkName,
+    this.image,
   });
 
   Map<String, dynamic> toMap() {
@@ -31,6 +33,7 @@ class ReportResponse {
       'reportTime': reportTime,
       'parkId': parkId,
       'parkName': parkName,
+      'image': image,
     };
   }
 
@@ -58,6 +61,7 @@ class ReportResponse {
       reportTime: (map['reportTime'] ?? map['reporttime'])?.toString() ?? '',
       parkId: parsedParkId,
       parkName: parsedParkName,
+      image: map['image'] as String?,
     );
   }
 
