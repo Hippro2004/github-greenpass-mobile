@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/core/network/dio_client.dart';
+import 'package:greenpass/core/network/image_helper.dart';
 import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
 import 'package:greenpass/features/announcement/services/announcement_service.dart';
 
@@ -80,7 +80,7 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
   }
 
   Widget _buildContent(AnnouncementResponse announcement) {
-    final imageUrl = _resolveImageUrl(announcement.image);
+    final imageUrl = resolveImageUrl(announcement.image);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -107,7 +107,7 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
                 child: Image.network(
                   imageUrl,
                   width: double.infinity,
-                  height: 190,
+                  height: 200,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) =>
                       _buildImagePlaceholder(),
@@ -180,36 +180,6 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
     );
   }
 
-  String _resolveImageUrl(String image) {
-    final value = image.trim();
-    if (value.isEmpty) return '';
-
-    final parsed = Uri.tryParse(value);
-    if (parsed != null && parsed.hasScheme) return value;
-
-    final apiUri = Uri.parse(DioClient.dio.options.baseUrl);
-    final origin = '${apiUri.scheme}://${apiUri.authority}';
-    final normalized = value
-        .replaceFirst(RegExp(r'^/+'), '')
-        .replaceFirst(RegExp(r'^api/v1/+'), '')
-        .replaceFirst(RegExp(r'^uploads/+'), 'uploads/')
-        .replaceFirst(RegExp(r'^announcements/+'), 'announcements/');
-
-    if (normalized.startsWith('uploads/')) {
-      return '$origin/$normalized';
-    }
-    if (normalized.startsWith('images/')) {
-      return '$origin/$normalized';
-    }
-    if (normalized.startsWith('announcements/')) {
-      return '$origin/uploads/$normalized';
-    }
-    if (normalized.startsWith('files/')) {
-      return '$origin/$normalized';
-    }
-
-    return '$origin/uploads/$normalized';
-  }
 
   Widget _buildImagePlaceholder() {
     return Container(

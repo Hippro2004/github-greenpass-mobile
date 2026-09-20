@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
@@ -7,6 +8,25 @@ import 'package:greenpass/features/user/dtos/update_request.dart';
 import 'package:greenpass/features/user/models/user.dart';
 
 class UserSevice {
+  Future<String> uploadProfileImage(File file) async {
+    try {
+      final fileName = file.path.split(Platform.pathSeparator).last;
+      final formData = FormData.fromMap({
+        "file": await MultipartFile.fromFile(file.path, filename: fileName),
+        "category": "profiles",
+      });
+
+      final response = await DioClient.dio.post(
+        "/upload",
+        data: formData,
+      );
+
+      final result = response.data['result'];
+      return (result['fileUrl'] ?? result['fileName']) as String;
+    } catch (e) {
+      rethrow;
+    }
+  }
   Future<User> login(LoginRequest loginRequest) async {
     try {
       final response = await DioClient.dio.post(

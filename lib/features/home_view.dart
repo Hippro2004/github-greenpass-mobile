@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:greenpass/core/network/image_helper.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
 import 'package:greenpass/features/announcement/services/announcement_service.dart';
@@ -639,6 +640,9 @@ class _MainViewState extends State<MainView> {
   }
 
   Widget _buildProfileCard() {
+    final userProfileImage = Session.currentUser?.profileImage;
+    final userProfileImageUrl = resolveImageUrl(userProfileImage);
+
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -647,10 +651,13 @@ class _MainViewState extends State<MainView> {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MoreView()),
-                ),
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MoreView()),
+                  );
+                  if (mounted) setState(() {});
+                },
                 borderRadius: BorderRadius.circular(22),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -689,12 +696,29 @@ class _MainViewState extends State<MainView> {
                             ),
                           ],
                         ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.person_rounded,
-                            color: forestGreen,
-                            size: 26,
-                          ),
+                        child: ClipOval(
+                          child: userProfileImageUrl.isNotEmpty
+                              ? Image.network(
+                                  userProfileImageUrl,
+                                  width: 46,
+                                  height: 46,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Center(
+                                        child: Icon(
+                                          Icons.person_rounded,
+                                          color: forestGreen,
+                                          size: 26,
+                                        ),
+                                      ),
+                                )
+                              : const Center(
+                                  child: Icon(
+                                    Icons.person_rounded,
+                                    color: forestGreen,
+                                    size: 26,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(width: 12),
