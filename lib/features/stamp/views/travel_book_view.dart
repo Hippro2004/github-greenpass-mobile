@@ -22,7 +22,6 @@ class _TravelBookViewState extends State<TravelBookView> {
   static const Color midForest = Color(0xFF0F5A3E);
   static const Color warmEarth = Color(0xFF78350F);
 
-  static const Color mintLight = Color(0xFFE2F7ED);
   static const Color mintPillBg = Color(0xFFD1FAE5);
   static const Color mintDark = Color(0xFF065F46);
   static const Color mintAction = Color(0xFFE8F7F0);
@@ -452,29 +451,8 @@ class _TravelBookViewState extends State<TravelBookView> {
           ),
           child: Row(
             children: [
-              // Badge/Thumbnail
-              Container(
-                width: 62,
-                height: 62,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [mintAction, mintLight],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color(0xFFA7F3D0).withValues(alpha: 0.6),
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.park_rounded,
-                    color: iconGreen,
-                    size: 32,
-                  ),
-                ),
-              ),
+              // Badge/Thumbnail (Substring Icon Badge)
+              _buildSubstringIconBadge(parkName),
               const SizedBox(width: 14),
 
               // Title and visits
@@ -552,6 +530,107 @@ class _TravelBookViewState extends State<TravelBookView> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// สร้างไอคอน Badge อัตโนมัติโดยการตัดคำ (substring) จากชื่ออุทยาน
+  Widget _buildSubstringIconBadge(String rawParkName) {
+    // 1. ตัดคำว่า "อุทยานแห่งชาติ" ออกด้วย substring
+    String shortName = rawParkName.trim();
+    if (shortName.startsWith("อุทยานแห่งชาติ")) {
+      shortName = shortName.substring("อุทยานแห่งชาติ".length).trim();
+    }
+    if (shortName.isEmpty) {
+      shortName = rawParkName;
+    }
+
+    // 2. วิเคราะห์คำในชื่ออุทยาน (substring) เพื่อเลือกประเภทไอคอนและคู่สีกราเดียนต์
+    final name = rawParkName;
+    IconData icon;
+    List<Color> gradientColors;
+
+    if (name.contains("น้ำตก")) {
+      icon = Icons.water_drop_rounded;
+      gradientColors = const [
+        Color(0xFF0284C7),
+        Color(0xFF2563EB),
+      ]; // สีฟ้าสายน้ำตก
+    } else if (name.contains("เกาะ") ||
+        name.contains("ทะเล") ||
+        name.contains("หาด") ||
+        name.contains("อ่าว") ||
+        name.contains("ธารา") ||
+        name.contains("หมู่เกาะ")) {
+      icon = Icons.waves_rounded;
+      gradientColors = const [
+        Color(0xFF00796B),
+        Color(0xFF009688),
+      ]; // สีเขียวอมฟ้าทางทะเล
+    } else if (name.contains("ดอย") ||
+        name.contains("ภู") ||
+        name.contains("ยอด")) {
+      icon = Icons.filter_hdr_rounded;
+      gradientColors = const [
+        Color(0xFF7C3AED),
+        Color(0xFF6D28D9),
+      ]; // สีม่วงยอดดอย
+    } else if (name.contains("เขา") ||
+        name.contains("ผา") ||
+        name.contains("หิน") ||
+        name.contains("ถ้ำ")) {
+      icon = Icons.landscape_rounded;
+      gradientColors = const [
+        Color(0xFFEA580C),
+        Color(0xFFD97706),
+      ]; // สีส้มทิวเขา
+    } else {
+      icon = Icons.park_rounded;
+      gradientColors = const [
+        Color(0xFF006D43),
+        Color(0xFF00A86B),
+      ]; // สีเขียวป่าไม้ธรรมชาติ
+    }
+
+    return Container(
+      width: 68,
+      height: 68,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors.first.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.white, size: 28),
+          const SizedBox(height: 3),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              shortName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.2,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
       ),
     );
   }

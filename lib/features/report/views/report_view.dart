@@ -176,7 +176,7 @@ class _ReportViewState extends State<ReportView> {
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: forestGreen.withOpacity(0.25),
+                          color: forestGreen.withValues(alpha: 0.25),
                           blurRadius: 14,
                           offset: const Offset(0, 6),
                         ),
@@ -206,7 +206,7 @@ class _ReportViewState extends State<ReportView> {
                               Text(
                                 "รายงานทั้งหมด ${_reports.length} รายการ",
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.75),
+                                  color: Colors.white.withValues(alpha: 0.75),
                                   fontSize: 11,
                                 ),
                               ),
@@ -221,7 +221,8 @@ class _ReportViewState extends State<ReportView> {
                   Expanded(
                     child: ListView.separated(
                       itemCount: _parks.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, index) =>
+                          const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final parkReport = _parks[index];
                         return _buildParkCard(
@@ -248,7 +249,7 @@ class _ReportViewState extends State<ReportView> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         onTap: () {
           Navigator.push(
             context,
@@ -259,14 +260,14 @@ class _ReportViewState extends State<ReportView> {
           );
         },
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFF1F5F9)),
             boxShadow: [
               BoxShadow(
-                color: forestGreen.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -274,61 +275,186 @@ class _ReportViewState extends State<ReportView> {
           ),
           child: Row(
             children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: softGreen,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.forest_outlined, color: forestGreen),
-              ),
-              const SizedBox(width: 12),
+              // Badge/Thumbnail (Substring Icon Badge)
+              _buildSubstringIconBadge(parkName),
+              const SizedBox(width: 14),
+
+              // Title and reports count
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "อุทยาน",
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: forestGreen,
-                        fontWeight: FontWeight.w500,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: softGreen,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        "อุทยานแห่งชาติ",
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: forestGreen,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 5),
                     Text(
                       parkName,
                       style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      "มีรายงาน ${parkReports.length} รายการ",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade500,
-                      ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.description_outlined,
+                          size: 14,
+                          color: warmGold,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "มีรายงาน ${parkReports.length} รายการ",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
+
+              // Chevron right button
               Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
+                width: 34,
+                height: 34,
+                decoration: const BoxDecoration(
                   color: softGreen,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.chevron_right, color: forestGreen),
+                child: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: forestGreen,
+                  size: 20,
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// สร้างไอคอน Badge อัตโนมัติโดยการตัดคำ (substring) จากชื่ออุทยาน
+  Widget _buildSubstringIconBadge(String rawParkName) {
+    // 1. ตัดคำว่า "อุทยานแห่งชาติ" ออกด้วย substring
+    String shortName = rawParkName.trim();
+    if (shortName.startsWith("อุทยานแห่งชาติ")) {
+      shortName = shortName.substring("อุทยานแห่งชาติ".length).trim();
+    }
+    if (shortName.isEmpty) {
+      shortName = rawParkName;
+    }
+
+    // 2. วิเคราะห์คำในชื่ออุทยาน (substring) เพื่อเลือกประเภทไอคอนและคู่สีกราเดียนต์
+    final name = rawParkName;
+    IconData icon;
+    List<Color> gradientColors;
+
+    if (name.contains("น้ำตก")) {
+      icon = Icons.water_drop_rounded;
+      gradientColors = const [
+        Color(0xFF0284C7),
+        Color(0xFF2563EB),
+      ]; // สีฟ้าสายน้ำตก
+    } else if (name.contains("เกาะ") ||
+        name.contains("ทะเล") ||
+        name.contains("หาด") ||
+        name.contains("อ่าว") ||
+        name.contains("ธารา") ||
+        name.contains("หมู่เกาะ")) {
+      icon = Icons.waves_rounded;
+      gradientColors = const [
+        Color(0xFF00796B),
+        Color(0xFF009688),
+      ]; // สีเขียวอมฟ้าทางทะเล
+    } else if (name.contains("ดอย") ||
+        name.contains("ภู") ||
+        name.contains("ยอด")) {
+      icon = Icons.filter_hdr_rounded;
+      gradientColors = const [
+        Color(0xFF7C3AED),
+        Color(0xFF6D28D9),
+      ]; // สีม่วงยอดดอย
+    } else if (name.contains("เขา") ||
+        name.contains("ผา") ||
+        name.contains("หิน") ||
+        name.contains("ถ้ำ")) {
+      icon = Icons.landscape_rounded;
+      gradientColors = const [
+        Color(0xFFEA580C),
+        Color(0xFFD97706),
+      ]; // สีส้มทิวเขา
+    } else {
+      icon = Icons.park_rounded;
+      gradientColors = const [
+        Color(0xFF006D43),
+        Color(0xFF00A86B),
+      ]; // สีเขียวป่าไม้ธรรมชาติ
+    }
+
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors.first.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.white, size: 26),
+          const SizedBox(height: 3),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              shortName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.2,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -22,7 +22,6 @@ class _ParkDetailViewState extends State<ParkDetailView> {
   static const Color mintLight = Color(0xFFE8F7F0);
   static const Color textDark = Color(0xFF091E25);
   static const Color textMuted = Color(0xFF64748B);
-  static const Color starAmber = Color(0xFFF59E0B);
   static const Color emergencyRed = Color(0xFFE11D48);
   static const Color emergencyBg = Color(0xFFFEE2E2);
 
@@ -101,11 +100,6 @@ class _ParkDetailViewState extends State<ParkDetailView> {
   }
 
   Widget _buildHeroCard(Park park) {
-    final isWorldHeritage =
-        park.name.contains("เขาใหญ่") ||
-        park.name.contains("แก่งกระจาน") ||
-        (park.description?.contains("มรดกโลก") ?? false);
-
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 10),
       padding: const EdgeInsets.all(18),
@@ -213,43 +207,43 @@ class _ParkDetailViewState extends State<ParkDetailView> {
           const SizedBox(height: 14),
 
           // Badge 1: World Heritage or Park Status
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.22),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isWorldHeritage
-                    ? starAmber.withValues(alpha: 0.35)
-                    : emeraldTint.withValues(alpha: 0.35),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isWorldHeritage ? Icons.star_rounded : Icons.eco_rounded,
-                  color: isWorldHeritage ? starAmber : emeraldTint,
-                  size: 14,
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  isWorldHeritage
-                      ? "มรดกโลกทางธรรมชาติ (UNESCO)"
-                      : (park.status ?? "อุทยานแห่งชาติ"),
-                  style: TextStyle(
-                    color: isWorldHeritage
-                        ? const Color(0xFFFDE047)
-                        : const Color(0xFFD1FAE5),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // Container(
+          //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          //   decoration: BoxDecoration(
+          //     color: Colors.black.withValues(alpha: 0.22),
+          //     borderRadius: BorderRadius.circular(20),
+          //     border: Border.all(
+          //       color: isWorldHeritage
+          //           ? starAmber.withValues(alpha: 0.35)
+          //           : emeraldTint.withValues(alpha: 0.35),
+          //     ),
+          //   ),
+          //   child: Row(
+          //     mainAxisSize: MainAxisSize.min,
+          //     children: [
+          //       Icon(
+          //         isWorldHeritage ? Icons.star_rounded : Icons.eco_rounded,
+          //         color: isWorldHeritage ? starAmber : emeraldTint,
+          //         size: 14,
+          //       ),
+          //       const SizedBox(width: 5),
+          //       Text(
+          //         isWorldHeritage
+          //             ? "มรดกโลกทางธรรมชาติ (UNESCO)"
+          //             : (park.status ?? "อุทยานแห่งชาติ"),
+          //         style: TextStyle(
+          //           color: isWorldHeritage
+          //               ? const Color(0xFFFDE047)
+          //               : const Color(0xFFD1FAE5),
+          //           fontSize: 11,
+          //           fontWeight: FontWeight.w600,
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
 
-          const SizedBox(height: 6),
+          // const SizedBox(height: 6),
 
           // Badge 2: Open Hours today
           Container(
