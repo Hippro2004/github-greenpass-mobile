@@ -21,10 +21,15 @@ class _NotificationViewState extends State<NotificationView> {
   String? _errorMessage;
   int _selectedFilterIndex = 0; // 0: ทั้งหมด, 1: ยังไม่อ่าน
 
-  static const Color forestGreen = Color(0xFF2D6A4F);
-  static const Color lightGreen = Color(0xFFE8F5E9);
-  static const Color creamBg = Color(0xFFF5F7FB);
-  static const Color textDark = Color(0xFF2E3B57);
+  // ── Vibrant Wilderness Palette ─────────────────────────────────
+  static const Color screenBg = Color(0xFFF3F7F5);
+  static const Color darkForest = Color(0xFF064E3B);
+  static const Color emeraldTint = Color(0xFF00A86B);
+  static const Color mintLight = Color(0xFFE8F7F0);
+  static const Color mintBorder = Color(0xFFD6EFE2);
+  static const Color mintPillBg = Color(0xFFD1FAE5);
+  static const Color textDark = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
 
   @override
   void initState() {
@@ -102,6 +107,7 @@ class _NotificationViewState extends State<NotificationView> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('ทำเครื่องหมายว่าอ่านแล้วทั้งหมด'),
+          backgroundColor: darkForest,
           duration: Duration(seconds: 2),
         ),
       );
@@ -159,37 +165,83 @@ class _NotificationViewState extends State<NotificationView> {
     final displayList = _filteredNotifications;
 
     return Scaffold(
-      backgroundColor: creamBg,
+      backgroundColor: screenBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: textDark,
-            size: 20,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 14),
+          child: Center(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context, true),
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: mintLight,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: mintBorder),
+                ),
+                child: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: darkForest,
+                  size: 26,
+                ),
+              ),
+            ),
           ),
-          onPressed: () => Navigator.pop(context, true),
         ),
-        title: const Text(
-          'การแจ้งเตือน',
-          style: TextStyle(
-            color: textDark,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'การแจ้งเตือน',
+              style: TextStyle(
+                color: textDark,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.2,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              width: 7,
+              height: 7,
+              decoration: const BoxDecoration(
+                color: emeraldTint,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
         ),
+        centerTitle: true,
         actions: [
           if (_unreadCount > 0)
-            TextButton(
-              onPressed: _markAllAsRead,
-              child: const Text(
-                'อ่านทั้งหมด',
-                style: TextStyle(
-                  color: forestGreen,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+            Padding(
+              padding: const EdgeInsets.only(right: 14),
+              child: Center(
+                child: GestureDetector(
+                  onTap: _markAllAsRead,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: mintLight,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: mintBorder),
+                    ),
+                    child: const Text(
+                      'อ่านทั้งหมด',
+                      style: TextStyle(
+                        color: darkForest,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -200,7 +252,7 @@ class _NotificationViewState extends State<NotificationView> {
           _buildFilterTabs(),
           Expanded(
             child: RefreshIndicator(
-              color: forestGreen,
+              color: emeraldTint,
               onRefresh: _loadNotifications,
               child: _buildContent(displayList),
             ),
@@ -211,9 +263,8 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   Widget _buildFilterTabs() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           _buildFilterChip(
@@ -246,8 +297,19 @@ class _NotificationViewState extends State<NotificationView> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? forestGreen : Colors.grey.shade100,
+          color: isSelected ? darkForest : Colors.white,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? darkForest : const Color(0xFFE2E8F0),
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: darkForest.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -255,25 +317,25 @@ class _NotificationViewState extends State<NotificationView> {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
+                color: isSelected ? Colors.white : textDark,
                 fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
             if (count > 0) ...[
               const SizedBox(width: 6),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.white.withValues(alpha: 0.25)
-                      : Colors.grey.shade300,
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   '$count',
                   style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black87,
+                    color: isSelected ? Colors.white : textMuted,
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),
@@ -288,7 +350,12 @@ class _NotificationViewState extends State<NotificationView> {
 
   Widget _buildContent(List<NotificationModel> list) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: forestGreen));
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation(emeraldTint),
+          strokeWidth: 3,
+        ),
+      );
     }
 
     if (_errorMessage != null) {
@@ -298,27 +365,34 @@ class _NotificationViewState extends State<NotificationView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline_rounded,
-                size: 48,
-                color: Colors.grey.shade400,
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEE2E2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.error_outline_rounded,
+                  size: 40,
+                  color: Color(0xFFDC2626),
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Text(
                 _errorMessage!,
-                style: const TextStyle(color: Colors.grey),
+                style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: _loadNotifications,
-                icon: const Icon(Icons.refresh, size: 18),
+                icon: const Icon(Icons.refresh, size: 16),
                 label: const Text('ลองใหม่'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: forestGreen,
+                  backgroundColor: darkForest,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
               ),
@@ -340,14 +414,14 @@ class _NotificationViewState extends State<NotificationView> {
                 Container(
                   width: 80,
                   height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                  decoration: const BoxDecoration(
+                    color: mintLight,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.notifications_none_rounded,
-                    size: 40,
-                    color: Colors.grey.shade400,
+                    size: 42,
+                    color: emeraldTint,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -364,7 +438,7 @@ class _NotificationViewState extends State<NotificationView> {
                   _selectedFilterIndex == 1
                       ? 'คุณอ่านการแจ้งเตือนทั้งหมดแล้ว'
                       : 'คุณจะได้รับการแจ้งเตือนเมื่อมีการอัปเดตสถานะรายงาน',
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  style: const TextStyle(fontSize: 13, color: textMuted),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -376,7 +450,7 @@ class _NotificationViewState extends State<NotificationView> {
 
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: list.length,
       separatorBuilder: (context, index) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
@@ -389,53 +463,57 @@ class _NotificationViewState extends State<NotificationView> {
   Widget _buildNotificationCard(NotificationModel item) {
     final isUnread = !item.isRead;
     final timeStr = _formatDateTime(item.createdAt);
+    final parkName = item.report?.parkName ?? '';
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _onNotificationTap(item),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isUnread
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isUnread
-                  ? forestGreen.withValues(alpha: 0.25)
-                  : Colors.grey.shade200,
-              width: isUnread ? 1.2 : 1.0,
+                  ? emeraldTint.withValues(alpha: 0.35)
+                  : const Color(0xFFEAF3EE),
+              width: isUnread ? 1.3 : 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isUnread ? 0.05 : 0.02),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: Colors.black.withValues(alpha: isUnread ? 0.04 : 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icon container
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: isUnread ? lightGreen : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
+              // Left Badge / Icon Container
+              if (parkName.trim().isNotEmpty)
+                _buildSubstringIconBadge(parkName)
+              else
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isUnread ? mintPillBg : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    item.report != null
+                        ? Icons.assignment_outlined
+                        : Icons.notifications_active_outlined,
+                    color: isUnread ? darkForest : textMuted,
+                    size: 24,
+                  ),
                 ),
-                child: Icon(
-                  item.report != null
-                      ? Icons.assignment_outlined
-                      : Icons.notifications_active_outlined,
-                  color: isUnread ? forestGreen : Colors.grey.shade600,
-                  size: 22,
-                ),
-              ),
+
               const SizedBox(width: 12),
+
               // Content
               Expanded(
                 child: Column(
@@ -448,11 +526,11 @@ class _NotificationViewState extends State<NotificationView> {
                           child: Text(
                             item.title,
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 14.5,
                               fontWeight: isUnread
-                                  ? FontWeight.bold
+                                  ? FontWeight.w800
                                   : FontWeight.w600,
-                              color: isUnread ? textDark : Colors.black87,
+                              color: textDark,
                             ),
                           ),
                         ),
@@ -464,7 +542,7 @@ class _NotificationViewState extends State<NotificationView> {
                             margin: const EdgeInsets.only(top: 4),
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              color: forestGreen,
+                              color: emeraldTint,
                             ),
                           ),
                         ],
@@ -475,8 +553,10 @@ class _NotificationViewState extends State<NotificationView> {
                       item.message,
                       style: TextStyle(
                         fontSize: 12.5,
-                        color: isUnread ? Colors.black87 : Colors.grey.shade600,
-                        height: 1.35,
+                        color: isUnread
+                            ? const Color(0xFF334155)
+                            : Colors.grey.shade600,
+                        height: 1.4,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -485,27 +565,27 @@ class _NotificationViewState extends State<NotificationView> {
                       children: [
                         Text(
                           timeStr,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
-                            color: Colors.grey.shade500,
+                            color: textMuted,
                           ),
                         ),
                         if (item.report != null)
                           Row(
-                            children: [
+                            children: const [
                               Text(
-                                'ดูรายงาน',
+                                'ดูความคืบหน้า',
                                 style: TextStyle(
                                   fontSize: 11.5,
-                                  color: forestGreen,
-                                  fontWeight: FontWeight.w600,
+                                  color: darkForest,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(width: 2),
-                              const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 10,
-                                color: forestGreen,
+                              SizedBox(width: 3),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                size: 14,
+                                color: darkForest,
                               ),
                             ],
                           ),
@@ -517,6 +597,90 @@ class _NotificationViewState extends State<NotificationView> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// ไอคอน Badge ตัดคำแบบ Vibrant Wilderness
+  Widget _buildSubstringIconBadge(String rawParkName) {
+    String shortName = rawParkName.trim();
+    if (shortName.startsWith("อุทยานแห่งชาติ")) {
+      shortName = shortName.substring("อุทยานแห่งชาติ".length).trim();
+    }
+    if (shortName.isEmpty) {
+      shortName = rawParkName;
+    }
+
+    final name = rawParkName;
+    IconData icon;
+    List<Color> gradientColors;
+
+    if (name.contains("น้ำตก")) {
+      icon = Icons.water_drop_rounded;
+      gradientColors = const [Color(0xFF0284C7), Color(0xFF2563EB)];
+    } else if (name.contains("เกาะ") ||
+        name.contains("ทะเล") ||
+        name.contains("หาด") ||
+        name.contains("อ่าว") ||
+        name.contains("ธารา") ||
+        name.contains("หมู่เกาะ")) {
+      icon = Icons.waves_rounded;
+      gradientColors = const [Color(0xFF00796B), Color(0xFF009688)];
+    } else if (name.contains("ดอย") ||
+        name.contains("ภู") ||
+        name.contains("ยอด")) {
+      icon = Icons.filter_hdr_rounded;
+      gradientColors = const [Color(0xFF7C3AED), Color(0xFF6D28D9)];
+    } else if (name.contains("เขา") ||
+        name.contains("ผา") ||
+        name.contains("หิน") ||
+        name.contains("ถ้ำ")) {
+      icon = Icons.landscape_rounded;
+      gradientColors = const [Color(0xFFEA580C), Color(0xFFD97706)];
+    } else {
+      icon = Icons.park_rounded;
+      gradientColors = const [Color(0xFF006D43), Color(0xFF00A86B)];
+    }
+
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors.first.withValues(alpha: 0.25),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.white, size: 20),
+          const SizedBox(height: 2),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Text(
+              shortName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 7.5,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.2,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
       ),
     );
   }
