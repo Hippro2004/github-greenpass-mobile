@@ -18,6 +18,7 @@ class EditProfileView extends StatefulWidget {
 class _EditProfileViewState extends State<EditProfileView> {
   final UserSevice _userService = UserSevice();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
   bool _isFetchingProfile = true;
 
@@ -70,6 +71,7 @@ class _EditProfileViewState extends State<EditProfileView> {
     _confirmPasswordController = TextEditingController();
     _gender = user?.gender;
     _isForeigner = user?.isForeigner ?? false;
+    _currentProfileImage = user?.profileImage;
 
     _fetchProfile();
   }
@@ -93,7 +95,13 @@ class _EditProfileViewState extends State<EditProfileView> {
           ..district = profile.district
           ..subDistrict = profile.subDistrict
           ..province = profile.province
-          ..zipcode = profile.zipcode;
+          ..zipcode = profile.zipcode
+          ..profileImage =
+              profile.profileImage ?? Session.currentUser?.profileImage;
+      }
+
+      if (profile.profileImage != null && profile.profileImage!.isNotEmpty) {
+        _currentProfileImage = profile.profileImage;
       }
 
       _firstnameController.text = profile.firstname;
@@ -150,17 +158,96 @@ class _EditProfileViewState extends State<EditProfileView> {
     super.dispose();
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final picked = await _picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+      if (picked != null) {
+        setState(() {
+          _selectedImageFile = File(picked.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("ไม่สามารถเลือกรูปภาพได้: $e")),
+        );
+      }
+    }
+  }
+
+  void _showImagePickerBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "เปลี่ยนรูปโปรไฟล์",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: darkGreen,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFE8F5E9),
+                  child: Icon(Icons.camera_alt, color: forestGreen),
+                ),
+                title: const Text("ถ่ายรูปด้วยกล้อง"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFE8F5E9),
+                  child: Icon(Icons.photo_library, color: forestGreen),
+                ),
+                title: const Text("เลือกจากคลังรูปภาพ"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     try {
       setState(() => _isLoading = true);
 
+      String? uploadedImageUrl = _currentProfileImage;
+      if (_selectedImageFile != null) {
+        uploadedImageUrl =
+            await _userService.uploadProfileImage(_selectedImageFile!);
+      }
+
       await _userService.update(
         Session.currentUser!.username!,
         UpdateRequest(
           firstname: _firstnameController.text,
-
           lastname: _lastnameController.text,
+          profileImage: uploadedImageUrl,
           email: _emailController.text,
           phone: _phoneController.text,
           birthDate: _birthDateController.text,
@@ -175,6 +262,12 @@ class _EditProfileViewState extends State<EditProfileView> {
               : null,
         ),
       );
+
+      if (Session.currentUser != null) {
+        Session.currentUser!.profileImage = uploadedImageUrl;
+      }
+      _currentProfileImage = uploadedImageUrl;
+      _selectedImageFile = null;
 
       // ยิง API ดึงข้อมูลล่าสุดมาแสดง
       await _fetchProfile(showLoading: false);
@@ -312,15 +405,17 @@ class _EditProfileViewState extends State<EditProfileView> {
               else
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          Center(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        Center(
+                          child: GestureDetector(
+                            onTap: _showImagePickerBottomSheet,
                             child: Stack(
                               children: [
                                 Container(
@@ -338,7 +433,9 @@ class _EditProfileViewState extends State<EditProfileView> {
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: forestGreen.withOpacity(0.25),
+                                        color: forestGreen.withValues(
+                                          alpha: 0.25,
+                                        ),
                                         blurRadius: 14,
                                         offset: const Offset(0, 4),
                                       ),
@@ -347,11 +444,26 @@ class _EditProfileViewState extends State<EditProfileView> {
                                   child: CircleAvatar(
                                     radius: 45,
                                     backgroundColor: Colors.grey.shade100,
-                                    child: const Icon(
-                                      Icons.person,
-                                      size: 45,
-                                      color: Colors.grey,
-                                    ),
+                                    backgroundImage: _selectedImageFile != null
+                                        ? FileImage(_selectedImageFile!)
+                                        : (resolveImageUrl(_currentProfileImage)
+                                                .isNotEmpty
+                                            ? NetworkImage(
+                                                resolveImageUrl(
+                                                  _currentProfileImage,
+                                                ),
+                                              )
+                                            : null) as ImageProvider?,
+                                    child: (_selectedImageFile == null &&
+                                            resolveImageUrl(
+                                              _currentProfileImage,
+                                            ).isEmpty)
+                                        ? const Icon(
+                                            Icons.person,
+                                            size: 45,
+                                            color: Colors.grey,
+                                          )
+                                        : null,
                                   ),
                                 ),
                                 Positioned(
@@ -377,323 +489,322 @@ class _EditProfileViewState extends State<EditProfileView> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 28),
+                        ),
+                        const SizedBox(height: 28),
 
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _AnimatedTextField(
+                                controller: _firstnameController,
+                                label: "ชื่อจริง",
+                                hint: "กรอกชื่อจริง",
+                                validator: (v) => v == null || v.isEmpty
+                                    ? "กรุณากรอกชื่อจริง"
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _AnimatedTextField(
+                                controller: _lastnameController,
+                                label: "นามสกุล",
+                                hint: "กรอกนามสกุล",
+                                validator: (v) => v == null || v.isEmpty
+                                    ? "กรุณากรอกนามสกุล"
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        _AnimatedTextField(
+                          controller: _emailController,
+                          label: "อีเมล",
+                          hint: "กรอกอีเมล",
+                          icon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return "กรุณากรอกอีเมล";
+                            if (!RegExp(
+                              r'^[\w.-]+@[\w.-]+\.\w+$',
+                            ).hasMatch(v)) {
+                              return "รูปแบบอีเมลไม่ถูกต้อง";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        _AnimatedTextField(
+                          controller: _phoneController,
+                          label: "หมายเลขโทรศัพท์",
+                          hint: "กรอกหมายเลขโทรศัพท์",
+                          icon: Icons.phone_outlined,
+                          keyboardType: TextInputType.phone,
+                          validator: (v) => v!.length != 10
+                              ? "กรุณากรอกหมายเลข 10 หลัก"
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+
+                        _AnimatedTextField(
+                          controller: _birthDateController,
+                          label: "วันเดือนปีเกิด",
+                          hint: "กรอกวันเดือนปีเกิด",
+                          icon: Icons.calendar_today_outlined,
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime(2000),
+                              firstDate: DateTime(1900),
+                              lastDate: DateTime.now(),
+                            );
+                            if (picked != null) {
+                              setState(
+                                () => _birthDateController.text = _dateFormat
+                                    .format(picked),
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        DropdownMenu<int>(
+                          width: double.infinity,
+                          initialSelection: _gender,
+                          label: const Text("เพศ"),
+                          leadingIcon: Icon(
+                            _gender == 0
+                                ? Icons.male
+                                : _gender == 1
+                                ? Icons.female
+                                : Icons.person_outline,
+                            color: _gender == 0
+                                ? Colors.blue
+                                : _gender == 1
+                                ? Colors.pink
+                                : forestGreen,
+                            size: 20,
+                          ),
+                          trailingIcon: const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: forestGreen,
+                          ),
+                          selectedTrailingIcon: const Icon(
+                            Icons.keyboard_arrow_up,
+                            color: forestGreen,
+                          ),
+                          menuStyle: MenuStyle(
+                            backgroundColor: WidgetStatePropertyAll(
+                              Colors.white,
+                            ),
+                            shape: WidgetStatePropertyAll(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                          ),
+                          inputDecorationTheme: InputDecorationTheme(
+                            filled: true,
+                            fillColor: Colors.white,
+                            labelStyle: const TextStyle(color: Colors.black45),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade200,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: forestGreen,
+                                width: 1.5,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                          dropdownMenuEntries: const [
+                            DropdownMenuEntry(value: 0, label: "ชาย"),
+                            DropdownMenuEntry(value: 1, label: "หญิง"),
+                          ],
+                          onSelected: (value) =>
+                              setState(() => _gender = value),
+                        ),
+                        const SizedBox(height: 8),
+
+                        Row(
+                          children: [
+                            Transform.scale(
+                              scale: 1.1,
+                              child: Checkbox(
+                                value: _isForeigner,
+                                onChanged: (v) =>
+                                    setState(() => _isForeigner = v!),
+                                activeColor: forestGreen,
+                                checkColor: Colors.white,
+                                side: BorderSide(
+                                  color: Colors.grey.shade300,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                            ),
+                            const Text(
+                              "เป็นชาวต่างชาติ",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        if (!_isForeigner) ...[
+                          const SizedBox(height: 12),
                           Row(
                             children: [
                               Expanded(
                                 child: _AnimatedTextField(
-                                  controller: _firstnameController,
-                                  label: "ชื่อจริง",
-                                  hint: "กรอกชื่อจริง",
-                                  validator: (v) => v == null || v.isEmpty
-                                      ? "กรุณากรอกชื่อจริง"
-                                      : null,
+                                  controller: _districtController,
+                                  label: "เขต / อำเภอ",
+                                  hint: "กรอกเขต / อำเภอ",
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: _AnimatedTextField(
-                                  controller: _lastnameController,
-                                  label: "นามสกุล",
-                                  hint: "กรอกนามสกุล",
-                                  validator: (v) => v == null || v.isEmpty
-                                      ? "กรุณากรอกนามสกุล"
-                                      : null,
+                                  controller: _subDistrictController,
+                                  label: "ตำบล / แขวง",
+                                  hint: "กรอกตำบล / แขวง",
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 16),
-
                           _AnimatedTextField(
-                            controller: _emailController,
-                            label: "อีเมล",
-                            hint: "กรอกอีเมล",
-                            icon: Icons.email_outlined,
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (value) {
-                              if (value == null || value.isEmpty)
-                                return "กรุณากรอกอีเมล";
-                              if (!RegExp(
-                                r'^[\w.-]+@[\w.-]+\.\w+$',
-                              ).hasMatch(value)) {
-                                return "รูปแบบอีเมลไม่ถูกต้อง";
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          _AnimatedTextField(
-                            controller: _phoneController,
-                            label: "หมายเลขโทรศัพท์",
-                            hint: "กรอกหมายเลขโทรศัพท์",
-                            icon: Icons.phone_outlined,
-                            keyboardType: TextInputType.phone,
-                            validator: (v) => v!.length != 10
-                                ? "กรุณากรอกหมายเลข 10 หลัก"
-                                : null,
-                          ),
-                          const SizedBox(height: 16),
-
-                          _AnimatedTextField(
-                            controller: _birthDateController,
-                            label: "วันเดือนปีเกิด",
-                            hint: "กรอกวันเดือนปีเกิด",
-                            icon: Icons.calendar_today_outlined,
-                            onTap: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime(2000),
-                                firstDate: DateTime(1900),
-                                lastDate: DateTime.now(),
-                              );
-                              if (picked != null) {
-                                setState(
-                                  () => _birthDateController.text = _dateFormat
-                                      .format(picked),
-                                );
-                              }
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          DropdownMenu<int>(
-                            width: double.infinity,
-                            initialSelection: _gender,
-                            label: const Text("เพศ"),
-                            leadingIcon: Icon(
-                              _gender == 0
-                                  ? Icons.male
-                                  : _gender == 1
-                                  ? Icons.female
-                                  : Icons.person_outline,
-                              color: _gender == 0
-                                  ? Colors.blue
-                                  : _gender == 1
-                                  ? Colors.pink
-                                  : forestGreen,
-                              size: 20,
-                            ),
-                            trailingIcon: const Icon(
-                              Icons.keyboard_arrow_down,
-                              color: forestGreen,
-                            ),
-                            selectedTrailingIcon: const Icon(
-                              Icons.keyboard_arrow_up,
-                              color: forestGreen,
-                            ),
-                            menuStyle: MenuStyle(
-                              backgroundColor: WidgetStatePropertyAll(
-                                Colors.white,
-                              ),
-                              shape: WidgetStatePropertyAll(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                            ),
-                            inputDecorationTheme: InputDecorationTheme(
-                              filled: true,
-                              fillColor: Colors.white,
-                              labelStyle: const TextStyle(
-                                color: Colors.black45,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade200,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide: const BorderSide(
-                                  color: forestGreen,
-                                  width: 1.5,
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
-                              ),
-                            ),
-                            dropdownMenuEntries: const [
-                              DropdownMenuEntry(value: 0, label: "ชาย"),
-                              DropdownMenuEntry(value: 1, label: "หญิง"),
-                            ],
-                            onSelected: (value) =>
-                                setState(() => _gender = value),
-                          ),
-                          const SizedBox(height: 8),
-
-                          Row(
-                            children: [
-                              Transform.scale(
-                                scale: 1.1,
-                                child: Checkbox(
-                                  value: _isForeigner,
-                                  onChanged: (v) =>
-                                      setState(() => _isForeigner = v!),
-                                  activeColor: forestGreen,
-                                  checkColor: Colors.white,
-                                  side: BorderSide(
-                                    color: Colors.grey.shade300,
-                                    width: 1.5,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              ),
-                              const Text(
-                                "เป็นชาวต่างชาติ",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          if (!_isForeigner) ...[
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _AnimatedTextField(
-                                    controller: _districtController,
-                                    label: "เขต / อำเภอ",
-                                    hint: "กรอกเขต / อำเภอ",
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _AnimatedTextField(
-                                    controller: _subDistrictController,
-                                    label: "ตำบล / แขวง",
-                                    hint: "กรอกตำบล / แขวง",
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            _AnimatedTextField(
-                              controller: _provinceController,
-                              label: "จังหวัด",
-                              hint: "กรอกจังหวัด",
-                              icon: Icons.location_on_outlined,
-                            ),
-                            const SizedBox(height: 16),
-                            _AnimatedTextField(
-                              controller: _zipcodeController,
-                              label: "เลขไปรษณีย์",
-                              hint: "กรอกเลขไปรษณีย์",
-                              icon: Icons.markunread_mailbox_outlined,
-                              keyboardType: TextInputType.number,
-                            ),
-                          ],
-
-                          const SizedBox(height: 16),
-                          const Divider(),
-                          const SizedBox(height: 8),
-
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.lock_outline,
-                                  size: 14,
-                                  color: softBrown,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  "เปลี่ยนรหัสผ่าน (ไม่บังคับ)",
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: softBrown,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          _AnimatedTextField(
-                            controller: _passwordController,
-                            label: "รหัสผ่านใหม่",
-                            hint: "กรอกรหัสผ่านใหม่",
-                            icon: Icons.lock_outline,
-                            obscure: _obscurePassword,
-                            onToggleObscure: () => setState(
-                              () => _obscurePassword = !_obscurePassword,
-                            ),
+                            controller: _provinceController,
+                            label: "จังหวัด",
+                            hint: "กรอกจังหวัด",
+                            icon: Icons.location_on_outlined,
                           ),
                           const SizedBox(height: 16),
                           _AnimatedTextField(
-                            controller: _confirmPasswordController,
-                            label: "ยืนยันรหัสผ่านใหม่",
-                            hint: "กรอกรหัสผ่านใหม่อีกครั้ง",
-                            icon: Icons.lock_outline,
-                            obscure: _obscureConfirmPassword,
-                            onToggleObscure: () => setState(
-                              () => _obscureConfirmPassword =
-                                  !_obscureConfirmPassword,
-                            ),
-                            validator: (v) {
-                              if (_passwordController.text.isNotEmpty &&
-                                  v != _passwordController.text) {
-                                return "รหัสผ่านไม่ตรงกัน";
-                              }
-                              return null;
-                            },
+                            controller: _zipcodeController,
+                            label: "เลขไปรษณีย์",
+                            hint: "กรอกเลขไปรษณีย์",
+                            icon: Icons.markunread_mailbox_outlined,
+                            keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 28),
-
-                          SizedBox(
-                            width: double.infinity,
-                            height: 52,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _submit,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: forestGreen,
-                                foregroundColor: Colors.white,
-                                disabledBackgroundColor: forestGreen
-                                    .withOpacity(0.6),
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text(
-                                      "บันทึก",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
                         ],
-                      ),
+
+                        const SizedBox(height: 16),
+                        const Divider(),
+                        const SizedBox(height: 8),
+
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.lock_outline,
+                                size: 14,
+                                color: softBrown,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                "เปลี่ยนรหัสผ่าน (ไม่บังคับ)",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: softBrown,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _AnimatedTextField(
+                          controller: _passwordController,
+                          label: "รหัสผ่านใหม่",
+                          hint: "กรอกรหัสผ่านใหม่",
+                          icon: Icons.lock_outline,
+                          obscure: _obscurePassword,
+                          onToggleObscure: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _AnimatedTextField(
+                          controller: _confirmPasswordController,
+                          label: "ยืนยันรหัสผ่านใหม่",
+                          hint: "กรอกรหัสผ่านใหม่อีกครั้ง",
+                          icon: Icons.lock_outline,
+                          obscure: _obscureConfirmPassword,
+                          onToggleObscure: () => setState(
+                            () => _obscureConfirmPassword =
+                                !_obscureConfirmPassword,
+                          ),
+                          validator: (v) {
+                            if (_passwordController.text.isNotEmpty &&
+                                v != _passwordController.text) {
+                              return "รหัสผ่านไม่ตรงกัน";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 28),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: forestGreen,
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: forestGreen.withOpacity(
+                                0.6,
+                              ),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text(
+                                    "บันทึก",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
                     ),
                   ),
                 ),
+              ),
             ],
           ),
         ],
