@@ -12,6 +12,7 @@ class User {
   String? subDistrict;
   String? province;
   String? zipcode;
+  String? profileImage;
 
   User({
     this.username,
@@ -27,6 +28,7 @@ class User {
     this.subDistrict,
     this.province,
     this.zipcode,
+    this.profileImage,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
@@ -45,6 +47,9 @@ class User {
     zipcode: json['zipcode'] != null ? json['zipcode'] as String : null,
     gender: json['gender'] != null ? json['gender'] as int : null,
     isForeigner: json['isForeigner'] as bool? ?? false,
+    profileImage:
+        (json['profileImage'] ?? json['image'] ?? json['profile_image'])
+            as String?,
   );
 
   Map<String, dynamic> toJson() => {
@@ -61,5 +66,6 @@ class User {
     'subDistrict': subDistrict,
     'province': province,
     'zipcode': zipcode,
+    'profileImage': profileImage,
   };
 }

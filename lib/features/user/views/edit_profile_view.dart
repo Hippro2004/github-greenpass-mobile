@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:greenpass/core/network/image_helper.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/features/user/dtos/update_request.dart';
 import 'package:greenpass/features/user/services/user_service.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 class EditProfileView extends StatefulWidget {
@@ -15,8 +18,12 @@ class EditProfileView extends StatefulWidget {
 class _EditProfileViewState extends State<EditProfileView> {
   final UserSevice _userService = UserSevice();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
   bool _isFetchingProfile = true;
+
+  File? _selectedImageFile;
+  String? _currentProfileImage;
 
   late final TextEditingController _firstnameController;
   late final TextEditingController _lastnameController;
@@ -64,6 +71,7 @@ class _EditProfileViewState extends State<EditProfileView> {
     _confirmPasswordController = TextEditingController();
     _gender = user?.gender;
     _isForeigner = user?.isForeigner ?? false;
+    _currentProfileImage = user?.profileImage;
 
     _fetchProfile();
   }
@@ -87,7 +95,13 @@ class _EditProfileViewState extends State<EditProfileView> {
           ..district = profile.district
           ..subDistrict = profile.subDistrict
           ..province = profile.province
-          ..zipcode = profile.zipcode;
+          ..zipcode = profile.zipcode
+          ..profileImage =
+              profile.profileImage ?? Session.currentUser?.profileImage;
+      }
+
+      if (profile.profileImage != null && profile.profileImage!.isNotEmpty) {
+        _currentProfileImage = profile.profileImage;
       }
 
       _firstnameController.text = profile.firstname;
@@ -144,16 +158,96 @@ class _EditProfileViewState extends State<EditProfileView> {
     super.dispose();
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final picked = await _picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+      if (picked != null) {
+        setState(() {
+          _selectedImageFile = File(picked.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("ไม่สามารถเลือกรูปภาพได้: $e")),
+        );
+      }
+    }
+  }
+
+  void _showImagePickerBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "เปลี่ยนรูปโปรไฟล์",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: darkGreen,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFE8F5E9),
+                  child: Icon(Icons.camera_alt, color: forestGreen),
+                ),
+                title: const Text("ถ่ายรูปด้วยกล้อง"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFE8F5E9),
+                  child: Icon(Icons.photo_library, color: forestGreen),
+                ),
+                title: const Text("เลือกจากคลังรูปภาพ"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     try {
       setState(() => _isLoading = true);
+
+      String? uploadedImageUrl = _currentProfileImage;
+      if (_selectedImageFile != null) {
+        uploadedImageUrl =
+            await _userService.uploadProfileImage(_selectedImageFile!);
+      }
 
       await _userService.update(
         Session.currentUser!.username!,
         UpdateRequest(
           firstname: _firstnameController.text,
           lastname: _lastnameController.text,
+          profileImage: uploadedImageUrl,
           email: _emailController.text,
           phone: _phoneController.text,
           birthDate: _birthDateController.text,
@@ -168,6 +262,12 @@ class _EditProfileViewState extends State<EditProfileView> {
               : null,
         ),
       );
+
+      if (Session.currentUser != null) {
+        Session.currentUser!.profileImage = uploadedImageUrl;
+      }
+      _currentProfileImage = uploadedImageUrl;
+      _selectedImageFile = null;
 
       // ยิง API ดึงข้อมูลล่าสุดมาแสดง
       await _fetchProfile(showLoading: false);
@@ -314,56 +414,80 @@ class _EditProfileViewState extends State<EditProfileView> {
                     child: Column(
                       children: [
                         Center(
-                          child: Stack(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [darkGreen, midGreen, forestGreen],
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: forestGreen.withOpacity(0.25),
-                                      blurRadius: 14,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: CircleAvatar(
-                                  radius: 45,
-                                  backgroundColor: Colors.grey.shade100,
-                                  child: const Icon(
-                                    Icons.person,
-                                    size: 45,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(7),
+                          child: GestureDetector(
+                            onTap: _showImagePickerBottomSheet,
+                            child: Stack(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
-                                    color: forestGreen,
                                     shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2,
+                                    gradient: const LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        darkGreen,
+                                        midGreen,
+                                        forestGreen,
+                                      ],
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: forestGreen.withValues(
+                                          alpha: 0.25,
+                                        ),
+                                        blurRadius: 14,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
                                   ),
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    size: 14,
-                                    color: Colors.white,
+                                  child: CircleAvatar(
+                                    radius: 45,
+                                    backgroundColor: Colors.grey.shade100,
+                                    backgroundImage: _selectedImageFile != null
+                                        ? FileImage(_selectedImageFile!)
+                                        : (resolveImageUrl(_currentProfileImage)
+                                                .isNotEmpty
+                                            ? NetworkImage(
+                                                resolveImageUrl(
+                                                  _currentProfileImage,
+                                                ),
+                                              )
+                                            : null) as ImageProvider?,
+                                    child: (_selectedImageFile == null &&
+                                            resolveImageUrl(
+                                              _currentProfileImage,
+                                            ).isEmpty)
+                                        ? const Icon(
+                                            Icons.person,
+                                            size: 45,
+                                            color: Colors.grey,
+                                          )
+                                        : null,
                                   ),
                                 ),
-                              ),
-                            ],
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(7),
+                                    decoration: BoxDecoration(
+                                      color: forestGreen,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.camera_alt,
+                                      size: 14,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 28),

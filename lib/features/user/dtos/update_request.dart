@@ -1,6 +1,7 @@
 class UpdateRequest {
   final String firstname;
   final String lastname;
+  final String? profileImage;
   final String email;
   final String phone;
   final String birthDate;
@@ -15,6 +16,8 @@ class UpdateRequest {
   UpdateRequest({
     required this.firstname,
     required this.lastname,
+    this.profileImage,
+
     required this.email,
     required this.phone,
     required this.birthDate,
@@ -30,6 +33,7 @@ class UpdateRequest {
   factory UpdateRequest.fromJson(Map<String, dynamic> json) => UpdateRequest(
     firstname: (json['firstname'] as String?) ?? '',
     lastname: (json['lastname'] as String?) ?? '',
+    profileImage: (json['profileImage'] as String?) ?? '',
     email: (json['email'] as String?) ?? '',
     phone: (json['phone'] as String?) ?? '',
     birthDate: (json['birthDate'] as String?) ?? '',
@@ -47,6 +51,7 @@ class UpdateRequest {
   Map<String, dynamic> toJson() => {
     'firstname': firstname,
     'lastname': lastname,
+    'profileImage': profileImage,
     'email': email,
     'phone': phone,
     'birthDate': birthDate,
