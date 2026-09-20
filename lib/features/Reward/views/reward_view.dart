@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/network/dio_client.dart';
-import 'package:greenpass/features/Reward/dtos/reward_response.dart';
-import 'package:greenpass/features/Reward/services/reward_service.dart';
-import 'package:greenpass/features/Reward/views/reward_detail_view.dart';
+import 'package:greenpass/features/reward/dtos/reward_response.dart';
+import 'package:greenpass/features/reward/services/reward_service.dart';
+import 'package:greenpass/features/reward/views/reward_detail_view.dart';
 import 'package:greenpass/features/stamp/services/stamp_service.dart';
 import 'package:greenpass/features/stamp/views/travel_book_view.dart';
 
@@ -64,15 +64,15 @@ class _RewardViewState extends State<RewardView> {
       final rewardsFuture = _rewardService.getAllRewards();
       final stampsFuture = _stampService.getMyStamps();
 
-      final results = await Future.wait([rewardsFuture, stampsFuture]);
-      final rewardRes = results[0] as dynamic;
-      final stampRes = results[1] as dynamic;
+      final results = await Future.wait<dynamic>([rewardsFuture, stampsFuture]);
+      final rewards = results[0];
+      final stamps = results[1];
 
       if (!mounted) return;
 
       setState(() {
-        _allRewards = rewardRes.result ?? [];
-        _userStampCount = (stampRes.result as List?)?.length ?? 0;
+        _allRewards = rewards;
+        _userStampCount = stamps.length;
         _isLoading = false;
         _applyFilter();
       });
@@ -99,7 +99,8 @@ class _RewardViewState extends State<RewardView> {
     if (_selectedFilter == 1) {
       // Sort by newest announcement date
       list.sort(
-          (a, b) => b.rewardAnnouncementDate.compareTo(a.rewardAnnouncementDate));
+        (a, b) => b.rewardAnnouncementDate.compareTo(a.rewardAnnouncementDate),
+      );
     }
 
     _filteredRewards = list;
@@ -124,8 +125,11 @@ class _RewardViewState extends State<RewardView> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: textDark, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: textDark,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -140,8 +144,11 @@ class _RewardViewState extends State<RewardView> {
         actions: [
           IconButton(
             tooltip: "สมุดแสตมป์",
-            icon: const Icon(Icons.menu_book_rounded,
-                color: forestGreen, size: 22),
+            icon: const Icon(
+              Icons.menu_book_rounded,
+              color: forestGreen,
+              size: 22,
+            ),
             onPressed: () {
               Navigator.push(
                 context,
@@ -213,13 +220,10 @@ class _RewardViewState extends State<RewardView> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final item = _filteredRewards[index];
-                      return _buildRewardCard(item);
-                    },
-                    childCount: _filteredRewards.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final item = _filteredRewards[index];
+                    return _buildRewardCard(item);
+                  }, childCount: _filteredRewards.length),
                 ),
               ),
           ],
@@ -234,10 +238,7 @@ class _RewardViewState extends State<RewardView> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF2D6A4F),
-            Color(0xFF1B4332),
-          ],
+          colors: [Color(0xFF2D6A4F), Color(0xFF1B4332)],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -310,8 +311,10 @@ class _RewardViewState extends State<RewardView> {
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(14),
@@ -348,7 +351,9 @@ class _RewardViewState extends State<RewardView> {
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 9, vertical: 4),
+                            horizontal: 9,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
@@ -403,20 +408,28 @@ class _RewardViewState extends State<RewardView> {
         decoration: InputDecoration(
           hintText: "ค้นหาของรางวัล...",
           hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
-          prefixIcon: const Icon(Icons.search_rounded,
-              color: Colors.black45, size: 20),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: Colors.black45,
+            size: 20,
+          ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear_rounded,
-                      size: 18, color: Colors.black45),
+                  icon: const Icon(
+                    Icons.clear_rounded,
+                    size: 18,
+                    color: Colors.black45,
+                  ),
                   onPressed: () {
                     _searchController.clear();
                   },
                 )
               : null,
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -483,9 +496,7 @@ class _RewardViewState extends State<RewardView> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => RewardDetailView(reward: item),
-              ),
+              MaterialPageRoute(builder: (_) => RewardDetailView(reward: item)),
             );
           },
           child: Padding(
@@ -515,7 +526,9 @@ class _RewardViewState extends State<RewardView> {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: lightGreen,
                               borderRadius: BorderRadius.circular(6),
@@ -573,8 +586,11 @@ class _RewardViewState extends State<RewardView> {
                       // Claim Info
                       const Row(
                         children: [
-                          Icon(Icons.location_on_outlined,
-                              size: 13, color: forestGreen),
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 13,
+                            color: forestGreen,
+                          ),
                           SizedBox(width: 4),
                           Text(
                             "รับได้ที่ศูนย์บริการนักท่องเที่ยว",
@@ -585,8 +601,11 @@ class _RewardViewState extends State<RewardView> {
                             ),
                           ),
                           Spacer(),
-                          Icon(Icons.arrow_forward_ios_rounded,
-                              size: 12, color: Colors.black38),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 12,
+                            color: Colors.black38,
+                          ),
                         ],
                       ),
                     ],
@@ -630,18 +649,11 @@ class _RewardViewState extends State<RewardView> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFE8F5E9),
-            Color(0xFFC8E6C9),
-          ],
+          colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
         ),
       ),
       child: const Center(
-        child: Icon(
-          Icons.card_giftcard_rounded,
-          color: forestGreen,
-          size: 36,
-        ),
+        child: Icon(Icons.card_giftcard_rounded, color: forestGreen, size: 36),
       ),
     );
   }
@@ -680,10 +692,7 @@ class _RewardViewState extends State<RewardView> {
                   ? "ไม่พบของรางวัลที่ตรงกับ \"$_searchQuery\""
                   : "ยังไม่มีรายการของรางวัลที่เปิดให้รับในขณะนี้",
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.black54,
-                fontSize: 13,
-              ),
+              style: const TextStyle(color: Colors.black54, fontSize: 13),
             ),
             if (_searchQuery.isNotEmpty) ...[
               const SizedBox(height: 16),

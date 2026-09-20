@@ -1,11 +1,8 @@
 import 'package:greenpass/core/network/dio_client.dart';
-import 'package:greenpass/dtos/api_response.dart';
 import 'package:greenpass/features/report/dtos/reply_report_response.dart';
 
 class ReplyReportService {
-  Future<ApiResponse<List<ReplyReportResponse>>> getReplyReport(
-    int reportId,
-  ) async {
+  Future<List<ReplyReportResponse>> getReplyReport(int reportId) async {
     try {
       final response = await DioClient.dio.get(
         "/reply-report/my-reply-report",
@@ -25,11 +22,7 @@ class ReplyReportService {
             .toList();
       }
 
-      return ApiResponse(
-        success: response.data["success"],
-        message: response.data["message"],
-        result: replyReports,
-      );
+      return replyReports;
     } catch (e) {
       rethrow;
     }

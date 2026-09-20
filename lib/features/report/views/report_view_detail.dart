@@ -33,10 +33,13 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
     _currentStatus = widget.report.status;
     _loadReplies();
 
-    _wsSub = NotificationWebSocketService.instance.notificationStream.listen((notif) {
+    _wsSub = NotificationWebSocketService.instance.notificationStream.listen((
+      notif,
+    ) {
       if (!mounted) return;
       if (notif.reportId == widget.report.reportId ||
-          (notif.report != null && notif.report!.reportId == widget.report.reportId)) {
+          (notif.report != null &&
+              notif.report!.reportId == widget.report.reportId)) {
         setState(() {
           if (notif.report?.status != null && notif.report!.status.isNotEmpty) {
             _currentStatus = notif.report!.status;
@@ -62,12 +65,12 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
 
   Future<void> _loadReplies() async {
     try {
-      final response = await _replyReportService.getReplyReport(
+      final replies = await _replyReportService.getReplyReport(
         widget.report.reportId,
       );
       if (!mounted) return;
       setState(() {
-        _replies = response.result ?? [];
+        _replies = replies;
         if (_replies.isNotEmpty) {
           final latestStatus = _replies.last.currentStatus;
           if (latestStatus.trim().isNotEmpty) {
@@ -314,6 +317,7 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
               children: [
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: Text(
@@ -324,19 +328,21 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Flexible(
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 9,
+                          horizontal: 10,
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.1),
+                          color: statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           _statusLabel(_currentStatus),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 11,

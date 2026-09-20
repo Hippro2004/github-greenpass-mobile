@@ -351,7 +351,7 @@ class _LoginViewState extends State<LoginView> {
                                             password: passwordController.text,
                                           ),
                                         );
-                                        Session.currentUser = user.result;
+                                        Session.currentUser = user;
                                         if (!mounted) return;
                                         ScaffoldMessenger.of(
                                           context,

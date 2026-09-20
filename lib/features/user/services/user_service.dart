@@ -1,25 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
-import 'package:greenpass/dtos/api_response.dart';
 import 'package:greenpass/features/user/dtos/login_request.dart';
 import 'package:greenpass/features/user/dtos/register_request.dart';
 import 'package:greenpass/features/user/dtos/update_request.dart';
 import 'package:greenpass/features/user/models/user.dart';
 
 class UserSevice {
-  Future<ApiResponse<User>> login(LoginRequest loginRequest) async {
+  Future<User> login(LoginRequest loginRequest) async {
     try {
       final response = await DioClient.dio.post(
         "/user/login",
         data: loginRequest.toJson(),
       );
-      // return User.fromJson(response.data['result']);
-      return ApiResponse(
-        success: response.data['success'],
-        message: response.data['message'],
-        result: User.fromJson(response.data['result']),
-      );
+      return User.fromJson(response.data['result']);
     } catch (e) {
       rethrow;
     }
@@ -37,55 +31,37 @@ class UserSevice {
     }
   }
 
-  Future<ApiResponse<void>> register(RegisterRequest registerRequest) async {
+  Future<void> register(RegisterRequest registerRequest) async {
     try {
-      final response = await DioClient.dio.post(
+      await DioClient.dio.post(
         "/user/register",
         data: registerRequest.toJson(),
       );
-      return ApiResponse(
-        success: response.data['success'],
-        message: response.data['message'],
-      );
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<ApiResponse<void>> update(
-    String username,
-    UpdateRequest updateRequest,
-  ) async {
+  Future<void> update(String username, UpdateRequest updateRequest) async {
     try {
-      final response = await DioClient.dio.put(
+      await DioClient.dio.put(
         "/user/${Session.currentUser!.username}",
         data: updateRequest.toJson(),
       );
-      return ApiResponse(
-        success: response.data['success'],
-        message: response.data['message'],
-      );
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<ApiResponse<void>> updateFcmToken(String fcmToken) async {
+  Future<void> updateFcmToken(String fcmToken) async {
     try {
       final username = Session.currentUser?.username;
       if (username == null) {
-        return ApiResponse(
-          success: false,
-          message: 'No current user in session',
-        );
+        throw StateError('No current user in session');
       }
-      final response = await DioClient.dio.put(
+      await DioClient.dio.put(
         "/user/$username/fcm-token",
         data: {"fcmToken": fcmToken},
-      );
-      return ApiResponse(
-        success: response.data['success'] ?? true,
-        message: response.data['message'] ?? 'FCM Token updated successfully',
       );
     } catch (e) {
       rethrow;

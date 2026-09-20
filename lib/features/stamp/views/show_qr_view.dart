@@ -54,10 +54,10 @@ class _StampQrViewState extends State<StampQrView> {
       final qrResponse = await _stampService.getQr();
       if (!mounted) return;
 
-      final secondsLeft = qrResponse.result!.remainingSecondsAt(DateTime.now());
+      final secondsLeft = qrResponse.remainingSecondsAt(DateTime.now());
 
       setState(() {
-        _qrResponse = qrResponse.result;
+        _qrResponse = qrResponse;
         _secondsLeft = secondsLeft;
         _totalSeconds = secondsLeft > 0 ? secondsLeft : 1;
         _isLoading = false;
@@ -324,7 +324,8 @@ class _StampQrViewState extends State<StampQrView> {
                               const SizedBox(height: 14),
 
                               Text(
-                                "${Session.currentUser?.firstname ?? ''} ${Session.currentUser?.lastname ?? ''}".trim(),
+                                "${Session.currentUser?.firstname ?? ''} ${Session.currentUser?.lastname ?? ''}"
+                                    .trim(),
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,

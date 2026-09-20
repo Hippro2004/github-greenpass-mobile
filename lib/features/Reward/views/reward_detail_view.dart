@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/network/dio_client.dart';
-import 'package:greenpass/features/Reward/dtos/reward_response.dart';
+import 'package:greenpass/features/reward/dtos/reward_response.dart';
 import 'package:greenpass/features/park/views/park_search_view.dart';
 import 'package:greenpass/features/stamp/views/travel_book_view.dart';
 
 class RewardDetailView extends StatelessWidget {
   final RewardResponse reward;
 
-  const RewardDetailView({
-    super.key,
-    required this.reward,
-  });
+  const RewardDetailView({super.key, required this.reward});
 
   static const Color forestGreen = Color(0xFF2D6A4F);
   static const Color darkGreen = Color(0xFF1B4332);
@@ -50,8 +47,11 @@ class RewardDetailView extends StatelessWidget {
               child: CircleAvatar(
                 backgroundColor: Colors.white.withValues(alpha: 0.85),
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: textDark, size: 18),
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: textDark,
+                    size: 18,
+                  ),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -81,7 +81,9 @@ class RewardDetailView extends StatelessWidget {
                     bottom: 20,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: goldAccent,
                         borderRadius: BorderRadius.circular(20),
@@ -96,8 +98,11 @@ class RewardDetailView extends StatelessWidget {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.stars_rounded,
-                              color: Colors.white, size: 16),
+                          Icon(
+                            Icons.stars_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          ),
                           SizedBox(width: 6),
                           Text(
                             "GreenPass Reward",
@@ -146,7 +151,9 @@ class RewardDetailView extends StatelessWidget {
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: lightGreen,
                                 borderRadius: BorderRadius.circular(8),
@@ -178,8 +185,11 @@ class RewardDetailView extends StatelessWidget {
                             if (reward.rewardAnnouncementDate.isNotEmpty)
                               Row(
                                 children: [
-                                  const Icon(Icons.calendar_today_rounded,
-                                      size: 13, color: Colors.black45),
+                                  const Icon(
+                                    Icons.calendar_today_rounded,
+                                    size: 13,
+                                    color: Colors.black45,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     reward.rewardAnnouncementDate,
@@ -228,8 +238,11 @@ class RewardDetailView extends StatelessWidget {
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.info_outline_rounded,
-                                color: forestGreen, size: 20),
+                            Icon(
+                              Icons.info_outline_rounded,
+                              color: forestGreen,
+                              size: 20,
+                            ),
                             SizedBox(width: 8),
                             Text(
                               "รายละเอียดของรางวัล",
@@ -278,8 +291,11 @@ class RewardDetailView extends StatelessWidget {
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.checklist_rounded,
-                                color: warmGold, size: 22),
+                            Icon(
+                              Icons.checklist_rounded,
+                              color: warmGold,
+                              size: 22,
+                            ),
                             SizedBox(width: 8),
                             Text(
                               "เงื่อนไขและวิธีรับของรางวัล",
@@ -295,25 +311,29 @@ class RewardDetailView extends StatelessWidget {
                         _buildStepItem(
                           step: "1",
                           title: "สะสมแสตมป์ท่องเที่ยว",
-                          desc: "เดินทางท่องเที่ยวอุทยานแห่งชาติและสแกนรับแสตมป์บันทึกลงใน GreenPass",
+                          desc:
+                              "เดินทางท่องเที่ยวอุทยานแห่งชาติและสแกนรับแสตมป์บันทึกลงใน GreenPass",
                         ),
                         const SizedBox(height: 12),
                         _buildStepItem(
                           step: "2",
                           title: "ติดต่อศูนย์บริการนักท่องเที่ยว",
-                          desc: "แจ้งความประสงค์ขอรับของรางวัล ณ จุดบริการในอุทยานแห่งชาติที่ร่วมรายการ",
+                          desc:
+                              "แจ้งความประสงค์ขอรับของรางวัล ณ จุดบริการในอุทยานแห่งชาติที่ร่วมรายการ",
                         ),
                         const SizedBox(height: 12),
                         _buildStepItem(
                           step: "3",
                           title: "แสดงสมุดแสตมป์ดิจิทัล",
-                          desc: "เปิดหน้าสมุดบันทึกแสตมป์ในแอป GreenPass เพื่อยืนยันสิทธิ์กับเจ้าหน้าที่",
+                          desc:
+                              "เปิดหน้าสมุดบันทึกแสตมป์ในแอป GreenPass เพื่อยืนยันสิทธิ์กับเจ้าหน้าที่",
                         ),
                         const SizedBox(height: 12),
                         _buildStepItem(
                           step: "4",
                           title: "รับของรางวัลสุดพิเศษ",
-                          desc: "รับของที่ระลึกสุดเอ็กซ์คลูซีฟ พร้อมเก็บความประทับใจในการอนุรักษ์ธรรมชาติ",
+                          desc:
+                              "รับของที่ระลึกสุดเอ็กซ์คลูซีฟ พร้อมเก็บความประทับใจในการอนุรักษ์ธรรมชาติ",
                         ),
                       ],
                     ),
@@ -334,8 +354,10 @@ class RewardDetailView extends StatelessWidget {
                           ),
                         );
                       },
-                      icon: const Icon(Icons.menu_book_rounded,
-                          color: Colors.white),
+                      icon: const Icon(
+                        Icons.menu_book_rounded,
+                        color: Colors.white,
+                      ),
                       label: const Text(
                         "เปิดสมุดแสตมป์เพื่อดูสิทธิ์",
                         style: TextStyle(
@@ -426,11 +448,7 @@ class RewardDetailView extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF2D6A4F),
-            Color(0xFF1B4332),
-            Color(0xFF40916C),
-          ],
+          colors: [Color(0xFF2D6A4F), Color(0xFF1B4332), Color(0xFF40916C)],
         ),
       ),
       child: Center(

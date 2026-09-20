@@ -42,7 +42,9 @@ class _ReportViewState extends State<ReportView> {
   void initState() {
     super.initState();
     _loadReports();
-    _wsSub = NotificationWebSocketService.instance.notificationStream.listen((_) {
+    _wsSub = NotificationWebSocketService.instance.notificationStream.listen((
+      _,
+    ) {
       if (!mounted) return;
       _loadReports();
     });
@@ -59,7 +61,7 @@ class _ReportViewState extends State<ReportView> {
       final reports = await _reportService.getMyReport();
       if (!mounted) return;
       setState(() {
-        _reports = reports.result!;
+        _reports = reports;
         _isLoading = false;
       });
     } catch (e) {

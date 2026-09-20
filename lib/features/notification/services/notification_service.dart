@@ -1,19 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
-import 'package:greenpass/dtos/api_response.dart';
 import 'package:greenpass/features/notification/models/notification_model.dart';
 
 class NotificationService {
-  Future<ApiResponse<List<NotificationModel>>> getMyNotifications() async {
+  Future<List<NotificationModel>> getMyNotifications() async {
     try {
       final username = Session.currentUser?.username;
       if (username == null || username.isEmpty) {
-        return ApiResponse(
-          success: false,
-          message: 'User session not found',
-          result: [],
-        );
+        throw StateError('User session not found');
       }
 
       final response = await DioClient.dio.get(
@@ -26,52 +21,28 @@ class NotificationService {
 
       if (rawResult != null && rawResult is List) {
         notifications = rawResult
-            .map((item) => NotificationModel.fromMap(item as Map<String, dynamic>))
+            .map(
+              (item) => NotificationModel.fromMap(item as Map<String, dynamic>),
+            )
             .toList();
       }
 
-      return ApiResponse(
-        success: response.data['success'] ?? true,
-        message: response.data['message'] ?? 'Notifications found',
-        result: notifications,
-      );
+      return notifications;
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return ApiResponse(
-          success: true,
-          message: 'No notifications found',
-          result: [],
-        );
+        return [];
       }
-      return ApiResponse(
-        success: false,
-        message: e.message ?? 'Failed to load notifications',
-        result: [],
-      );
+      rethrow;
     } catch (e) {
-      return ApiResponse(
-        success: false,
-        message: e.toString(),
-        result: [],
-      );
+      rethrow;
     }
   }
 
-  Future<ApiResponse<void>> markAsRead(int notificationId) async {
+  Future<void> markAsRead(int notificationId) async {
     try {
-      final response = await DioClient.dio.put(
-        "/notification/$notificationId/read",
-      );
-
-      return ApiResponse(
-        success: response.data['success'] ?? true,
-        message: response.data['message'] ?? 'Notification marked as read',
-      );
+      await DioClient.dio.put("/notification/$notificationId/read");
     } catch (e) {
-      return ApiResponse(
-        success: false,
-        message: e.toString(),
-      );
+      rethrow;
     }
   }
 }

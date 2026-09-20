@@ -94,7 +94,8 @@ class _MainViewState extends State<MainView> {
     if (!mounted) return;
 
     final isReport = notification.report != null;
-    final isWarning = !isReport &&
+    final isWarning =
+        !isReport &&
         (notification.title.contains("เตือน") ||
             notification.message.contains("ซ้ำ") ||
             notification.message.contains("ไม่สามารถ") ||
@@ -137,19 +138,15 @@ class _MainViewState extends State<MainView> {
                   color: badgeBg,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  iconData,
-                  color: iconColor,
-                  size: 34,
-                ),
+                child: Icon(iconData, color: iconColor, size: 34),
               ),
               const SizedBox(height: 16),
               Text(
                 notification.title.isNotEmpty
                     ? notification.title
                     : (isReport
-                        ? "การแจ้งเตือน"
-                        : (isWarning ? "แจ้งเตือนการสแกน" : "สำเร็จ")),
+                          ? "การแจ้งเตือน"
+                          : (isWarning ? "แจ้งเตือนการสแกน" : "สำเร็จ")),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 16,
@@ -247,15 +244,11 @@ class _MainViewState extends State<MainView> {
 
   Future<void> _loadUnreadNotifications() async {
     try {
-      final response = await _notificationService.getMyNotifications();
+      final notifications = await _notificationService.getMyNotifications();
       if (!mounted) return;
-      if (response.success && response.result != null) {
-        setState(() {
-          _unreadNotificationCount = response.result!
-              .where((n) => !n.isRead)
-              .length;
-        });
-      }
+      setState(() {
+        _unreadNotificationCount = notifications.where((n) => !n.isRead).length;
+      });
     } catch (_) {}
   }
 
@@ -276,21 +269,19 @@ class _MainViewState extends State<MainView> {
       _announcementError = null;
     });
     try {
-      final response = await _announcementService.getAllAnnouncements();
+      final announcements = await _announcementService.getAllAnnouncements();
       if (!mounted) return;
-      final announcements = List<AnnouncementResponse>.from(
-        response.result ?? const <AnnouncementResponse>[],
-      );
-      announcements.sort((first, second) {
-        final firstDate = DateTime.tryParse(first.postDate);
-        final secondDate = DateTime.tryParse(second.postDate);
-        if (firstDate != null && secondDate != null) {
-          return secondDate.compareTo(firstDate);
-        }
-        return second.postDate.compareTo(first.postDate);
-      });
+      final sortedAnnouncements = List<AnnouncementResponse>.from(announcements)
+        ..sort((first, second) {
+          final firstDate = DateTime.tryParse(first.postDate);
+          final secondDate = DateTime.tryParse(second.postDate);
+          if (firstDate != null && secondDate != null) {
+            return secondDate.compareTo(firstDate);
+          }
+          return second.postDate.compareTo(first.postDate);
+        });
       setState(() {
-        _announcements = announcements.take(4).toList();
+        _announcements = sortedAnnouncements.take(4).toList();
         _announcementLoading = false;
       });
       _startAnnouncementRotation();

@@ -30,7 +30,9 @@ class _NotificationViewState extends State<NotificationView> {
   void initState() {
     super.initState();
     _loadNotifications();
-    _wsSub = NotificationWebSocketService.instance.notificationStream.listen((n) {
+    _wsSub = NotificationWebSocketService.instance.notificationStream.listen((
+      n,
+    ) {
       if (!mounted) return;
       setState(() {
         _notifications.insert(0, n);
@@ -51,22 +53,12 @@ class _NotificationViewState extends State<NotificationView> {
     });
 
     try {
-      final response = await _notificationService.getMyNotifications();
+      final notifications = await _notificationService.getMyNotifications();
       if (!mounted) return;
-
-      if (response.success && response.result != null) {
-        setState(() {
-          _notifications = response.result!;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _errorMessage = response.message.isNotEmpty
-              ? response.message
-              : 'ไม่สามารถโหลดการแจ้งเตือนได้';
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _notifications = notifications;
+        _isLoading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -173,7 +165,11 @@ class _NotificationViewState extends State<NotificationView> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: textDark, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: textDark,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context, true),
         ),
         title: const Text(
@@ -269,7 +265,9 @@ class _NotificationViewState extends State<NotificationView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.white.withValues(alpha: 0.25) : Colors.grey.shade300,
+                  color: isSelected
+                      ? Colors.white.withValues(alpha: 0.25)
+                      : Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -290,9 +288,7 @@ class _NotificationViewState extends State<NotificationView> {
 
   Widget _buildContent(List<NotificationModel> list) {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: forestGreen),
-      );
+      return const Center(child: CircularProgressIndicator(color: forestGreen));
     }
 
     if (_errorMessage != null) {
@@ -302,7 +298,11 @@ class _NotificationViewState extends State<NotificationView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline_rounded, size: 48, color: Colors.grey.shade400),
+              Icon(
+                Icons.error_outline_rounded,
+                size: 48,
+                color: Colors.grey.shade400,
+              ),
               const SizedBox(height: 12),
               Text(
                 _errorMessage!,
@@ -398,10 +398,14 @@ class _NotificationViewState extends State<NotificationView> {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isUnread ? Colors.white : Colors.white.withValues(alpha: 0.7),
+            color: isUnread
+                ? Colors.white
+                : Colors.white.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isUnread ? forestGreen.withValues(alpha: 0.25) : Colors.grey.shade200,
+              color: isUnread
+                  ? forestGreen.withValues(alpha: 0.25)
+                  : Colors.grey.shade200,
               width: isUnread ? 1.2 : 1.0,
             ),
             boxShadow: [
@@ -424,7 +428,9 @@ class _NotificationViewState extends State<NotificationView> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  item.report != null ? Icons.assignment_outlined : Icons.notifications_active_outlined,
+                  item.report != null
+                      ? Icons.assignment_outlined
+                      : Icons.notifications_active_outlined,
                   color: isUnread ? forestGreen : Colors.grey.shade600,
                   size: 22,
                 ),
@@ -443,7 +449,9 @@ class _NotificationViewState extends State<NotificationView> {
                             item.title,
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
+                              fontWeight: isUnread
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
                               color: isUnread ? textDark : Colors.black87,
                             ),
                           ),

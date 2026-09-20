@@ -4,10 +4,9 @@ import 'package:greenpass/features/report/dtos/report_response.dart';
 
 import '../../../core/storage/session_strorage.dart';
 import '../dtos/add_report_request.dart';
-import '../../../dtos/api_response.dart';
 
 class ReportService {
-  Future<ApiResponse<List<ReportResponse>>> getMyReport() async {
+  Future<List<ReportResponse>> getMyReport() async {
     try {
       final response = await DioClient.dio.get(
         "/report/my-reports",
@@ -23,34 +22,20 @@ class ReportService {
             .toList();
       }
 
-      return ApiResponse(
-        success: response.data["success"],
-        message: response.data["message"],
-        result: reports,
-        // result: (response.data["result"] as List)
-        //     .map((e) => ReportResponse.fromJson(e))
-        //     .toList(),
-      );
+      return reports;
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return ApiResponse(success: true, message: "No reports", result: []);
+        return [];
       }
       rethrow;
     }
   }
 
-  Future<ApiResponse<void>> addReport(
-    AddReportRequest addReportRequest,
-    int parkId,
-  ) async {
-    final response = await DioClient.dio.post(
+  Future<void> addReport(AddReportRequest addReportRequest, int parkId) async {
+    await DioClient.dio.post(
       "/report/add-report",
       data: addReportRequest.toJson(),
       options: Options(headers: {"username": Session.currentUser!.username}),
-    );
-    return ApiResponse(
-      success: response.data['success'],
-      message: response.data['message'],
     );
   }
 }

@@ -74,30 +74,28 @@ class _AddReportViewState extends State<AddReportView> {
   Future<void> _loadReportTypes() async {
     try {
       setState(() => _isLoadingTypes = true);
-      final response = await reportTypeService.getAllReportType();
+      final reportTypes = await reportTypeService.getAllReportType();
       if (!mounted) return;
 
-      if (response.success && response.result != null) {
-        final rawTypes = response.result!
-            .where((type) => type.typename.trim().isNotEmpty)
-            .toList();
+      final rawTypes = reportTypes
+          .where((type) => type.typename.trim().isNotEmpty)
+          .toList();
 
-        final uniqueTypes = <ReporyTypeRequest>[];
-        final uniqueNames = <String>[];
-        for (final type in rawTypes) {
-          if (!uniqueNames.contains(type.typename)) {
-            uniqueNames.add(type.typename);
-            uniqueTypes.add(type);
-          }
+      final uniqueTypes = <ReporyTypeRequest>[];
+      final uniqueNames = <String>[];
+      for (final type in rawTypes) {
+        if (!uniqueNames.contains(type.typename)) {
+          uniqueNames.add(type.typename);
+          uniqueTypes.add(type);
         }
+      }
 
-        if (uniqueNames.isNotEmpty) {
-          setState(() {
-            _reportTypes = uniqueTypes;
-            _reportTypeNames = uniqueNames;
-            _selectedReportTypeName = uniqueNames.first;
-          });
-        }
+      if (uniqueNames.isNotEmpty) {
+        setState(() {
+          _reportTypes = uniqueTypes;
+          _reportTypeNames = uniqueNames;
+          _selectedReportTypeName = uniqueNames.first;
+        });
       }
     } catch (_) {
       if (!mounted) return;
@@ -411,7 +409,7 @@ class _AddReportViewState extends State<AddReportView> {
                     if (!_formKey.currentState!.validate()) return;
                     try {
                       setState(() => _isLoading = true);
-                      final response = await reportSerivce.addReport(
+                      await reportSerivce.addReport(
                         AddReportRequest(
                           name: _nameController.text,
                           description: _descriptionController.text,
@@ -422,17 +420,8 @@ class _AddReportViewState extends State<AddReportView> {
                         _selectedPark!.id,
                       );
                       if (!mounted) return;
-                      if (response.success) {
-                        Navigator.pop(context, true);
-                        return;
-                      }
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(response.message),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
+                      Navigator.pop(context, true);
+                      return;
                     } on DioException catch (e) {
                       if (!mounted) return;
                       final statusCode = e.response?.statusCode;

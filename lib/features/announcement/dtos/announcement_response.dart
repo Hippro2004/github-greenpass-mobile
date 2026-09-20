@@ -4,18 +4,36 @@ class AnnouncementResponse {
   final int announcementId;
   final String announcementTitle;
   final String postDate;
-  final String? description;
+  final String description;
   final String parkName;
-  final String? parkRangerName;
+  final String image;
 
   AnnouncementResponse({
     required this.announcementId,
     required this.announcementTitle,
     required this.postDate,
-    this.description,
+    required this.description,
     required this.parkName,
-    this.parkRangerName,
+    required this.image,
   });
+
+  AnnouncementResponse copyWith({
+    int? announcementId,
+    String? announcementTitle,
+    String? postDate,
+    String? description,
+    String? parkName,
+    String? image,
+  }) {
+    return AnnouncementResponse(
+      announcementId: announcementId ?? this.announcementId,
+      announcementTitle: announcementTitle ?? this.announcementTitle,
+      postDate: postDate ?? this.postDate,
+      description: description ?? this.description,
+      parkName: parkName ?? this.parkName,
+      image: image ?? this.image,
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -24,7 +42,7 @@ class AnnouncementResponse {
       'postDate': postDate,
       'description': description,
       'parkName': parkName,
-      'parkRangerName': parkRangerName,
+      'image': image,
     };
   }
 
@@ -33,20 +51,20 @@ class AnnouncementResponse {
       announcementId: map['announcementId']?.toInt() ?? 0,
       announcementTitle: map['announcementTitle'] ?? '',
       postDate: map['postDate'] ?? '',
-      description: map['description'],
+      description: map['description'] ?? '',
       parkName: map['parkName'] ?? '',
-      parkRangerName: map['parkRangerName'],
+      image: map['image'] ?? '',
     );
   }
 
-  Map<String, dynamic> toJson() => toMap();
+  String toJson() => json.encode(toMap());
 
   factory AnnouncementResponse.fromJson(String source) =>
       AnnouncementResponse.fromMap(json.decode(source));
 
   @override
   String toString() {
-    return 'AnnouncementResponse(announcementId: $announcementId, announcementTitle: $announcementTitle, postDate: $postDate, description: $description, parkName: $parkName, parkRangerName: $parkRangerName)';
+    return 'AnnouncementResponse(announcementId: $announcementId, announcementTitle: $announcementTitle, postDate: $postDate, description: $description, parkName: $parkName, image: $image)';
   }
 
   @override
@@ -59,7 +77,7 @@ class AnnouncementResponse {
         other.postDate == postDate &&
         other.description == description &&
         other.parkName == parkName &&
-        other.parkRangerName == parkRangerName;
+        other.image == image;
   }
 
   @override
@@ -69,6 +87,6 @@ class AnnouncementResponse {
         postDate.hashCode ^
         description.hashCode ^
         parkName.hashCode ^
-        parkRangerName.hashCode;
+        image.hashCode;
   }
 }

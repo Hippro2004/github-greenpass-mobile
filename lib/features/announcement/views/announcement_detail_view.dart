@@ -35,18 +35,13 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
       _error = null;
     });
     try {
-      final response = await _announcementService.getAnnouncementDetails(
+      final announcement = await _announcementService.getAnnouncementDetails(
         widget.announcementId,
       );
       if (!mounted) return;
       setState(() {
-        _announcement = response.result;
+        _announcement = announcement;
         _isLoading = false;
-        if (_announcement == null) {
-          _error = response.message.isEmpty
-              ? "ไม่พบข้อมูลประกาศ"
-              : response.message;
-        }
       });
     } catch (error) {
       if (!mounted) return;
@@ -94,7 +89,7 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
           border: Border.all(color: Colors.grey.shade100),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -103,6 +98,20 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (announcement.image.trim().isNotEmpty) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Image.network(
+                  announcement.image,
+                  width: double.infinity,
+                  height: 190,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      _buildImagePlaceholder(),
+                ),
+              ),
+              const SizedBox(height: 18),
+            ],
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -153,8 +162,8 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
             ),
             const Divider(height: 28),
             Text(
-              announcement.description?.trim().isNotEmpty == true
-                  ? announcement.description!
+              announcement.description.trim().isNotEmpty
+                  ? announcement.description
                   : "ไม่มีรายละเอียดเพิ่มเติม",
               style: TextStyle(
                 color: Colors.grey.shade700,
@@ -164,6 +173,20 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildImagePlaceholder() {
+    return Container(
+      width: double.infinity,
+      height: 190,
+      color: lightGreen,
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.image_not_supported_outlined,
+        color: darkGreen,
+        size: 42,
       ),
     );
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/features/stamp/dtos/stamp_response.dart';
-import 'package:greenpass/features/stamp/models/stamp.dart';
 import 'package:greenpass/features/stamp/services/stamp_service.dart';
 import 'package:greenpass/features/stamp/views/book_stamp_details.dart';
 
@@ -48,7 +47,7 @@ class _TravelBookViewState extends State<TravelBookView> {
       final stamps = await _stampService.getMyStamps();
       if (!mounted) return;
       setState(() {
-        _stamps = stamps.result ?? [];
+        _stamps = stamps;
         _isLoading = false;
       });
     } catch (e) {
@@ -338,17 +337,7 @@ class _TravelBookViewState extends State<TravelBookView> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => BookStampDetails(
-                stamp: Stamp(
-                  stamp.stampId,
-                  null,
-                  stamp.stampDate,
-                  stamp.time,
-                  stamp.parkId,
-                  stamp.parkName,
-                  0,
-                ),
-              ),
+              builder: (context) => BookStampDetails(stamp: stamp),
             ),
           );
         },

@@ -1,17 +1,12 @@
 import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
-import 'package:greenpass/dtos/api_response.dart';
 
 class AnnoucementService {
-  Future<ApiResponse<List<AnnouncementResponse>>> getAllAnnouncements() async {
+  Future<List<AnnouncementResponse>> getAllAnnouncements() async {
     final res = await DioClient.dio.get("/announcement/all-announcement");
 
     if (res.statusCode == 204 || res.data == null) {
-      return const ApiResponse(
-        success: true,
-        message: "No announcements",
-        result: [],
-      );
+      return [];
     }
 
     if (res.data is! Map) {
@@ -30,30 +25,19 @@ class AnnoucementService {
               .toList()
         : <AnnouncementResponse>[];
 
-    return ApiResponse(
-      success: data["success"] == true || data["sussess"] == true,
-      message: data["message"]?.toString() ?? "",
-      result: announcements,
-    );
+    return announcements;
   }
 
-  Future<ApiResponse<AnnouncementResponse>> getAnnouncementDetails(
-    int id,
-  ) async {
+  Future<AnnouncementResponse> getAnnouncementDetails(int id) async {
     final res = await DioClient.dio.get(
       "/announcement/announcement-details",
       queryParameters: {"announcementId": id},
     );
 
     final rawResult = res.data["result"];
-    final result = rawResult is Map
-        ? AnnouncementResponse.fromMap(Map<String, dynamic>.from(rawResult))
-        : null;
-
-    return ApiResponse(
-      success: res.data["success"] == true || res.data["sussess"] == true,
-      message: res.data["message"]?.toString() ?? "",
-      result: result,
-    );
+    if (rawResult is! Map) {
+      throw const FormatException("ไม่พบข้อมูลประกาศ");
+    }
+    return AnnouncementResponse.fromMap(Map<String, dynamic>.from(rawResult));
   }
 }

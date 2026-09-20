@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/features/stamp/models/stamp.dart';
+import 'package:greenpass/features/stamp/dtos/stamp_response.dart';
 import 'package:greenpass/features/stamp/services/stamp_service.dart';
 
 class BookStampDetails extends StatefulWidget {
-  final Stamp stamp;
+  final StampResponse stamp;
 
   const BookStampDetails({super.key, required this.stamp});
 
@@ -13,7 +13,7 @@ class BookStampDetails extends StatefulWidget {
 
 class _BookStampDetailsState extends State<BookStampDetails> {
   final StampService _stampService = StampService();
-  List<Stamp> _histories = [];
+  List<StampResponse> _histories = [];
 
   bool _isLoading = true;
   String? _error;
@@ -44,16 +44,16 @@ class _BookStampDetailsState extends State<BookStampDetails> {
     return _formatTime(t);
   }
 
-  List<Stamp> get _allVisits {
+  List<StampResponse> get _allVisits {
     if (_histories.isEmpty) {
       return [widget.stamp];
     }
     return _histories;
   }
 
-  Stamp get _firstStamp {
+  StampResponse get _firstStamp {
     final visits = _allVisits;
-    final sorted = List<Stamp>.from(visits)
+    final sorted = List<StampResponse>.from(visits)
       ..sort((a, b) {
         final timeA = a.time.trim().isNotEmpty ? a.time.trim() : "00:00:00";
         final timeB = b.time.trim().isNotEmpty ? b.time.trim() : "00:00:00";
@@ -70,9 +70,9 @@ class _BookStampDetailsState extends State<BookStampDetails> {
     return sorted.first;
   }
 
-  Stamp get _latestStamp {
+  StampResponse get _latestStamp {
     final visits = _allVisits;
-    final sorted = List<Stamp>.from(visits)
+    final sorted = List<StampResponse>.from(visits)
       ..sort((a, b) {
         final timeA = a.time.trim().isNotEmpty ? a.time.trim() : "00:00:00";
         final timeB = b.time.trim().isNotEmpty ? b.time.trim() : "00:00:00";
@@ -89,9 +89,9 @@ class _BookStampDetailsState extends State<BookStampDetails> {
     return sorted.last;
   }
 
-  List<Stamp> get _sortedHistories {
+  List<StampResponse> get _sortedHistories {
     final visits = _allVisits;
-    final sorted = List<Stamp>.from(visits)
+    final sorted = List<StampResponse>.from(visits)
       ..sort((a, b) {
         final timeA = a.time.trim().isNotEmpty ? a.time.trim() : "00:00:00";
         final timeB = b.time.trim().isNotEmpty ? b.time.trim() : "00:00:00";
@@ -120,8 +120,29 @@ class _BookStampDetailsState extends State<BookStampDetails> {
         widget.stamp.parkId,
       );
       if (!mounted) return;
+      final loadedHistories = histories;
+      final mergedHistories = loadedHistories.map((history) {
+        if (history.stampId != widget.stamp.stampId) return history;
+
+        return history.copyWith(
+          parkName: history.parkName.trim().isEmpty
+              ? widget.stamp.parkName
+              : history.parkName,
+          parkRangerName: history.parkRangerName.trim().isEmpty
+              ? widget.stamp.parkRangerName
+              : history.parkRangerName,
+          signature: history.signature.trim().isEmpty
+              ? widget.stamp.signature
+              : history.signature,
+        );
+      }).toList();
+      final hasSelectedStamp = mergedHistories.any(
+        (history) => history.stampId == widget.stamp.stampId,
+      );
       setState(() {
-        _histories = histories.result ?? [];
+        _histories = hasSelectedStamp
+            ? mergedHistories
+            : [...mergedHistories, widget.stamp];
         _isLoading = false;
       });
     } catch (e) {
@@ -315,22 +336,8 @@ class _BookStampDetailsState extends State<BookStampDetails> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // รูป stamp หรือ ส่วนหัวอุทยาน
-                  if (widget.stamp.stampImage != null &&
-                      widget.stamp.stampImage!.trim().isNotEmpty)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Image.asset(
-                        'assets/images/${widget.stamp.stampImage}',
-                        width: double.infinity,
-                        height: 200,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildPlaceholderHeader(),
-                      ),
-                    )
-                  else
-                    _buildPlaceholderHeader(),
+                  // ส่วนหัวอุทยาน
+                  _buildPlaceholderHeader(),
                   const SizedBox(height: 16),
 
                   // การ์ดข้อมูล stamp
@@ -444,95 +451,148 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                             ),
                           ],
                         ),
-                        child: Row(
+                        child: Column(
                           children: [
-                            Container(
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                color: cardLavender,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                "#$visitNumber",
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: deepPurple,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "วันที่ประทับ",
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.grey.shade500,
-                                      fontWeight: FontWeight.w500,
+                            Row(
+                              children: [
+                                Container(
+                                  width: 34,
+                                  height: 34,
+                                  decoration: BoxDecoration(
+                                    color: cardLavender,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    "#$visitNumber",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: deepPurple,
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Row(
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      const Icon(
-                                        Icons.calendar_today_outlined,
-                                        size: 13,
-                                        color: deepPurple,
-                                      ),
-                                      const SizedBox(width: 5),
                                       Text(
-                                        history.stampDate.isNotEmpty
-                                            ? history.stampDate
-                                            : "-",
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.w600,
+                                        "วันที่ประทับ",
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.grey.shade500,
+                                          fontWeight: FontWeight.w500,
                                         ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.calendar_today_outlined,
+                                            size: 13,
+                                            color: deepPurple,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            history.stampDate.isNotEmpty
+                                                ? history.stampDate
+                                                : "-",
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.black87,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            ),
-                            if (history.time.trim().isNotEmpty)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: lightPurple.withValues(alpha: 0.14),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: lightPurple.withValues(alpha: 0.25),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.access_time_filled,
-                                      size: 13,
-                                      color: midPurple,
+                                if (history.time.trim().isNotEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 6,
                                     ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      _formatTime(history.time),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: deepPurple,
+                                    decoration: BoxDecoration(
+                                      color: lightPurple.withValues(
+                                        alpha: 0.14,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: lightPurple.withValues(
+                                          alpha: 0.25,
+                                        ),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.access_time_filled,
+                                          size: 13,
+                                          color: midPurple,
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          _formatTime(history.time),
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: deepPurple,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            if (history.parkRangerName.trim().isNotEmpty ||
+                                history.signature.trim().isNotEmpty) ...[
+                              const Divider(height: 22),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: _buildInfoRow(
+                                      Icons.badge_outlined,
+                                      'เจ้าหน้าที่',
+                                      history.parkRangerName.trim().isEmpty
+                                          ? '-'
+                                          : history.parkRangerName,
+                                    ),
+                                  ),
+                                  if (history.signature.trim().isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8),
+                                      child: Container(
+                                        width: 90,
+                                        height: 42,
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: lavenderBg,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Image.network(
+                                          history.signature,
+                                          fit: BoxFit.contain,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(
+                                                    Icons.draw_outlined,
+                                                    size: 20,
+                                                    color: Colors.black38,
+                                                  ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
+                            ],
                           ],
                         ),
                       );

@@ -6,6 +6,8 @@ class StampResponse {
   final String time;
   final int parkId;
   final String parkName;
+  final String parkRangerName;
+  final String signature;
 
   StampResponse({
     required this.stampId,
@@ -13,12 +15,9 @@ class StampResponse {
     required this.time,
     required this.parkId,
     required this.parkName,
+    required this.parkRangerName,
+    required this.signature,
   });
-
-  @override
-  String toString() {
-    return 'StampResponse(stampId: $stampId, stampDate: $stampDate, time: $time, parkId: $parkId, parkName: $parkName)';
-  }
 
   StampResponse copyWith({
     int? stampId,
@@ -26,6 +25,8 @@ class StampResponse {
     String? time,
     int? parkId,
     String? parkName,
+    String? parkRangerName,
+    String? signature,
   }) {
     return StampResponse(
       stampId: stampId ?? this.stampId,
@@ -33,6 +34,8 @@ class StampResponse {
       time: time ?? this.time,
       parkId: parkId ?? this.parkId,
       parkName: parkName ?? this.parkName,
+      parkRangerName: parkRangerName ?? this.parkRangerName,
+      signature: signature ?? this.signature,
     );
   }
 
@@ -43,6 +46,8 @@ class StampResponse {
       'time': time,
       'parkId': parkId,
       'parkName': parkName,
+      'parkRangerName': parkRangerName,
+      'signature': signature,
     };
   }
 
@@ -53,13 +58,20 @@ class StampResponse {
       time: map['time'] ?? '',
       parkId: map['parkId']?.toInt() ?? 0,
       parkName: map['parkName'] ?? '',
+      parkRangerName: map['parkRangerName'] ?? '',
+      signature: map['signature'] ?? '',
     );
   }
 
-  Map<String, dynamic> toJson() => toMap();
+  String toJson() => json.encode(toMap());
 
   factory StampResponse.fromJson(String source) =>
       StampResponse.fromMap(json.decode(source));
+
+  @override
+  String toString() {
+    return 'StampResponse(stampId: $stampId, stampDate: $stampDate, time: $time, parkId: $parkId, parkName: $parkName, parkRangerName: $parkRangerName, signature: $signature)';
+  }
 
   @override
   bool operator ==(Object other) {
@@ -70,7 +82,9 @@ class StampResponse {
         other.stampDate == stampDate &&
         other.time == time &&
         other.parkId == parkId &&
-        other.parkName == parkName;
+        other.parkName == parkName &&
+        other.parkRangerName == parkRangerName &&
+        other.signature == signature;
   }
 
   @override
@@ -79,6 +93,8 @@ class StampResponse {
         stampDate.hashCode ^
         time.hashCode ^
         parkId.hashCode ^
-        parkName.hashCode;
+        parkName.hashCode ^
+        parkRangerName.hashCode ^
+        signature.hashCode;
   }
 }

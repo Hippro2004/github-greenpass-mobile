@@ -35,12 +35,12 @@ class _AnnouncementViewState extends State<AnnouncementView> {
       _error = null;
     });
     try {
-      final response = await _announcementService.getAllAnnouncements();
+      final announcements = await _announcementService.getAllAnnouncements();
       if (!mounted) return;
-      final announcements = List<AnnouncementResponse>.from(
-        response.result ?? const <AnnouncementResponse>[],
+      final sortedAnnouncements = List<AnnouncementResponse>.from(
+        announcements,
       );
-      announcements.sort((first, second) {
+      sortedAnnouncements.sort((first, second) {
         final firstDate = DateTime.tryParse(first.postDate);
         final secondDate = DateTime.tryParse(second.postDate);
         if (firstDate != null && secondDate != null) {
@@ -49,7 +49,7 @@ class _AnnouncementViewState extends State<AnnouncementView> {
         return second.postDate.compareTo(first.postDate);
       });
       setState(() {
-        _announcements = announcements;
+        _announcements = sortedAnnouncements;
         _isLoading = false;
       });
     } catch (error) {
