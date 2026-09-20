@@ -30,7 +30,6 @@ class _ParkSearchViewState extends State<ParkSearchView> {
   static const Color mintBorder = Color(0xFFD6EFE2);
   static const Color textDark = Color(0xFF091E25);
   static const Color textMuted = Color(0xFF64748B);
-  static const Color bottomBannerBg = Color(0xFF1E293B);
 
   @override
   void initState() {
@@ -82,10 +81,10 @@ class _ParkSearchViewState extends State<ParkSearchView> {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Top App Bar ─────────────────────────────────
+            // ── Top App Bar (หัวข้ออยู่ตรงกลาง) ────────────────
             _buildTopAppBar(),
 
-            // ── Search Bar ──────────────────────────────────
+            // ── Search Bar (ช่องค้นหาด้านล่าง) ─────────────────
             _buildSearchBar(),
 
             // ── Results Summary Header ──────────────────────
@@ -105,16 +104,14 @@ class _ParkSearchViewState extends State<ParkSearchView> {
                       : ListView.separated(
                           padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                           itemCount: _filteredParks.length,
-                          separatorBuilder: (_, index) => const SizedBox(height: 12),
+                          separatorBuilder: (_, index) =>
+                              const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final park = _filteredParks[index];
                             return _buildParkCard(park);
                           },
                         ),
             ),
-
-            // ── Bottom Online Reservation Banner ────────────
-            _buildBottomBanner(),
           ],
         ),
       ),
@@ -124,29 +121,32 @@ class _ParkSearchViewState extends State<ParkSearchView> {
   Widget _buildTopAppBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // Left back button
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: mintLight,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: mintBorder),
-              ),
-              child: const Icon(
-                Icons.chevron_left_rounded,
-                color: darkForest,
-                size: 26,
+          // ปุ่มย้อนกลับ อยู่ชิดซ้าย
+          Align(
+            alignment: Alignment.centerLeft,
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: mintLight,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: mintBorder),
+                ),
+                child: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: darkForest,
+                  size: 26,
+                ),
               ),
             ),
           ),
 
-          // Center title with vibrant green dot
+          // หัวข้อ "ค้นหาอุทยาน" จัดกึ่งกลางหน้าจออย่างสมบูรณ์แบบ
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -170,43 +170,6 @@ class _ParkSearchViewState extends State<ParkSearchView> {
               ),
             ],
           ),
-
-          // Right map button
-          GestureDetector(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Row(
-                    children: [
-                      Icon(Icons.map_rounded, color: Colors.white, size: 18),
-                      SizedBox(width: 8),
-                      Text("ระบบแผนที่อุทยานแบบอินเทอร์แอคทีฟ"),
-                    ],
-                  ),
-                  backgroundColor: darkForest,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: mintLight,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: mintBorder),
-              ),
-              child: const Icon(
-                Icons.map_outlined,
-                color: darkForest,
-                size: 22,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -214,7 +177,7 @@ class _ParkSearchViewState extends State<ParkSearchView> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -358,23 +321,8 @@ class _ParkSearchViewState extends State<ParkSearchView> {
         ),
         child: Row(
           children: [
-            // ── Left Park Photo or Clean Placeholder ─────────
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                width: 68,
-                height: 68,
-                color: mintLight,
-                child: park.image != null
-                    ? Image.asset(
-                        'assets/images/${park.image}',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, exception, stackTrace) =>
-                            _buildPlaceholder(),
-                      )
-                    : _buildPlaceholder(),
-              ),
-            ),
+            // ── Left Substring Icon Badge ──────────────────
+            _buildSubstringIconBadge(park),
 
             const SizedBox(width: 14),
 
@@ -469,12 +417,103 @@ class _ParkSearchViewState extends State<ParkSearchView> {
     );
   }
 
-  Widget _buildPlaceholder() {
-    return const Center(
-      child: Icon(
-        Icons.park_rounded,
-        color: primaryGreen,
-        size: 32,
+  /// สร้างไอคอน Badge อัตโนมัติโดยการตัดคำ (substring) จากชื่ออุทยาน
+  Widget _buildSubstringIconBadge(Park park) {
+    // 1. ตัดคำว่า "อุทยานแห่งชาติ" ออกด้วย substring
+    String shortName = park.name;
+    if (shortName.startsWith("อุทยานแห่งชาติ")) {
+      shortName = shortName.substring("อุทยานแห่งชาติ".length).trim();
+    }
+    if (shortName.isEmpty) {
+      shortName = park.name;
+    }
+
+    // 2. วิเคราะห์คำในชื่ออุทยาน (substring) เพื่อเลือกประเภทไอคอนและคู่สีกราเดียนต์
+    final name = park.name;
+    IconData icon;
+    List<Color> gradientColors;
+
+    if (name.contains("น้ำตก")) {
+      icon = Icons.water_drop_rounded;
+      gradientColors = const [
+        Color(0xFF0284C7),
+        Color(0xFF2563EB),
+      ]; // สีฟ้าสายน้ำตก
+    } else if (name.contains("เกาะ") ||
+        name.contains("ทะเล") ||
+        name.contains("หาด") ||
+        name.contains("อ่าว") ||
+        name.contains("ธารา") ||
+        name.contains("หมู่เกาะ")) {
+      icon = Icons.waves_rounded;
+      gradientColors = const [
+        Color(0xFF00796B),
+        Color(0xFF009688),
+      ]; // สีเขียวอมฟ้าทางทะเล
+    } else if (name.contains("ดอย") ||
+        name.contains("ภู") ||
+        name.contains("ยอด")) {
+      icon = Icons.filter_hdr_rounded;
+      gradientColors = const [
+        Color(0xFF7C3AED),
+        Color(0xFF6D28D9),
+      ]; // สีม่วงยอดดอย
+    } else if (name.contains("เขา") ||
+        name.contains("ผา") ||
+        name.contains("หิน") ||
+        name.contains("ถ้ำ")) {
+      icon = Icons.landscape_rounded;
+      gradientColors = const [
+        Color(0xFFEA580C),
+        Color(0xFFD97706),
+      ]; // สีส้มทิวเขา
+    } else {
+      icon = Icons.park_rounded;
+      gradientColors = const [
+        Color(0xFF006D43),
+        Color(0xFF00A86B),
+      ]; // สีเขียวป่าไม้ธรรมชาติ
+    }
+
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors.first.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.white, size: 30),
+          const SizedBox(height: 3),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              shortName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 9.5,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.2,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -511,73 +550,6 @@ class _ParkSearchViewState extends State<ParkSearchView> {
             style: TextStyle(color: textMuted, fontSize: 12),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBottomBanner() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: bottomBannerBg,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.12),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Status dot
-            Container(
-              width: 7,
-              height: 7,
-              decoration: const BoxDecoration(
-                color: Color(0xFF10B981),
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-
-            const Expanded(
-              child: Text(
-                "เปิดระบบจองบ้านพักออนไลน์",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-
-            const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "เช็คคิว",
-                  style: TextStyle(
-                    color: Color(0xFF34D399),
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(width: 3),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: Color(0xFF34D399),
-                  size: 16,
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }

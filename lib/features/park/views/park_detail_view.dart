@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:greenpass/features/park/models/park.dart';
-import 'package:greenpass/features/stamp/views/show_qr_view.dart';
 
 class ParkDetailView extends StatefulWidget {
   final Park park;
@@ -13,8 +12,6 @@ class ParkDetailView extends StatefulWidget {
 }
 
 class _ParkDetailViewState extends State<ParkDetailView> {
-  bool _isFavorite = false;
-
   // ── Vibrant Wilderness Color Palette (DESIGN.md) ───────────
   static const Color screenBg = Color(0xFFF6FAF7);
   static const Color darkForest = Color(0xFF064E3B);
@@ -28,7 +25,6 @@ class _ParkDetailViewState extends State<ParkDetailView> {
   static const Color starAmber = Color(0xFFF59E0B);
   static const Color emergencyRed = Color(0xFFE11D48);
   static const Color emergencyBg = Color(0xFFFEE2E2);
-  static const Color emergencyBorder = Color(0xFFFECDD3);
 
   @override
   Widget build(BuildContext context) {
@@ -60,11 +56,10 @@ class _ParkDetailViewState extends State<ParkDetailView> {
             // ── Section 4: เกี่ยวกับอุทยาน ────────────────────────
             _buildAboutCard(park),
 
-            const SizedBox(height: 100), // Space for bottom action bar
+            const SizedBox(height: 40),
           ],
         ),
       ),
-      bottomSheet: _buildBottomActionBar(park),
     );
   }
 
@@ -102,99 +97,12 @@ class _ParkDetailViewState extends State<ParkDetailView> {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      actions: [
-        Center(
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _isFavorite = !_isFavorite;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Row(
-                    children: [
-                      Icon(
-                        _isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
-                        color: starAmber,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _isFavorite
-                            ? "บันทึก ${park.name} ในรายการโปรดแล้ว"
-                            : "นำออกจากรายการโปรดแล้ว",
-                      ),
-                    ],
-                  ),
-                  backgroundColor: darkForest,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-            child: Container(
-              width: 38,
-              height: 38,
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.18),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                _isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
-                color: _isFavorite ? starAmber : Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
-        ),
-        Center(
-          child: GestureDetector(
-            onTap: () {
-              Clipboard.setData(ClipboardData(text: "${park.name}\n${park.address ?? ''}"));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Row(
-                    children: [
-                      Icon(Icons.check_circle_rounded, color: emeraldTint, size: 18),
-                      SizedBox(width: 8),
-                      Text("คัดลอกข้อมูลอุทยานสำหรับแชร์แล้ว"),
-                    ],
-                  ),
-                  backgroundColor: darkForest,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-            child: Container(
-              width: 38,
-              height: 38,
-              margin: const EdgeInsets.only(right: 16),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.18),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.share_outlined,
-                color: Colors.white,
-                size: 18,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
   Widget _buildHeroCard(Park park) {
-    final isWorldHeritage = park.name.contains("เขาใหญ่") ||
+    final isWorldHeritage =
+        park.name.contains("เขาใหญ่") ||
         park.name.contains("แก่งกระจาน") ||
         (park.description?.contains("มรดกโลก") ?? false);
 
@@ -205,11 +113,7 @@ class _ParkDetailViewState extends State<ParkDetailView> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF064E3B),
-            Color(0xFF0B5D41),
-            Color(0xFF043828),
-          ],
+          colors: [Color(0xFF064E3B), Color(0xFF0B5D41), Color(0xFF043828)],
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
@@ -242,13 +146,14 @@ class _ParkDetailViewState extends State<ParkDetailView> {
                           width: 64,
                           height: 64,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, exception, stackTrace) => const Center(
-                            child: Icon(
-                              Icons.park_rounded,
-                              color: emeraldTint,
-                              size: 34,
-                            ),
-                          ),
+                          errorBuilder: (_, exception, stackTrace) =>
+                              const Center(
+                                child: Icon(
+                                  Icons.park_rounded,
+                                  color: emeraldTint,
+                                  size: 34,
+                                ),
+                              ),
                         )
                       : const Center(
                           child: Icon(
@@ -408,9 +313,15 @@ class _ParkDetailViewState extends State<ParkDetailView> {
                       SnackBar(
                         content: Row(
                           children: [
-                            const Icon(Icons.navigation_rounded, color: Colors.white, size: 18),
+                            const Icon(
+                              Icons.navigation_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                             const SizedBox(width: 8),
-                            Expanded(child: Text("เปิดแผนที่นำทางไปยัง ${park.name}")),
+                            Expanded(
+                              child: Text("เปิดแผนที่นำทางไปยัง ${park.name}"),
+                            ),
                           ],
                         ),
                         backgroundColor: darkForest,
@@ -423,7 +334,10 @@ class _ParkDetailViewState extends State<ParkDetailView> {
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 9,
+                      horizontal: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: mintLight,
                       borderRadius: BorderRadius.circular(10),
@@ -456,7 +370,11 @@ class _ParkDetailViewState extends State<ParkDetailView> {
                       SnackBar(
                         content: const Row(
                           children: [
-                            Icon(Icons.copy_rounded, color: emeraldTint, size: 18),
+                            Icon(
+                              Icons.copy_rounded,
+                              color: emeraldTint,
+                              size: 18,
+                            ),
                             SizedBox(width: 8),
                             Text("คัดลอกที่อยู่อุทยานแล้ว"),
                           ],
@@ -581,11 +499,9 @@ class _ParkDetailViewState extends State<ParkDetailView> {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  park.eventNote ?? "ด่านตรวจปิดรับนักท่องเที่ยวขึ้นเขาหลังเวลา 18:00 น.",
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: textMuted,
-                  ),
+                  park.eventNote ??
+                      "ด่านตรวจปิดรับนักท่องเที่ยวขึ้นเขาหลังเวลา 18:00 น.",
+                  style: const TextStyle(fontSize: 11, color: textMuted),
                 ),
               ),
             ],
@@ -624,57 +540,18 @@ class _ParkDetailViewState extends State<ParkDetailView> {
                 height: 1.4,
               ),
             ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: isKhaoYai
-                ? [
-                    _buildTagChip("🔭 ส่องสัตว์กลางคืน (Night Safari)", mintLight, primaryGreen),
-                    _buildTagChip("🛶 เส้นทางผากล้วยไม้", mintLight, primaryGreen),
-                    _buildTagChip("⛺ ลานกางเต็นท์ลำตะคอง", const Color(0xFFFEF3C7), const Color(0xFF92400E)),
-                  ]
-                : [
-                    if (park.isSeasonalPark == true)
-                      _buildTagChip(
-                        "📅 เปิด ${park.seasonOpenDate ?? ''} - ${park.seasonCloseDate ?? ''}",
-                        const Color(0xFFFEF3C7),
-                        const Color(0xFF92400E),
-                      ),
-                    _buildTagChip("🌿 จุดท่องเที่ยวธรรมชาติ", mintLight, primaryGreen),
-                    _buildTagChip("📷 จุดชมทัศนียภาพ", const Color(0xFFE0F2FE), const Color(0xFF0284C7)),
-                  ],
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildTagChip(String label, Color bgColor, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: textColor.withValues(alpha: 0.2)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          color: textColor,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
   Widget _buildAboutCard(Park park) {
-    final description = park.description != null && park.description!.trim().isNotEmpty
+    final description =
+        park.description != null && park.description!.trim().isNotEmpty
         ? park.description!
         : (park.name.contains("เขาใหญ่")
-            ? "อุทยานแห่งชาติเขาใหญ่ เป็นอุทยานแห่งชาติแห่งแรกของประเทศไทย จัดตั้งขึ้นเมื่อปี พ.ศ. 2505 และได้รับการยกย่องเป็นมรดกโลกทางธรรมชาติ อุดมสมบูรณ์ด้วยผืนป่าดงพญาเย็น-เขาใหญ่ แหล่งต้นน้ำลำธารสำคัญและที่อยู่อาศัยของสัตว์ป่านานาชนิด"
-            : "ข้อมูลประวัติและความเป็นมาของอุทยานแห่งชาตินี้ เป็นแหล่งอนุรักษ์ทรัพยากรธรรมชาติและสิ่งแวดล้อมที่สำคัญ");
+              ? "อุทยานแห่งชาติเขาใหญ่ เป็นอุทยานแห่งชาติแห่งแรกของประเทศไทย จัดตั้งขึ้นเมื่อปี พ.ศ. 2505 และได้รับการยกย่องเป็นมรดกโลกทางธรรมชาติ อุดมสมบูรณ์ด้วยผืนป่าดงพญาเย็น-เขาใหญ่ แหล่งต้นน้ำลำธารสำคัญและที่อยู่อาศัยของสัตว์ป่านานาชนิด"
+              : "ข้อมูลประวัติและความเป็นมาของอุทยานแห่งชาตินี้ เป็นแหล่งอนุรักษ์ทรัพยากรธรรมชาติและสิ่งแวดล้อมที่สำคัญ");
 
     return _buildCardContainer(
       iconContainerColor: mintLight,
@@ -749,242 +626,6 @@ class _ParkDetailViewState extends State<ParkDetailView> {
           child,
         ],
       ),
-    );
-  }
-
-  Widget _buildBottomActionBar(Park park) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey.shade200),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -3),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            // Left: ฉุกเฉิน
-            GestureDetector(
-              onTap: () => _showEmergencyModal(context, park),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                decoration: BoxDecoration(
-                  color: emergencyBg,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: emergencyBorder),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.phone_in_talk_rounded,
-                      color: emergencyRed,
-                      size: 16,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      "ฉุกเฉิน",
-                      style: TextStyle(
-                        color: emergencyRed,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 10),
-
-            // Right: ประทับตราอุทยาน (E-Stamp)
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const StampQrView(),
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [primaryGreen, emeraldTint],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: primaryGreen.withValues(alpha: 0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.verified_user_outlined,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        "ประทับตราอุทยาน (E-Stamp)",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showEmergencyModal(BuildContext context, Park park) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      backgroundColor: Colors.white,
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: emergencyBg,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.phone_in_talk_rounded, color: emergencyRed, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      "เบอร์โทรฉุกเฉิน",
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: textDark,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildEmergencyItem(
-                  title: "สายด่วนกรมอุทยานแห่งชาติฯ",
-                  number: "1362",
-                  subtitle: "บริการตลอด 24 ชั่วโมง",
-                ),
-                const Divider(height: 16),
-                _buildEmergencyItem(
-                  title: "ตำรวจท่องเที่ยว",
-                  number: "1155",
-                  subtitle: "แจ้งเหตุด่วนช่วยเหลือนักท่องเที่ยว",
-                ),
-                const Divider(height: 16),
-                _buildEmergencyItem(
-                  title: "สถาบันการแพทย์ฉุกเฉินแห่งชาติ (สพฉ.)",
-                  number: "1669",
-                  subtitle: "อุบัติเหตุฉุกเฉินและกู้ชีพ",
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildEmergencyItem({
-    required String title,
-    required String number,
-    required String subtitle,
-  }) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.bold,
-                  color: textDark,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: const TextStyle(fontSize: 11, color: textMuted),
-              ),
-            ],
-          ),
-        ),
-        GestureDetector(
-          onTap: () {
-            Clipboard.setData(ClipboardData(text: number));
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("คัดลอกเบอร์ $number แล้ว"),
-                backgroundColor: darkForest,
-                behavior: SnackBarBehavior.floating,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: emergencyBg,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.phone, size: 14, color: emergencyRed),
-                const SizedBox(width: 4),
-                Text(
-                  number,
-                  style: const TextStyle(
-                    color: emergencyRed,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
