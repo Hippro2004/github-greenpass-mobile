@@ -16,13 +16,22 @@ class _TravelBookViewState extends State<TravelBookView> {
   bool _isLoading = true;
   String? _error;
 
-  // ── ธีมม่วง เฉพาะหน้าสมุดบันทึกการเดินทาง ──────────────
-  static const Color deepPurple = Color(0xFF4A2E83);
-  static const Color midPurple = Color(0xFF7C4DCC);
-  static const Color lightPurple = Color(0xFFB79CED);
-  static const Color lavenderBg = Color(0xFFF6F3FB);
-  static const Color cardLavender = Color(0xFFEEE6FB);
-  static const Color mutedGold = Color(0xFFB08D57);
+  // ── Vibrant Wilderness Theme Palette (ตามแบบ DESIGN.md / screen.png) ───────────
+  static const Color screenBg = Color(0xFFF3F7F5);
+  static const Color darkForest = Color(0xFF064E3B);
+  static const Color midForest = Color(0xFF0F5A3E);
+  static const Color warmEarth = Color(0xFF78350F);
+
+  static const Color mintLight = Color(0xFFE2F7ED);
+  static const Color mintPillBg = Color(0xFFD1FAE5);
+  static const Color mintDark = Color(0xFF065F46);
+  static const Color mintAction = Color(0xFFE8F7F0);
+  static const Color iconGreen = Color(0xFF059669);
+
+  static const Color amberIcon = Color(0xFFD97706);
+
+  static const Color textPrimary = Color(0xFF0F172A);
+  static const Color textSecondary = Color(0xFF64748B);
 
   Map<int, List<StampResponse>> get _stampsByPark {
     final grouped = <int, List<StampResponse>>{};
@@ -62,265 +71,351 @@ class _TravelBookViewState extends State<TravelBookView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: lavenderBg,
+      backgroundColor: screenBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         forceMaterialTransparency: true,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade200),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 14),
+          child: Center(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: mintAction,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Color(0xFF134E39),
+                  size: 18,
+                ),
+              ),
             ),
-            child: const Icon(Icons.arrow_back, color: deepPurple, size: 18),
           ),
         ),
         title: const Text(
           "สมุดบันทึกการเดินทาง",
           style: TextStyle(
-            color: deepPurple,
-            fontWeight: FontWeight.w600,
-            fontSize: 17,
+            color: Color(0xFF0F2E23),
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
           ),
         ),
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 14),
+            child: Center(
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: mintAction,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.menu_book_rounded,
+                  color: Color(0xFF134E39),
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
-      body: Stack(
-        children: [
-          // ── ลายตกแต่งพื้นหลังโทนม่วง ────────────────
-          Positioned(
-            top: -50,
-            right: -50,
-            child: Container(
-              width: 190,
-              height: 190,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: lightPurple.withOpacity(0.16),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation(iconGreen),
+                strokeWidth: 3,
               ),
-            ),
-          ),
-          Positioned(
-            bottom: -80,
-            left: -60,
-            child: Container(
-              width: 240,
-              height: 240,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: deepPurple.withOpacity(0.06),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 90,
-            left: -10,
-            child: Icon(
-              Icons.auto_stories,
-              size: 70,
-              color: deepPurple.withOpacity(0.05),
-            ),
-          ),
-
-          _isLoading
-              ? Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation(deepPurple),
-                    strokeWidth: 3,
-                  ),
-                )
-              : _error != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+            )
+          : _error != null
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.error_outline,
+                          color: Colors.red,
+                          size: 36,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        _error!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 46,
+                        child: ElevatedButton.icon(
+                          onPressed: _loadStamps,
+                          icon: const Icon(Icons.refresh, size: 18),
+                          label: const Text("ลองใหม่"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: iconGreen,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          : _stamps.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: mintAction,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFA7F3D0)),
+                    ),
+                    child: const Icon(
+                      Icons.park_outlined,
+                      size: 52,
+                      color: iconGreen,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    "ยังไม่มีแสตมป์",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    "เริ่มต้นการเดินทางและรับแสตมป์แรกของคุณ",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Hero Stats Banner ─────────────────────────
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [darkForest, midForest, warmEarth],
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: darkForest.withValues(alpha: 0.35),
+                          blurRadius: 18,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Stack(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.08),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.error_outline,
-                              color: Colors.red,
-                              size: 36,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            _error!,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.black87,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 46,
-                            child: ElevatedButton.icon(
-                              onPressed: _loadStamps,
-                              icon: const Icon(Icons.refresh, size: 18),
-                              label: const Text("ลองใหม่"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: deepPurple,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
+                          Positioned(
+                            right: -25,
+                            top: -10,
+                            child: Transform.rotate(
+                              angle: -0.15,
+                              child: Icon(
+                                Icons.star_rounded,
+                                size: 150,
+                                color: Colors.white.withValues(alpha: 0.08),
                               ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 18,
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFF063A27),
+                                    border: Border.all(
+                                      color: const Color(0xFF22C55E)
+                                          .withValues(alpha: 0.4),
+                                      width: 2.5,
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.park_rounded,
+                                      color: Color(0xFFFCD34D),
+                                      size: 30,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.15,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: const Text(
+                                          "OFFICIAL PASSPORT",
+                                          style: TextStyle(
+                                            color: Color(0xFFE2E8F0),
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.9,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        "สะสมแล้ว ${_parks.length} อุทยาน",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16.5,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        "เข้าเยี่ยมชมทั้งหมด ${_stamps.length} ครั้ง",
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.85,
+                                          ),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                )
-              : _stamps.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                  const SizedBox(height: 20),
+
+                  // ── Section Title ──────────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(22),
-                        decoration: BoxDecoration(
-                          color: lightPurple.withOpacity(0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.auto_stories_outlined,
-                          size: 48,
-                          color: deepPurple.withOpacity(0.5),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "ยังไม่มีแสตมป์",
+                      const Text(
+                        "อุทยานที่คุณได้ประทับตรา",
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade600,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "เริ่มต้นการเดินทางและรับแสตมป์แรกของคุณ",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade400,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 14,
+                          horizontal: 12,
+                          vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [deepPurple, midPurple],
+                          color: mintPillBg,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          "${_parks.length} แห่ง",
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: mintDark,
                           ),
-                          borderRadius: BorderRadius.circular(18),
-                          boxShadow: [
-                            BoxShadow(
-                              color: deepPurple.withOpacity(0.25),
-                              blurRadius: 14,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(9),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.collections_bookmark_outlined,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "สะสมแล้ว ${_parks.length} อุทยาน",
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  Text(
-                                    "เข้าเยี่ยมชมทั้งหมด ${_stamps.length} ครั้ง",
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.75),
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      Expanded(
-                        child: ListView.separated(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 10),
-                          itemCount: _parks.length,
-                          itemBuilder: (context, index) {
-                            final stamp = _parks[index];
-                            return _buildParkCard(
-                              stamp,
-                              _stampsByPark[stamp.parkId]!.length,
-                            );
-                          },
                         ),
                       ),
                     ],
                   ),
-                ),
-        ],
-      ),
+                  const SizedBox(height: 12),
+
+                  // ── Park Cards List ────────────────────────────
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
+                      itemCount: _parks.length,
+                      itemBuilder: (context, index) {
+                        final stamp = _parks[index];
+                        return _buildParkCard(
+                          stamp,
+                          _stampsByPark[stamp.parkId]!.length,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 
@@ -332,7 +427,7 @@ class _TravelBookViewState extends State<TravelBookView> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         onTap: () {
           Navigator.push(
             context,
@@ -342,14 +437,14 @@ class _TravelBookViewState extends State<TravelBookView> {
           );
         },
         child: Container(
-          height: 86,
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFF1F5F9)),
             boxShadow: [
               BoxShadow(
-                color: deepPurple.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -357,100 +452,105 @@ class _TravelBookViewState extends State<TravelBookView> {
           ),
           child: Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: _buildPlaceholder(),
+              // Badge/Thumbnail
+              Container(
+                width: 62,
+                height: 62,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [mintAction, mintLight],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFFA7F3D0).withValues(alpha: 0.6),
+                  ),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.park_rounded,
+                    color: iconGreen,
+                    size: 32,
+                  ),
                 ),
               ),
+              const SizedBox(width: 14),
+
+              // Title and visits
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "อุทยาน",
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: mintPillBg,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        "อุทยานแห่งชาติ",
                         style: TextStyle(
                           fontSize: 10,
-                          color: deepPurple.withOpacity(0.65),
-                          fontWeight: FontWeight.w500,
+                          color: mintDark,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        parkName,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          // fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      parkName,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        color: textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.directions_walk_rounded,
+                          size: 14,
+                          color: amberIcon,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.directions_walk_outlined,
-                            size: 14,
-                            color: mutedGold.withOpacity(0.9),
+                        const SizedBox(width: 4),
+                        Text(
+                          "เข้าเยี่ยมชม $visitCount ครั้ง",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: textSecondary,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            "เข้าเยี่ยมชม $visitCount ครั้ง",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
+
+              // Chevron right button
               Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: lightPurple.withOpacity(0.16),
+                width: 34,
+                height: 34,
+                decoration: const BoxDecoration(
+                  color: mintAction,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.chevron_right,
-                  color: deepPurple,
-                  size: 18,
+                  Icons.chevron_right_rounded,
+                  color: mintDark,
+                  size: 20,
                 ),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return Container(
-      height: 70,
-      width: 70,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [cardLavender, lightPurple.withOpacity(0.35)],
-        ),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.auto_stories,
-          color: deepPurple.withOpacity(0.6),
-          size: 30,
         ),
       ),
     );

@@ -20,16 +20,15 @@ class _StampQrViewState extends State<StampQrView> {
   QrResponse? _qrResponse;
   Timer? _timer;
   int _secondsLeft = 0;
-  int _totalSeconds = 1;
 
-  // ── ธีมสีเดียวกับหน้า Login / MainView ───────────────
-  static const Color forestGreen = Color(0xFF2D6A4F);
-  static const Color lightGreen = Color(0xFF74C69D);
-  static const Color creamBg = Color(0xFFF8F5F0);
-  static const Color softBrown = Color(0xFF8B6F47);
-  static const Color darkGreen = Color(0xFF1B4332);
-  static const Color midGreen = Color(0xFF40916C);
-  static const Color cardGreen = Color(0xFFE8F5EE);
+  // ── ธีมสีเดียวกับไอคอน รับแสตมป์ (0xFF8A5A3B) ───────────────
+  static const Color primaryBrown = Color(0xFF8A5A3B);
+  static const Color lightBrown = Color(0xFFD4A373);
+  static const Color creamBg = Color(0xFFFAF7F2);
+  static const Color softBrown = Color(0xFF8A5A3B);
+  static const Color darkBrown = Color(0xFF5D3823);
+  static const Color midBrown = Color(0xFFA56F4E);
+  static const Color cardBrown = Color(0xFFF7EFE8);
 
   @override
   void initState() {
@@ -61,7 +60,6 @@ class _StampQrViewState extends State<StampQrView> {
       setState(() {
         _qrResponse = qrResponse;
         _secondsLeft = secondsLeft;
-        _totalSeconds = secondsLeft > 0 ? secondsLeft : 1;
         _isLoading = false;
       });
 
@@ -97,7 +95,7 @@ class _StampQrViewState extends State<StampQrView> {
   Color get _timerColor => _isExpired
       ? Colors.red
       : _secondsLeft > 120
-      ? forestGreen
+      ? primaryBrown
       : _secondsLeft > 60
       ? Colors.orange
       : Colors.red;
@@ -119,13 +117,13 @@ class _StampQrViewState extends State<StampQrView> {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Colors.grey.shade200),
             ),
-            child: const Icon(Icons.arrow_back, color: forestGreen, size: 18),
+            child: const Icon(Icons.arrow_back, color: primaryBrown, size: 18),
           ),
         ),
         title: const Text(
           "รับแสตมป์",
           style: TextStyle(
-            color: forestGreen,
+            color: primaryBrown,
             fontWeight: FontWeight.w600,
             fontSize: 17,
           ),
@@ -143,7 +141,7 @@ class _StampQrViewState extends State<StampQrView> {
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: lightGreen.withOpacity(0.12),
+                color: lightBrown.withValues(alpha: 0.12),
               ),
             ),
           ),
@@ -155,7 +153,7 @@ class _StampQrViewState extends State<StampQrView> {
               height: 220,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: forestGreen.withOpacity(0.05),
+                color: primaryBrown.withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -163,9 +161,9 @@ class _StampQrViewState extends State<StampQrView> {
             top: 100,
             left: 10,
             child: Icon(
-              Icons.eco,
+              Icons.bookmark_rounded,
               size: 50,
-              color: forestGreen.withOpacity(0.06),
+              color: primaryBrown.withValues(alpha: 0.06),
             ),
           ),
 
@@ -175,7 +173,7 @@ class _StampQrViewState extends State<StampQrView> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(forestGreen),
+                        valueColor: AlwaysStoppedAnimation(primaryBrown),
                         strokeWidth: 3,
                       ),
                       const SizedBox(height: 16),
@@ -195,7 +193,7 @@ class _StampQrViewState extends State<StampQrView> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 16,
                             offset: const Offset(0, 4),
                           ),
@@ -207,7 +205,7 @@ class _StampQrViewState extends State<StampQrView> {
                           Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.08),
+                              color: Colors.red.withValues(alpha: 0.08),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -233,7 +231,7 @@ class _StampQrViewState extends State<StampQrView> {
                               icon: const Icon(Icons.refresh, size: 18),
                               label: const Text("ลองใหม่"),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: forestGreen,
+                                backgroundColor: primaryBrown,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
@@ -262,7 +260,7 @@ class _StampQrViewState extends State<StampQrView> {
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
+                                color: Colors.black.withValues(alpha: 0.06),
                                 blurRadius: 20,
                                 offset: const Offset(0, 6),
                               ),
@@ -278,7 +276,7 @@ class _StampQrViewState extends State<StampQrView> {
                                 ),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [darkGreen, midGreen, forestGreen],
+                                    colors: [darkBrown, midBrown, primaryBrown],
                                   ),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -308,7 +306,7 @@ class _StampQrViewState extends State<StampQrView> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: cardGreen,
+                                  color: cardBrown,
                                   borderRadius: BorderRadius.circular(18),
                                 ),
                                 child: Opacity(
@@ -340,7 +338,7 @@ class _StampQrViewState extends State<StampQrView> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: _timerColor.withOpacity(0.1),
+                                  color: _timerColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                                 child: Row(
@@ -374,7 +372,7 @@ class _StampQrViewState extends State<StampQrView> {
                                     icon: const Icon(Icons.refresh, size: 16),
                                     label: const Text("สร้าง QR ใหม่"),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: forestGreen,
+                                      backgroundColor: primaryBrown,
                                       foregroundColor: Colors.white,
                                       elevation: 0,
                                       padding: const EdgeInsets.symmetric(
