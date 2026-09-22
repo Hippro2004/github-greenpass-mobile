@@ -54,13 +54,6 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
           }
         });
         _loadReplies();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(notif.message),
-            backgroundColor: darkForest,
-            duration: const Duration(seconds: 4),
-          ),
-        );
       }
     });
   }

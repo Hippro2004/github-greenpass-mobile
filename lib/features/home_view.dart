@@ -21,7 +21,7 @@ import 'package:greenpass/features/notification/services/notification_service.da
 import 'package:greenpass/features/notification/views/notification_view.dart';
 import 'package:greenpass/features/notification/models/notification_model.dart';
 import 'package:greenpass/features/notification/services/notification_websocket_service.dart';
-import 'package:greenpass/features/report/views/report_view_detail.dart';
+import 'package:greenpass/features/notification/widgets/top_notification_banner.dart';
 
 class MainView extends StatefulWidget {
   const MainView({super.key});
@@ -94,152 +94,10 @@ class _MainViewState extends State<MainView> {
   void _showRealtimeNotificationPopup(NotificationModel notification) {
     if (!mounted) return;
 
-    final isReport = notification.report != null;
-    final isWarning =
-        !isReport &&
-        (notification.title.contains("เตือน") ||
-            notification.message.contains("ซ้ำ") ||
-            notification.message.contains("ไม่สามารถ") ||
-            notification.message.contains("หมดอายุ"));
-
-    Color badgeBg;
-    Color iconColor;
-    IconData iconData;
-
-    if (isReport) {
-      badgeBg = const Color(0xFFE8F5E9);
-      iconColor = const Color(0xFF2D6A4F);
-      iconData = Icons.notifications_active_rounded;
-    } else if (isWarning) {
-      badgeBg = const Color(0xFFFFF3E0);
-      iconColor = const Color(0xFFE65100);
-      iconData = Icons.info_outline_rounded;
-    } else {
-      badgeBg = const Color(0xFFE8F5EE);
-      iconColor = const Color(0xFF2D6A4F);
-      iconData = Icons.check_circle_rounded;
-    }
-
-    showDialog(
+    TopNotificationBanner.show(
       context: context,
-      useRootNavigator: true,
-      builder: (dialogCtx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        elevation: 12,
-        backgroundColor: Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: badgeBg,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(iconData, color: iconColor, size: 34),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                notification.title.isNotEmpty
-                    ? notification.title
-                    : (isReport
-                          ? "การแจ้งเตือน"
-                          : (isWarning ? "แจ้งเตือนการสแกน" : "สำเร็จ")),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E3B57),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                notification.message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade700,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 22),
-              if (isReport)
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(dialogCtx),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          side: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        child: const Text(
-                          'ปิด',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(dialogCtx);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ReportViewDetail(
-                                report: notification.report!,
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          backgroundColor: const Color(0xFF2D6A4F),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text('ดูรายงาน'),
-                      ),
-                    ),
-                  ],
-                )
-              else
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(dialogCtx),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 13),
-                      backgroundColor: const Color(0xFF2D6A4F),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'รับทราบ',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
+      notification: notification,
+      duration: const Duration(seconds: 4),
     );
   }
 

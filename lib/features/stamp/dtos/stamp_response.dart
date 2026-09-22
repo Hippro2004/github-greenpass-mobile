@@ -52,14 +52,48 @@ class StampResponse {
   }
 
   factory StampResponse.fromMap(Map<String, dynamic> map) {
+    int parsedParkId = 0;
+    if (map['parkId'] != null) {
+      parsedParkId = (map['parkId'] as num).toInt();
+    } else if (map['park'] != null && map['park'] is Map) {
+      parsedParkId = (map['park']['parkId'] as num?)?.toInt() ?? 0;
+    }
+
+    String parsedParkName = '';
+    if (map['parkName'] != null && map['parkName'].toString().trim().isNotEmpty) {
+      parsedParkName = map['parkName'].toString().trim();
+    } else if (map['park'] != null && map['park'] is Map) {
+      parsedParkName = (map['park']['name'] ?? '').toString().trim();
+    }
+
+    String parsedRangerName = '';
+    if (map['parkRangerName'] != null &&
+        map['parkRangerName'].toString().trim().isNotEmpty) {
+      parsedRangerName = map['parkRangerName'].toString().trim();
+    } else if (map['parkRanger'] != null && map['parkRanger'] is Map) {
+      final ranger = map['parkRanger'] as Map;
+      final fn = (ranger['firstname'] ?? '').toString().trim();
+      final sn = (ranger['surname'] ?? '').toString().trim();
+      parsedRangerName = '$fn $sn'.trim();
+    }
+
+    String parsedSignature = '';
+    if (map['signature'] != null &&
+        map['signature'].toString().trim().isNotEmpty) {
+      parsedSignature = map['signature'].toString().trim();
+    } else if (map['parkRanger'] != null && map['parkRanger'] is Map) {
+      parsedSignature =
+          (map['parkRanger']['signature'] ?? '').toString().trim();
+    }
+
     return StampResponse(
-      stampId: map['stampId']?.toInt() ?? 0,
-      stampDate: map['stampDate'] ?? '',
-      time: map['time'] ?? '',
-      parkId: map['parkId']?.toInt() ?? 0,
-      parkName: map['parkName'] ?? '',
-      parkRangerName: map['parkRangerName'] ?? '',
-      signature: map['signature'] ?? '',
+      stampId: (map['stampId'] as num?)?.toInt() ?? 0,
+      stampDate: map['stampDate']?.toString() ?? '',
+      time: map['time']?.toString() ?? '',
+      parkId: parsedParkId,
+      parkName: parsedParkName,
+      parkRangerName: parsedRangerName,
+      signature: parsedSignature,
     );
   }
 

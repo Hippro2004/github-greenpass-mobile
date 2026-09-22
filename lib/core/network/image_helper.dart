@@ -37,9 +37,18 @@ String resolveImageUrl(String? imagePath, {String defaultCategory = 'users'}) {
     cleanPath = cleanPath.substring('/api/v1'.length);
   }
 
-  // ถ้าส่งมาเป็นชื่อไฟล์เดี่ยวๆ เช่น 1726849382_avatar.jpg ที่ยังไม่มี /uploads/
+  // ถ้าส่งมาเป็นชื่อไฟล์เดี่ยวๆ หรือมีโฟลเดอร์หมวดหมู่นำหน้ามาแล้วแต่ยังไม่มี /uploads/
   if (!cleanPath.startsWith('/uploads/')) {
-    cleanPath = '/uploads/$defaultCategory$cleanPath';
+    if (cleanPath.startsWith('/signatures/') ||
+        cleanPath.startsWith('/users/') ||
+        cleanPath.startsWith('/reports/') ||
+        cleanPath.startsWith('/rewards/') ||
+        cleanPath.startsWith('/announcements/') ||
+        cleanPath.startsWith('/$defaultCategory/')) {
+      cleanPath = '/uploads$cleanPath';
+    } else {
+      cleanPath = '/uploads/$defaultCategory$cleanPath';
+    }
   }
 
   return '$apiBaseUrl$cleanPath';

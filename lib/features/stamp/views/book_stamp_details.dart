@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:greenpass/core/network/image_helper.dart';
 import 'package:greenpass/features/stamp/dtos/stamp_response.dart';
 import 'package:greenpass/features/stamp/services/stamp_service.dart';
 
@@ -187,13 +189,20 @@ class _BookStampDetailsState extends State<BookStampDetails> {
 
   void _showSignatureDialog(
     BuildContext context,
-    String signatureUrl,
+    String signaturePath,
     String rangerName,
   ) {
+    final resolvedUrl = resolveImageUrl(
+      signaturePath,
+      defaultCategory: 'signatures',
+    );
+
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.all(22),
           child: Column(
@@ -202,13 +211,23 @@ class _BookStampDetailsState extends State<BookStampDetails> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    "ตราประทับและลายมือชื่อ",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: textPrimary,
-                    ),
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.verified_user_rounded,
+                        color: Color(0xFF10B981),
+                        size: 20,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        "ตราประทับและลายมือชื่อ",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: textPrimary,
+                        ),
+                      ),
+                    ],
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded, size: 20),
@@ -219,42 +238,106 @@ class _BookStampDetailsState extends State<BookStampDetails> {
               const SizedBox(height: 14),
               Container(
                 width: double.infinity,
-                height: 140,
+                height: 180,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: screenBg,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
-                child: signatureUrl.trim().isNotEmpty
-                    ? Image.network(
-                        signatureUrl,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, _, _) => const Center(
-                          child: Icon(
-                            Icons.draw_outlined,
-                            size: 48,
-                            color: Colors.black26,
+                child: resolvedUrl.trim().isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: InteractiveViewer(
+                          maxScale: 3.5,
+                          child: CachedNetworkImage(
+                            imageUrl: resolvedUrl,
+                            fit: BoxFit.contain,
+                            placeholder: (_, _) => const Center(
+                              child: SizedBox(
+                                width: 28,
+                                height: 28,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: iconGreen,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (_, _, _) => const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.draw_outlined,
+                                    size: 48,
+                                    color: Colors.black26,
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    "ไม่สามารถโหลดรูปลายมือชื่อได้",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       )
                     : const Center(
-                        child: Icon(
-                          Icons.draw_outlined,
-                          size: 48,
-                          color: Colors.black26,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.draw_outlined,
+                              size: 48,
+                              color: Colors.black26,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              "ไม่มีข้อมูลลายมือชื่อ",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
               ),
-              const SizedBox(height: 14),
-              Text(
-                rangerName.trim().isNotEmpty
-                    ? "เจ้าหน้าที่: $rangerName"
-                    : "เจ้าหน้าที่อุทยานแห่งชาติ",
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: textSecondary,
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: mintLight,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFA7F3D0)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.person_rounded,
+                      size: 16,
+                      color: darkForest,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      rangerName.trim().isNotEmpty
+                          ? "เจ้าหน้าที่: $rangerName"
+                          : "เจ้าหน้าที่อุทยานแห่งชาติ",
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: darkForest,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -265,6 +348,14 @@ class _BookStampDetailsState extends State<BookStampDetails> {
   }
 
   Widget _buildStampHeroHeader(String parkTitle) {
+    final heroSignature = _latestStamp.signature.trim().isNotEmpty
+        ? _latestStamp.signature
+        : widget.stamp.signature;
+    final heroRanger = _latestStamp.parkRangerName.trim().isNotEmpty
+        ? _latestStamp.parkRangerName
+        : widget.stamp.parkRangerName;
+    final hasSignature = heroSignature.trim().isNotEmpty;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -306,62 +397,100 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Circular Stamp Badge
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: 96,
-                        height: 96,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF063A27),
-                          border: Border.all(
-                            color: const Color(
-                              0xFF22C55E,
-                            ).withValues(alpha: 0.35),
-                            width: 3,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.25),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const CustomPaint(
-                          painter: DashedCirclePainter(
-                            color: Color(0xFFFBBF24),
-                            strokeWidth: 2,
-                            dashes: 22,
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.park_rounded,
-                              color: Color(0xFFFCD34D),
-                              size: 44,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        right: 2,
-                        bottom: 2,
-                        child: Container(
-                          width: 26,
-                          height: 26,
-                          decoration: const BoxDecoration(
-                            color: amberBadge,
+                  GestureDetector(
+                    onTap: hasSignature
+                        ? () => _showSignatureDialog(
+                            context,
+                            heroSignature,
+                            heroRanger,
+                          )
+                        : null,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 96,
+                          height: 96,
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
+                            color: const Color(0xFF063A27),
+                            border: Border.all(
+                              color: const Color(
+                                0xFF22C55E,
+                              ).withValues(alpha: 0.35),
+                              width: 3,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.25),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                          child: const Icon(
-                            Icons.check_rounded,
-                            color: Color(0xFF0F172A),
-                            size: 16,
+                          child: CustomPaint(
+                            painter: const DashedCirclePainter(
+                              color: Color(0xFFFBBF24),
+                              strokeWidth: 2,
+                              dashes: 22,
+                            ),
+                            child: Center(
+                              child: ClipOval(
+                                child: SizedBox(
+                                  width: 72,
+                                  height: 72,
+                                  child: hasSignature
+                                      ? CachedNetworkImage(
+                                          imageUrl: resolveImageUrl(
+                                            heroSignature,
+                                            defaultCategory: 'signatures',
+                                          ),
+                                          fit: BoxFit.contain,
+                                          placeholder: (_, _) => const Center(
+                                            child: Icon(
+                                              Icons.park_rounded,
+                                              color: Color(0xFFFCD34D),
+                                              size: 44,
+                                            ),
+                                          ),
+                                          errorWidget: (_, _, _) =>
+                                              const Center(
+                                            child: Icon(
+                                              Icons.park_rounded,
+                                              color: Color(0xFFFCD34D),
+                                              size: 44,
+                                            ),
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.park_rounded,
+                                          color: Color(0xFFFCD34D),
+                                          size: 44,
+                                        ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          right: 2,
+                          bottom: 2,
+                          child: Container(
+                            width: 26,
+                            height: 26,
+                            decoration: const BoxDecoration(
+                              color: amberBadge,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check_rounded,
+                              color: Color(0xFF0F172A),
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
 
