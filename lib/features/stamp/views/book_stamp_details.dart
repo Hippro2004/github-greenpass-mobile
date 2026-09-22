@@ -200,147 +200,184 @@ class _BookStampDetailsState extends State<BookStampDetails> {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(
+        clipBehavior: Clip.antiAlias,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF0FDF4),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
                         Icons.verified_user_rounded,
                         color: Color(0xFF10B981),
-                        size: 20,
+                        size: 18,
                       ),
-                      SizedBox(width: 8),
-                      Text(
+                    ),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
                         "ตราประทับและลายมือชื่อ",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                           color: textPrimary,
+                          letterSpacing: -0.2,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 20),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Container(
-                width: double.infinity,
-                height: 180,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: screenBg,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: resolvedUrl.trim().isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: InteractiveViewer(
-                          maxScale: 3.5,
-                          child: CachedNetworkImage(
-                            imageUrl: resolvedUrl,
-                            fit: BoxFit.contain,
-                            placeholder: (_, _) => const Center(
-                              child: SizedBox(
-                                width: 28,
-                                height: 28,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: iconGreen,
-                                ),
-                              ),
-                            ),
-                            errorWidget: (_, _, _) => const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.draw_outlined,
-                                    size: 48,
-                                    color: Colors.black26,
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    "ไม่สามารถโหลดรูปลายมือชื่อได้",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                    : const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.draw_outlined,
-                              size: 48,
-                              color: Colors.black26,
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              "ไม่มีข้อมูลลายมือชื่อ",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: mintLight,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFA7F3D0)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.person_rounded,
-                      size: 16,
-                      color: darkForest,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      rangerName.trim().isNotEmpty
-                          ? "เจ้าหน้าที่: $rangerName"
-                          : "เจ้าหน้าที่อุทยานแห่งชาติ",
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: darkForest,
+                    const SizedBox(width: 8),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: () => Navigator.pop(ctx),
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: textSecondary,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: screenBg,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(17),
+                    child: resolvedUrl.trim().isNotEmpty
+                        ? InteractiveViewer(
+                            clipBehavior: Clip.hardEdge,
+                            minScale: 0.8,
+                            maxScale: 3.5,
+                            child: SizedBox.expand(
+                              child: CachedNetworkImage(
+                                imageUrl: resolvedUrl,
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                                height: double.infinity,
+                                placeholder: (_, _) => const Center(
+                                  child: SizedBox(
+                                    width: 28,
+                                    height: 28,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: iconGreen,
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (_, _, _) => const Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.draw_outlined,
+                                        size: 48,
+                                        color: Colors.black26,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        "ไม่สามารถโหลดรูปลายมือชื่อได้",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        : const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.draw_outlined,
+                                  size: 48,
+                                  color: Colors.black26,
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  "ไม่มีข้อมูลลายมือชื่อ",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: mintLight,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFA7F3D0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.person_rounded,
+                        size: 16,
+                        color: darkForest,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          rangerName.trim().isNotEmpty
+                              ? "เจ้าหน้าที่: $rangerName"
+                              : "เจ้าหน้าที่อุทยานแห่งชาติ",
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: darkForest,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
