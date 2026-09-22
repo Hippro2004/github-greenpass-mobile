@@ -450,15 +450,67 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
           // ภาพประกอบ (ถ้ามี)
           if (report.image != null && report.image!.trim().isNotEmpty) ...[
             const SizedBox(height: 14),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                resolveImageUrl(report.image, defaultCategory: 'reports'),
-                width: double.infinity,
-                height: 210,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    const SizedBox.shrink(),
+            GestureDetector(
+              onTap: () {
+                final mainUrl = resolveImageUrl(
+                  report.image,
+                  defaultCategory: 'reports',
+                );
+                if (mainUrl.isNotEmpty) {
+                  _showImagePreviewDialog(
+                    context,
+                    imageUrl: mainUrl,
+                    title: 'ภาพประกอบรายงาน: ${report.name}',
+                  );
+                }
+              },
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      resolveImageUrl(report.image, defaultCategory: 'reports'),
+                      width: double.infinity,
+                      height: 210,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox.shrink(),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.fullscreen_rounded,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'ดูรูปขนาดเต็ม',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -521,6 +573,15 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
   Widget _buildTimelineItem(ReplyReportResponse reply, bool isLast) {
     final statusColor = _statusColor(reply.currentStatus);
     final statusLabel = _statusLabel(reply.currentStatus);
+
+    final rawImage = reply.image.trim();
+    final imageList = rawImage
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty && s != 'null' && s != '-')
+        .map((s) => resolveImageUrl(s, defaultCategory: 'reports'))
+        .where((url) => url.isNotEmpty)
+        .toList();
 
     return IntrinsicHeight(
       child: Row(
@@ -620,8 +681,14 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                     ),
                   ],
 
+                  // ── รูปภาพความคืบหน้า / การแก้ไขจากเจ้าหน้าที่ ──
+                  if (imageList.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    _buildReplyImagesWidget(imageList, statusLabel),
+                  ],
+
                   if (reply.parkRangerName?.trim().isNotEmpty ?? false) ...[
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         const Icon(
@@ -646,6 +713,311 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// แสดงรูปภาพการดำเนินงาน/การแก้ไขของ Reply
+  Widget _buildReplyImagesWidget(List<String> images, String statusLabel) {
+    if (images.length == 1) {
+      return _buildSingleReplyImage(images.first, statusLabel);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 120,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: images.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final imgUrl = images[index];
+              return GestureDetector(
+                onTap: () => _showImagePreviewDialog(
+                  context,
+                  imageUrl: imgUrl,
+                  title: 'ภาพความคืบหน้า ($statusLabel) #${index + 1}',
+                ),
+                child: Container(
+                  width: 150,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      imgUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(
+                        child: Icon(
+                          Icons.broken_image_rounded,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// แสดงภาพเดี่ยวของ Reply
+  Widget _buildSingleReplyImage(String imageUrl, String statusLabel) {
+    return GestureDetector(
+      onTap: () => _showImagePreviewDialog(
+        context,
+        imageUrl: imageUrl,
+        title: 'ภาพการดำเนินงาน ($statusLabel)',
+      ),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: Stack(
+            children: [
+              Image.network(
+                imageUrl,
+                width: double.infinity,
+                height: 170,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    height: 140,
+                    alignment: Alignment.center,
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                      color: emeraldTint,
+                      strokeWidth: 2,
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: 100,
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.broken_image_rounded,
+                        color: Colors.grey.shade400,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'ไม่สามารถโหลดรูปภาพได้',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.fullscreen_rounded,
+                        size: 14,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'ดูรูปขนาดเต็ม',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 3.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: darkForest.withValues(alpha: 0.85),
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.camera_alt_outlined,
+                        size: 11,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'ภาพจากเจ้าหน้าที่',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// แสดงรูปภาพพรีวิวแบบ Full-screen ซูมได้
+  void _showImagePreviewDialog(
+    BuildContext context, {
+    required String imageUrl,
+    required String title,
+  }) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.88),
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Flexible(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  color: Colors.black,
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.75,
+                  ),
+                  child: InteractiveViewer(
+                    minScale: 0.8,
+                    maxScale: 4.0,
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.contain,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          height: 260,
+                          alignment: Alignment.center,
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 220,
+                        alignment: Alignment.center,
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.broken_image_rounded,
+                              color: Colors.white54,
+                              size: 38,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'ไม่สามารถโหลดรูปภาพได้',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
