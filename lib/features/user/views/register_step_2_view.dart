@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:greenpass/core/services/translation_service.dart';
+import 'package:greenpass/core/widgets/auto_translated_text.dart';
 import 'package:greenpass/features/user/dtos/register_request.dart';
 import 'package:greenpass/features/user/services/user_service.dart';
 import 'package:greenpass/features/user/views/login_view.dart';
@@ -368,6 +370,8 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
         ),
         centerTitle: true,
         actions: [
+          const LanguageSwitchButton(),
+          const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
@@ -561,8 +565,14 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
 
                           // Foreigner Checkbox
                           GestureDetector(
-                            onTap: () =>
-                                setState(() => isForeigner = !isForeigner),
+                            onTap: () {
+                              setState(() {
+                                isForeigner = !isForeigner;
+                                TranslationService.instance.switchLanguage(
+                                  isForeigner ? 'en' : 'th',
+                                );
+                              });
+                            },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 14,
@@ -604,9 +614,16 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                                     height: 20,
                                     child: Checkbox(
                                       value: isForeigner,
-                                      onChanged: (v) => setState(
-                                        () => isForeigner = v ?? false,
-                                      ),
+                                      onChanged: (v) {
+                                        final val = v ?? false;
+                                        setState(() {
+                                          isForeigner = val;
+                                          TranslationService.instance
+                                              .switchLanguage(
+                                                val ? 'en' : 'th',
+                                              );
+                                        });
+                                      },
                                       activeColor: darkForest,
                                       checkColor: Colors.white,
                                       shape: RoundedRectangleBorder(

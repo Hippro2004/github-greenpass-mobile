@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/network/image_helper.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
+import 'package:greenpass/core/widgets/auto_translated_text.dart';
 import 'package:greenpass/features/home_view.dart';
 import 'package:greenpass/features/user/dtos/login_request.dart';
 import 'package:greenpass/features/user/services/user_service.dart';
@@ -138,6 +139,13 @@ class _LoginViewState extends State<LoginView> {
                 color: mintPillBg.withValues(alpha: 0.5),
               ),
             ),
+          ),
+
+          // ── Language Switcher Button (Top Right) ─────────────
+          const Positioned(
+            top: 50,
+            right: 20,
+            child: LanguageSwitchButton(),
           ),
 
           // ── Main Content ──────────────────────────────────────

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/network/image_helper.dart';
+import 'package:greenpass/core/widgets/auto_translated_text.dart';
 import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
 import 'package:greenpass/features/announcement/services/announcement_service.dart';
 
@@ -88,7 +89,7 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
             ),
           ),
         ),
-        title: const Text(
+        title: const AutoTranslatedText(
           "รายละเอียดประกาศ",
           style: TextStyle(
             color: textDark,
@@ -98,6 +99,12 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
           ),
         ),
         centerTitle: true,
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 14),
+            child: Center(child: LanguageSwitchButton()),
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(
@@ -168,7 +175,7 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
                           color: mintPillBg,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text(
+                        child: const AutoTranslatedText(
                           "ประกาศอุทยาน",
                           style: TextStyle(
                             fontSize: 10,
@@ -178,7 +185,7 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
+                      AutoTranslatedText(
                         announcement.parkName,
                         style: const TextStyle(
                           color: textDark,
@@ -197,7 +204,7 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
             const SizedBox(height: 18),
 
             // หัวข้อประกาศ
-            Text(
+            AutoTranslatedText(
               announcement.announcementTitle,
               style: const TextStyle(
                 color: textDark,
@@ -242,7 +249,7 @@ class _AnnouncementDetailViewState extends State<AnnouncementDetailView> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFEEF2F6)),
               ),
-              child: Text(
+              child: AutoTranslatedText(
                 announcement.description.trim().isNotEmpty
                     ? announcement.description
                     : "ไม่มีรายละเอียดเพิ่มเติม",
