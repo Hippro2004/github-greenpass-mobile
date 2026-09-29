@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:greenpass/core/widgets/auto_translated_text.dart';
 import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
 import 'package:greenpass/features/announcement/services/announcement_service.dart';
 import 'package:greenpass/features/announcement/views/announcement_detail_view.dart';
@@ -152,7 +153,7 @@ class _AnnouncementViewState extends State<AnnouncementView> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            const AutoTranslatedText(
               "ประกาศข่าวสาร",
               style: TextStyle(
                 color: textDark,
@@ -173,6 +174,12 @@ class _AnnouncementViewState extends State<AnnouncementView> {
           ],
         ),
         centerTitle: true,
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 14),
+            child: Center(child: LanguageSwitchButton()),
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(
@@ -345,7 +352,7 @@ class _AnnouncementViewState extends State<AnnouncementView> {
                         ),
                         const SizedBox(width: 6),
                         Expanded(
-                          child: Text(
+                          child: AutoTranslatedText(
                             announcement.parkName,
                             style: const TextStyle(
                               fontSize: 11.5,
@@ -359,7 +366,7 @@ class _AnnouncementViewState extends State<AnnouncementView> {
                       ],
                     ),
                     const SizedBox(height: 5),
-                    Text(
+                    AutoTranslatedText(
                       announcement.announcementTitle.trim().isEmpty
                           ? "ประกาศจากอุทยาน"
                           : announcement.announcementTitle,
