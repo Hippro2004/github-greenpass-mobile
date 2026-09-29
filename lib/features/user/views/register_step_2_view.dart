@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/services/translation_service.dart';
-import 'package:greenpass/core/widgets/auto_translated_text.dart';
 import 'package:greenpass/features/user/dtos/register_request.dart';
 import 'package:greenpass/features/user/services/user_service.dart';
 import 'package:greenpass/features/user/views/login_view.dart';
@@ -370,7 +369,6 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
         ),
         centerTitle: true,
         actions: [
-          const LanguageSwitchButton(),
           const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(right: 16),

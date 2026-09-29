@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:greenpass/core/widgets/auto_translated_text.dart';
 import 'package:greenpass/features/user/views/login_view.dart';
 import 'package:greenpass/features/user/views/register_step_2_view.dart';
 
@@ -167,7 +166,6 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
         ),
         centerTitle: true,
         actions: [
-          const LanguageSwitchButton(),
           const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(right: 16),

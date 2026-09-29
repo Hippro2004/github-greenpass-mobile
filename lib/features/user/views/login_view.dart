@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/network/image_helper.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
-import 'package:greenpass/core/widgets/auto_translated_text.dart';
 import 'package:greenpass/features/home_view.dart';
 import 'package:greenpass/features/user/dtos/login_request.dart';
 import 'package:greenpass/features/user/services/user_service.dart';
@@ -76,9 +75,9 @@ class _LoginViewState extends State<LoginView> {
           duration: Duration(seconds: 2),
         ),
       );
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainView()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const MainView()));
     } on DioException catch (e) {
       if (!mounted) return;
       final statusCode = e.response?.statusCode;
@@ -94,7 +93,11 @@ class _LoginViewState extends State<LoginView> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
+              const Icon(
+                Icons.error_outline_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Expanded(child: Text(message)),
             ],
@@ -141,18 +144,14 @@ class _LoginViewState extends State<LoginView> {
             ),
           ),
 
-          // ── Language Switcher Button (Top Right) ─────────────
-          const Positioned(
-            top: 50,
-            right: 20,
-            child: LanguageSwitchButton(),
-          ),
-
           // ── Main Content ──────────────────────────────────────
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 20,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -267,10 +266,7 @@ class _LoginViewState extends State<LoginView> {
                             const SizedBox(height: 4),
                             const Text(
                               "กรอกข้อมูลบัญชีเพื่อเข้าสู่ระบบ GreenPass",
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: textMuted,
-                              ),
+                              style: TextStyle(fontSize: 13, color: textMuted),
                             ),
                             const SizedBox(height: 22),
 
@@ -310,8 +306,9 @@ class _LoginViewState extends State<LoginView> {
                                   height: 22,
                                   child: Checkbox(
                                     value: _rememberMe,
-                                    onChanged: (v) =>
-                                        setState(() => _rememberMe = v ?? false),
+                                    onChanged: (v) => setState(
+                                      () => _rememberMe = v ?? false,
+                                    ),
                                     activeColor: darkForest,
                                     checkColor: Colors.white,
                                     side: BorderSide(
@@ -431,10 +428,7 @@ class _LoginViewState extends State<LoginView> {
                       children: [
                         const Text(
                           "ยังไม่มีบัญชีสมาชิก? ",
-                          style: TextStyle(
-                            color: textMuted,
-                            fontSize: 13,
-                          ),
+                          style: TextStyle(color: textMuted, fontSize: 13),
                         ),
                         GestureDetector(
                           onTap: () => Navigator.of(context).push(
