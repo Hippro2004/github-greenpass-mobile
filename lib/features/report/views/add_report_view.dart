@@ -248,15 +248,6 @@ class _AddReportViewState extends State<AddReportView> {
   Future<void> _submitReport() async {
     if (_isLoading) return;
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedPark == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("กรุณาเลือกอุทยานแห่งชาติที่พบปัญหา"),
-          backgroundColor: Color(0xFFDC2626),
-        ),
-      );
-      return;
-    }
 
     try {
       setState(() => _isLoading = true);
@@ -570,7 +561,7 @@ class _AddReportViewState extends State<AddReportView> {
                 // ── Section 3: แนบรูปภาพ ──────────────────────────────
                 _buildSectionHeader(
                   icon: Icons.add_photo_alternate_rounded,
-                  title: "ภาพถ่ายประกอบ (ถ้ามี)",
+                  title: "ภาพถ่ายประกอบ (จำเป็น)",
                   subtitle:
                       "เพิ่มรูปภาพเพื่อช่วยให้เจ้าหน้าที่ตรวจสอบได้เร็วขึ้น",
                 ),
@@ -719,143 +710,183 @@ class _AddReportViewState extends State<AddReportView> {
   }
 
   Widget _buildImagePickerBox() {
-    if (_image != null) {
-      return Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: mintBorder),
-          boxShadow: [
-            BoxShadow(
-              color: darkForest.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
-          child: Stack(
-            children: [
-              Image.file(
-                _image!,
+    return FormField<File>(
+      validator: (_) => _image == null ? "กรุณาแนบรูปภาพปัญหาที่พบ" : null,
+      builder: (field) {
+        final hasError = field.hasError && _image == null;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_image != null)
+              Container(
                 width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
-              ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: GestureDetector(
-                  onTap: () => setState(() => _image = null),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.65),
-                      shape: BoxShape.circle,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: mintBorder),
+                  boxShadow: [
+                    BoxShadow(
+                      color: darkForest.withValues(alpha: 0.04),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
                     ),
-                    child: const Icon(
-                      Icons.close_rounded,
-                      size: 18,
-                      color: Colors.white,
-                    ),
-                  ),
+                  ],
                 ),
-              ),
-              Positioned(
-                bottom: 10,
-                right: 10,
-                child: GestureDetector(
-                  onTap: _showImagePickerBottomSheet,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.65),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.photo_camera_rounded,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          "เปลี่ยนรูป",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: Stack(
+                    children: [
+                      Image.file(
+                        _image!,
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() => _image = null);
+                            field.didChange(null);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.65),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close_rounded,
+                              size: 18,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ],
+                      ),
+                      Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: GestureDetector(
+                          onTap: _showImagePickerBottomSheet,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.65),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.photo_camera_rounded,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  "เปลี่ยนรูป",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              GestureDetector(
+                onTap: _showImagePickerBottomSheet,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: double.infinity,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: hasError
+                          ? const Color(0xFFEF4444)
+                          : Colors.grey.shade200,
+                      width: hasError ? 1.5 : 1.5,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: hasError
+                            ? const Color(0xFFEF4444).withValues(alpha: 0.05)
+                            : darkForest.withValues(alpha: 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: hasError
+                              ? const Color(0xFFFEE2E2)
+                              : mintLight,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: hasError
+                                ? const Color(0xFFFCA5A5)
+                                : mintBorder,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.add_a_photo_outlined,
+                          size: 24,
+                          color: hasError
+                              ? const Color(0xFFEF4444)
+                              : darkForest,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "แนบรูปภาพปัญหาที่พบ *",
+                        style: TextStyle(
+                          color: hasError ? const Color(0xFFEF4444) : textDark,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      const Text(
+                        "แตะเพื่อถ่ายรูปด้วยกล้อง หรือเลือกจากอัลบั้ม",
+                        style: TextStyle(fontSize: 11.5, color: textMuted),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return GestureDetector(
-      onTap: _showImagePickerBottomSheet,
-      child: Container(
-        width: double.infinity,
-        height: 150,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: Colors.grey.shade200, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: darkForest.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
+            if (hasError)
+              Padding(
+                padding: const EdgeInsets.only(left: 12, top: 6),
+                child: Text(
+                  field.errorText!,
+                  style: const TextStyle(
+                    color: Color(0xFFEF4444),
+                    fontSize: 11.5,
+                  ),
+                ),
+              ),
           ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: mintLight,
-                shape: BoxShape.circle,
-                border: Border.all(color: mintBorder),
-              ),
-              child: const Icon(
-                Icons.add_a_photo_outlined,
-                size: 24,
-                color: darkForest,
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "แนบรูปภาพปัญหาที่พบ",
-              style: TextStyle(
-                color: textDark,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 3),
-            const Text(
-              "แตะเพื่อถ่ายรูปด้วยกล้อง หรือเลือกจากอัลบั้ม",
-              style: TextStyle(fontSize: 11.5, color: textMuted),
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 
