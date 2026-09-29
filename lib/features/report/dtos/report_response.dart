@@ -9,6 +9,7 @@ class ReportResponse {
   final String reportTime;
   final int parkId;
   final String parkName;
+  final String? typeName;
   final String? image;
 
   ReportResponse({
@@ -20,6 +21,7 @@ class ReportResponse {
     required this.reportTime,
     required this.parkId,
     required this.parkName,
+    this.typeName,
     this.image,
   });
 
@@ -33,6 +35,7 @@ class ReportResponse {
       'reportTime': reportTime,
       'parkId': parkId,
       'parkName': parkName,
+      'typeName': typeName,
       'image': image,
     };
   }
@@ -52,6 +55,15 @@ class ReportResponse {
       parsedParkName = (map['park']['name'] ?? '').toString();
     }
 
+    String? parsedTypeName;
+    if (map['typeName'] != null) {
+      parsedTypeName = map['typeName'].toString();
+    } else if (map['type'] != null && map['type'] is Map) {
+      parsedTypeName = (map['type']['typeName'] ?? map['type']['name'])?.toString();
+    } else if (map['reportType'] != null) {
+      parsedTypeName = map['reportType'].toString();
+    }
+
     return ReportResponse(
       reportId: (map['reportId'] ?? map['id'])?.toInt() ?? 0,
       name: map['name'] ?? '',
@@ -61,6 +73,7 @@ class ReportResponse {
       reportTime: (map['reportTime'] ?? map['reporttime'])?.toString() ?? '',
       parkId: parsedParkId,
       parkName: parsedParkName,
+      typeName: parsedTypeName,
       image: map['image'] as String?,
     );
   }
@@ -72,7 +85,7 @@ class ReportResponse {
 
   @override
   String toString() {
-    return 'ReportResponse(reportId: $reportId, name: $name, description: $description, status: $status, reportDate: $reportDate, reportTime: $reportTime, parkId: $parkId, parkName: $parkName)';
+    return 'ReportResponse(reportId: $reportId, name: $name, description: $description, status: $status, reportDate: $reportDate, reportTime: $reportTime, parkId: $parkId, parkName: $parkName, typeName: $typeName)';
   }
 
   @override
@@ -87,7 +100,8 @@ class ReportResponse {
         other.reportDate == reportDate &&
         other.reportTime == reportTime &&
         other.parkId == parkId &&
-        other.parkName == parkName;
+        other.parkName == parkName &&
+        other.typeName == typeName;
   }
 
   @override
@@ -99,6 +113,7 @@ class ReportResponse {
         reportDate.hashCode ^
         reportTime.hashCode ^
         parkId.hashCode ^
-        parkName.hashCode;
+        parkName.hashCode ^
+        typeName.hashCode;
   }
 }

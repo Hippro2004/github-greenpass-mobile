@@ -351,19 +351,24 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                 decoration: BoxDecoration(
                   color: mintLight,
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: mintBorder),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.assignment_outlined,
+                      (report.typeName != null && report.typeName!.trim().isNotEmpty)
+                          ? Icons.category_rounded
+                          : Icons.assignment_outlined,
                       size: 13,
                       color: darkForest,
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
-                      'รายงานเหตุการณ์',
-                      style: TextStyle(
+                      (report.typeName != null && report.typeName!.trim().isNotEmpty)
+                          ? report.typeName!
+                          : 'รายงานเหตุการณ์',
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: darkForest,

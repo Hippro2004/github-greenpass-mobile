@@ -250,6 +250,45 @@ class ParkReportsView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ประเภทรายงาน (ถ้ามี)
+              if (report.typeName != null && report.typeName!.trim().isNotEmpty) ...[
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: mintLight,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: mintBorder),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.category_rounded,
+                            size: 11,
+                            color: darkForest,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            report.typeName!,
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: darkForest,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+              ],
+
               // หัวเรื่อง + ป้ายสถานะ
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
