@@ -71,7 +71,7 @@ class _AddReportViewState extends State<AddReportView> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("ไม่สามารถเลือกรูปภาพได้: $e")));
+        ).showSnackBar(SnackBar(content: Text("ไม่สามารถเลือกรูปภาพได้")));
       }
     }
   }
@@ -108,46 +108,46 @@ class _AddReportViewState extends State<AddReportView> {
                 ),
               ),
               const SizedBox(height: 20),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                leading: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: mintLight,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: mintBorder),
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt_rounded,
-                    color: darkForest,
-                    size: 22,
-                  ),
-                ),
-                title: const Text(
-                  "ถ่ายภาพด้วยกล้อง",
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: textDark,
-                  ),
-                ),
-                subtitle: const Text(
-                  "ถ่ายภาพปัญหาที่พบทันทีจากกล้องของคุณ",
-                  style: TextStyle(fontSize: 12, color: textMuted),
-                ),
-                trailing: const Icon(
-                  Icons.chevron_right_rounded,
-                  color: textMuted,
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
+              // ListTile(
+              //   contentPadding: const EdgeInsets.symmetric(
+              //     horizontal: 12,
+              //     vertical: 4,
+              //   ),
+              //   leading: Container(
+              //     width: 44,
+              //     height: 44,
+              //     decoration: BoxDecoration(
+              //       color: mintLight,
+              //       borderRadius: BorderRadius.circular(14),
+              //       border: Border.all(color: mintBorder),
+              //     ),
+              //     child: const Icon(
+              //       Icons.camera_alt_rounded,
+              //       color: darkForest,
+              //       size: 22,
+              //     ),
+              //   ),
+              //   title: const Text(
+              //     "ถ่ายภาพด้วยกล้อง",
+              //     style: TextStyle(
+              //       fontSize: 15,
+              //       fontWeight: FontWeight.w600,
+              //       color: textDark,
+              //     ),
+              //   ),
+              //   subtitle: const Text(
+              //     "ถ่ายภาพปัญหาที่พบทันทีจากกล้องของคุณ",
+              //     style: TextStyle(fontSize: 12, color: textMuted),
+              //   ),
+              //   trailing: const Icon(
+              //     Icons.chevron_right_rounded,
+              //     color: textMuted,
+              //   ),
+              //   onTap: () {
+              //     Navigator.pop(context);
+              //     _pickImage(ImageSource.camera);
+              //   },
+              // ),
               const SizedBox(height: 6),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
@@ -523,7 +523,10 @@ class _AddReportViewState extends State<AddReportView> {
                               ),
                             if (field.hasError)
                               Padding(
-                                padding: const EdgeInsets.only(left: 12, top: 6),
+                                padding: const EdgeInsets.only(
+                                  left: 12,
+                                  top: 6,
+                                ),
                                 child: Text(
                                   field.errorText!,
                                   style: const TextStyle(
@@ -568,7 +571,8 @@ class _AddReportViewState extends State<AddReportView> {
                 _buildSectionHeader(
                   icon: Icons.add_photo_alternate_rounded,
                   title: "ภาพถ่ายประกอบ (ถ้ามี)",
-                  subtitle: "เพิ่มรูปภาพเพื่อช่วยให้เจ้าหน้าที่ตรวจสอบได้เร็วขึ้น",
+                  subtitle:
+                      "เพิ่มรูปภาพเพื่อช่วยให้เจ้าหน้าที่ตรวจสอบได้เร็วขึ้น",
                 ),
                 const SizedBox(height: 10),
                 _buildImagePickerBox(),
@@ -643,15 +647,16 @@ class _AddReportViewState extends State<AddReportView> {
                             style: TextStyle(
                               color: hasPark ? textDark : textMuted,
                               fontSize: 15,
-                              fontWeight:
-                                  hasPark ? FontWeight.bold : FontWeight.w600,
+                              fontWeight: hasPark
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             hasPark
                                 ? (_selectedPark!.address ??
-                                    "แตะเพื่อเปลี่ยนอุทยาน")
+                                      "แตะเพื่อเปลี่ยนอุทยาน")
                                 : "แตะเพื่อค้นหาและเลือกสถานที่เกิดเหตุ",
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -808,10 +813,7 @@ class _AddReportViewState extends State<AddReportView> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: Colors.grey.shade200,
-            width: 1.5,
-          ),
+          border: Border.all(color: Colors.grey.shade200, width: 1.5),
           boxShadow: [
             BoxShadow(
               color: darkForest.withValues(alpha: 0.03),
@@ -849,10 +851,7 @@ class _AddReportViewState extends State<AddReportView> {
             const SizedBox(height: 3),
             const Text(
               "แตะเพื่อถ่ายรูปด้วยกล้อง หรือเลือกจากอัลบั้ม",
-              style: TextStyle(
-                fontSize: 11.5,
-                color: textMuted,
-              ),
+              style: TextStyle(fontSize: 11.5, color: textMuted),
             ),
           ],
         ),
