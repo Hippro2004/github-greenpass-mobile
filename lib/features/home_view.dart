@@ -128,7 +128,10 @@ class _MainViewState extends State<MainView> {
       _announcementError = null;
     });
     try {
-      final announcements = await _announcementService.getAllAnnouncements();
+      final announcements = await _announcementService.getAllAnnouncements(
+        page: 1,
+        limit: 4,
+      );
       if (!mounted) return;
       final sortedAnnouncements = List<AnnouncementResponse>.from(announcements)
         ..sort((first, second) {

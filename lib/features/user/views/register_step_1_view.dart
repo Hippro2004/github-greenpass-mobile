@@ -33,11 +33,17 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  static const Color forestGreen = Color(0xFF2D6A4F);
-  static const Color lightGreen = Color(0xFF74C69D);
-  static const Color creamBg = Color(0xFFF8F5F0);
-  static const Color darkGreen = Color(0xFF1B4332);
-  static const Color midGreen = Color(0xFF40916C);
+  // ── Vibrant Wilderness Palette ─────────────────────────────────
+  static const Color screenBg = Color(0xFFF3F7F5);
+  static const Color darkForest = Color(0xFF064E3B);
+  static const Color midForest = Color(0xFF0F5A3E);
+  static const Color emeraldTint = Color(0xFF00A86B);
+  static const Color mintLight = Color(0xFFE8F7F0);
+  static const Color mintBorder = Color(0xFFD6EFE2);
+  static const Color mintPillBg = Color(0xFFD1FAE5);
+  static const Color mintDark = Color(0xFF065F46);
+  static const Color textDark = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
 
   @override
   void initState() {
@@ -63,547 +69,461 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
     super.dispose();
   }
 
+  Future<void> _handleNext() async {
+    if (formkey.currentState!.validate()) {
+      final data = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => RegisterStep2View(
+            username: _usernameController.text.trim(),
+            firstname: _firstnameController.text.trim(),
+            lastname: _lastnameController.text.trim(),
+            email: _emailController.text.trim(),
+            phone: _phoneController.text.trim(),
+            password: _passwordController.text,
+            savedBirthDate: _savedBirthDate,
+            savedGender: _savedGender,
+            savedIsForeigner: _savedIsForeigner,
+            savedDistrict: _savedDistrict,
+            savedSubDistrict: _savedSubDistrict,
+            savedProvince: _savedProvince,
+            savedZipcode: _savedZipcode,
+          ),
+        ),
+      );
+      if (data != null) {
+        setState(() {
+          _savedBirthDate = data['birthDate'];
+          _savedGender = data['gender'];
+          _savedIsForeigner = data['isForeigner'] ?? false;
+          _savedDistrict = data['district'] ?? '';
+          _savedSubDistrict = data['subDistrict'] ?? '';
+          _savedProvince = data['province'] ?? '';
+          _savedZipcode = data['zipcode'] ?? '';
+        });
+      }
+    } else {
+      setState(() {
+        _autovalidateMode = AutovalidateMode.onUserInteraction;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
-      body: isLoading
-          ? Container(
-              color: Colors.black.withOpacity(0.3),
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+      backgroundColor: screenBg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 14),
+          child: Center(
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginView()),
+              ),
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: mintLight,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: mintBorder),
+                ),
+                child: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: darkForest,
+                  size: 26,
+                ),
+              ),
+            ),
+          ),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "สมัครสมาชิก",
+              style: TextStyle(
+                color: textDark,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                letterSpacing: -0.2,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              width: 7,
+              height: 7,
+              decoration: const BoxDecoration(
+                color: emeraldTint,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: mintPillBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  "1 / 2",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: mintDark,
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(forestGreen),
-                        strokeWidth: 3,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header title and progress indicator
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "สร้างบัญชีใหม่",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: textDark,
+                        letterSpacing: -0.3,
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        "กำลังโหลด...",
-                        style: TextStyle(color: Colors.black54, fontSize: 14),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      "กรอกข้อมูลบัญชีเพื่อเริ่มต้นใช้งาน GreenPass",
+                      style: TextStyle(fontSize: 13, color: textMuted),
+                    ),
+                    const SizedBox(height: 12),
+                    // Progress Indicator
+                    Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: darkForest,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          width: 10,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: mintBorder,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Form Card
+              Container(
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: mintBorder),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 18,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Form(
+                  key: formkey,
+                  autovalidateMode: _autovalidateMode,
+                  child: Column(
+                    children: [
+                      // Username
+                      _AuthInputField(
+                        controller: _usernameController,
+                        label: "ชื่อผู้ใช้งาน",
+                        hint: "กรอกชื่อผู้ใช้งาน",
+                        icon: Icons.person_outline_rounded,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return "กรุณากรอกชื่อผู้ใช้งาน";
+                          }
+                          if (value.trim().length < 3) {
+                            return "ชื่อผู้ใช้งานต้องมีอย่างน้อย 3 ตัวอักษร";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Firstname & Lastname
+                      _AuthInputField(
+                        controller: _firstnameController,
+                        label: "ชื่อจริง",
+                        hint: "ชื่อจริง",
+                        icon: Icons.badge_outlined,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return "กรุณากรอกชื่อ";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+
+                      _AuthInputField(
+                        controller: _lastnameController,
+                        label: "นามสกุล",
+                        hint: "นามสกุล",
+                        icon: Icons.badge_outlined,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return "กรุณากรอกนามสกุล";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Email
+                      _AuthInputField(
+                        controller: _emailController,
+                        label: "อีเมล",
+                        hint: "example@email.com",
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return "กรุณากรอกอีเมล";
+                          }
+                          if (!RegExp(
+                            r'^[\w.-]+@[\w.-]+\.\w+$',
+                          ).hasMatch(value.trim())) {
+                            return "รูปแบบอีเมลไม่ถูกต้อง";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Phone
+                      _AuthInputField(
+                        controller: _phoneController,
+                        label: "หมายเลขโทรศัพท์",
+                        hint: "08xxxxxxxx (10 หลัก)",
+                        icon: Icons.phone_outlined,
+                        keyboardType: TextInputType.phone,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return "กรุณากรอกหมายเลขโทรศัพท์";
+                          }
+                          if (value.trim().length != 10) {
+                            return "กรุณากรอกหมายเลข 10 หลัก";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Password
+                      _AuthInputField(
+                        controller: _passwordController,
+                        label: "รหัสผ่าน",
+                        hint: "รหัสผ่านอย่างน้อย 4 ตัวอักษร",
+                        icon: Icons.lock_outline_rounded,
+                        obscure: _obscurePassword,
+                        onToggleObscure: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "กรุณากรอกรหัสผ่าน";
+                          }
+                          if (value.length < 4) {
+                            return "รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Confirm Password
+                      _AuthInputField(
+                        controller: _confirmPasswordController,
+                        label: "ยืนยันรหัสผ่าน",
+                        hint: "กรอกรหัสผ่านอีกครั้ง",
+                        icon: Icons.lock_outline_rounded,
+                        obscure: _obscureConfirmPassword,
+                        onToggleObscure: () => setState(
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "กรุณากรอกยืนยันรหัสผ่าน";
+                          }
+                          if (value != _passwordController.text) {
+                            return "รหัสผ่านทั้งสองช่องไม่ตรงกัน";
+                          }
+                          return null;
+                        },
                       ),
                     ],
                   ),
                 ),
               ),
-            )
-          : Stack(
-              children: [
-                // ── gradient ส่วนบน
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: size.height * 0.28,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [darkGreen, midGreen, forestGreen],
-                      ),
+              const SizedBox(height: 20),
+
+              // Next Button
+              Container(
+                width: double.infinity,
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [darkForest, midForest],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: darkForest.withValues(alpha: 0.25),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: _handleNext,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    shadowColor: Colors.transparent,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                ),
-
-                // ── cream ส่วนล่าง
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: size.height * 0.72,
-                  child: Container(color: creamBg),
-                ),
-
-                // ── ลายตกแต่ง
-                Positioned(
-                  top: 20,
-                  right: -20,
-                  child: Icon(
-                    Icons.forest,
-                    size: 100,
-                    color: Colors.white.withOpacity(0.06),
-                  ),
-                ),
-                Positioned(
-                  top: 40,
-                  left: -20,
-                  child: Icon(
-                    Icons.eco,
-                    size: 80,
-                    color: Colors.white.withOpacity(0.06),
-                  ),
-                ),
-                Positioned(
-                  bottom: -80,
-                  left: -50,
-                  child: Container(
-                    width: 250,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: forestGreen.withOpacity(0.06),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: -40,
-                  right: -60,
-                  child: Container(
-                    width: 180,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: lightGreen.withOpacity(0.1),
-                    ),
-                  ),
-                ),
-
-                // ── เนื้อหา
-                SafeArea(
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverAppBar(
-                        backgroundColor: Colors.transparent,
-                        elevation: 0,
-                        forceMaterialTransparency: true,
-                        floating: true,
-                        snap: true,
-                        leading: IconButton(
-                          onPressed: () =>
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                  builder: (_) => const LoginView(),
-                                ),
-                              ),
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                          ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "ถัดไป (ข้อมูลส่วนตัว)",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
-
-                      SliverToBoxAdapter(
-                        child: Column(
-                          children: [
-                            // ── Header บนพื้นเขียว
-                            SizedBox(
-                              height: size.height * 0.14,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    "สมัครสมาชิก",
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "เริ่มต้นการเดินทางกับ GreenPass",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.white.withOpacity(0.8),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // Step indicator
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        width: 24,
-                                        height: 8,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.4),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // ── Form card
-                            Container(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                              ),
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
-                                    blurRadius: 24,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Form(
-                                key: formkey,
-                                autovalidateMode: _autovalidateMode,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "ข้อมูลบัญชี",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "กรอกข้อมูลเพื่อสร้างบัญชีใหม่",
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-
-                                    _AnimatedTextField(
-                                      controller: _usernameController,
-                                      label: "ชื่อผู้ใช้งาน",
-                                      hint: "กรอกชื่อผู้ใช้งาน",
-                                      icon: Icons.person_outline,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return "กรุณากรอกชื่อผู้ใช้งาน";
-                                        }
-                                        if (!(value.length >= 4 &&
-                                            value.length <= 16)) {
-                                          return "ความยาว 4 - 16 ตัวอักษร";
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    const SizedBox(height: 12),
-                                    _AnimatedTextField(
-                                      controller: _firstnameController,
-                                      label: "ชื่อจริง",
-                                      hint: "กรอกชื่อจริง",
-                                      icon: Icons.badge_outlined,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return "กรุณากรอกชื่อจริง";
-                                        }
-                                        if (!(value.length >= 2 &&
-                                            value.length <= 25)) {
-                                          return "ความยาว 2 - 25";
-                                        }
-                                        return null;
-                                      },
-                                    ),
-
-                                    const SizedBox(height: 12),
-
-                                    _AnimatedTextField(
-                                      controller: _lastnameController,
-                                      label: "นามสกุล",
-                                      hint: "กรอกนามสกุล",
-                                      icon: Icons.badge_outlined,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return "กรุณากรอกนามสกุล";
-                                        }
-                                        if (!(value.length >= 2 &&
-                                            value.length <= 25)) {
-                                          return "ความยาว 2 - 25";
-                                        }
-                                        return null;
-                                      },
-                                    ),
-
-                                    const SizedBox(height: 12),
-
-                                    _AnimatedTextField(
-                                      controller: _emailController,
-                                      label: "อีเมล",
-                                      hint: "กรอกอีเมล",
-                                      icon: Icons.email_outlined,
-                                      keyboardType: TextInputType.emailAddress,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return "กรุณากรอกอีเมล";
-                                        }
-                                        if (!RegExp(
-                                          r'^[\w.-]+@[\w.-]+\.\w+$',
-                                        ).hasMatch(value)) {
-                                          return "รูปแบบอีเมลไม่ถูกต้อง";
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    const SizedBox(height: 12),
-
-                                    _AnimatedTextField(
-                                      controller: _phoneController,
-                                      label: "หมายเลขโทรศัพท์",
-                                      hint: "กรอกหมายเลขโทรศัพท์",
-                                      icon: Icons.phone_outlined,
-                                      keyboardType: TextInputType.phone,
-                                      validator: (value) {
-                                        if (value!.length != 10) {
-                                          return "กรุณากรอกหมายเลข 10 หลัก";
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    const SizedBox(height: 12),
-
-                                    _AnimatedTextField(
-                                      controller: _passwordController,
-                                      label: "รหัสผ่าน",
-                                      hint: "กรอกรหัสผ่าน",
-                                      icon: Icons.lock_outline,
-                                      obscure: _obscurePassword,
-                                      onToggleObscure: () => setState(
-                                        () => _obscurePassword =
-                                            !_obscurePassword,
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return "กรุณากรอกรหัสผ่าน";
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    const SizedBox(height: 12),
-
-                                    _AnimatedTextField(
-                                      controller: _confirmPasswordController,
-                                      label: "ยืนยันรหัสผ่าน",
-                                      hint: "กรอกรหัสผ่านยืนยัน",
-                                      icon: Icons.lock_outline,
-                                      obscure: _obscureConfirmPassword,
-                                      onToggleObscure: () => setState(
-                                        () => _obscureConfirmPassword =
-                                            !_obscureConfirmPassword,
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return "กรุณากรอกรหัสผ่าน";
-                                        }
-                                        if (!(value.length >= 4 &&
-                                            value.length <= 16)) {
-                                          return "ความยาวตั้งแต่ 4 - 16";
-                                        }
-                                        if (value != _passwordController.text) {
-                                          return "รหัสผ่านไม่ตรงกัน";
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    const SizedBox(height: 24),
-
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 52,
-                                      child: ElevatedButton.icon(
-                                        onPressed: () async {
-                                          if (formkey.currentState!
-                                              .validate()) {
-                                            final data =
-                                                await Navigator.push<
-                                                  Map<String, dynamic>
-                                                >(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        RegisterStep2View(
-                                                          username:
-                                                              _usernameController
-                                                                  .text,
-                                                          firstname:
-                                                              _firstnameController
-                                                                  .text,
-                                                          lastname:
-                                                              _lastnameController
-                                                                  .text,
-                                                          email:
-                                                              _emailController
-                                                                  .text,
-                                                          phone:
-                                                              _phoneController
-                                                                  .text,
-                                                          password:
-                                                              _passwordController
-                                                                  .text,
-                                                          savedBirthDate:
-                                                              _savedBirthDate,
-                                                          savedGender:
-                                                              _savedGender,
-                                                          savedIsForeigner:
-                                                              _savedIsForeigner,
-                                                          savedDistrict:
-                                                              _savedDistrict,
-                                                          savedSubDistrict:
-                                                              _savedSubDistrict,
-                                                          savedProvince:
-                                                              _savedProvince,
-                                                          savedZipcode:
-                                                              _savedZipcode,
-                                                        ),
-                                                  ),
-                                                );
-                                            if (data != null) {
-                                              _savedBirthDate =
-                                                  data['birthDate'];
-                                              _savedGender = data['gender'];
-                                              _savedIsForeigner =
-                                                  data['isForeigner'];
-                                              _savedDistrict = data['district'];
-                                              _savedSubDistrict =
-                                                  data['subDistrict'];
-                                              _savedProvince = data['province'];
-                                              _savedZipcode = data['zipcode'];
-                                            }
-                                          } else {
-                                            setState(() {
-                                              _autovalidateMode =
-                                                  AutovalidateMode
-                                                      .onUserInteraction;
-                                            });
-                                          }
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: forestGreen,
-                                          foregroundColor: Colors.white,
-                                          elevation: 0,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              14,
-                                            ),
-                                          ),
-                                        ),
-                                        label: const Text(
-                                          "ต่อไป",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        icon: const Icon(Icons.arrow_forward),
-                                        iconAlignment: IconAlignment.end,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  "มีบัญชีอยู่แล้ว? ",
-                                  style: TextStyle(
-                                    color: Colors.black45,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () =>
-                                      Navigator.of(context).pushReplacement(
-                                        MaterialPageRoute(
-                                          builder: (_) => const LoginView(),
-                                        ),
-                                      ),
-                                  child: const Text(
-                                    "เข้าสู่ระบบ",
-                                    style: TextStyle(
-                                      color: forestGreen,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: forestGreen,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 32),
-                          ],
-                        ),
-                      ),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_rounded, size: 18),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 20),
+
+              // Back to Login Footer
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "มีบัญชีอยู่แล้ว? ",
+                    style: TextStyle(color: textMuted, fontSize: 13),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const LoginView()),
+                    ),
+                    child: const Text(
+                      "เข้าสู่ระบบ",
+                      style: TextStyle(
+                        color: darkForest,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline,
+                        decorationColor: darkForest,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
 
-// ── Animated TextField (เหมือน LoginView)
-class _AnimatedTextField extends StatefulWidget {
+// ── Standardized Modern Auth Input Field ───────────────────────────
+class _AuthInputField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
   final String hint;
-  final IconData? icon;
+  final IconData icon;
   final bool obscure;
   final VoidCallback? onToggleObscure;
-  final String? Function(String?)? validator;
   final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
 
-  const _AnimatedTextField({
+  const _AuthInputField({
     required this.controller,
     required this.label,
     required this.hint,
-    this.icon,
+    required this.icon,
     this.obscure = false,
     this.onToggleObscure,
-    this.validator,
     this.keyboardType,
+    this.validator,
   });
 
   @override
-  State<_AnimatedTextField> createState() => _AnimatedTextFieldState();
+  State<_AuthInputField> createState() => _AuthInputFieldState();
 }
 
-class _AnimatedTextFieldState extends State<_AnimatedTextField> {
+class _AuthInputFieldState extends State<_AuthInputField> {
   final FocusNode _focusNode = FocusNode();
   bool _isFocused = false;
 
-  static const Color forestGreen = Color(0xFF2D6A4F);
-  static const Color creamBg = Color(0xFFF8F5F0);
+  static const Color darkForest = Color(0xFF064E3B);
+  static const Color emeraldTint = Color(0xFF00A86B);
+  static const Color textDark = Color(0xFF0F172A);
 
   @override
   void initState() {
     super.initState();
-    _focusNode.addListener(
-      () => setState(() => _isFocused = _focusNode.hasFocus),
-    );
+    _focusNode.addListener(() {
+      if (mounted) setState(() => _isFocused = _focusNode.hasFocus);
+    });
   }
 
   @override
@@ -614,80 +534,71 @@ class _AnimatedTextFieldState extends State<_AnimatedTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: _isFocused
-            ? [
-                BoxShadow(
-                  color: forestGreen.withOpacity(0.15),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : [],
+    return TextFormField(
+      controller: widget.controller,
+      focusNode: _focusNode,
+      obscureText: widget.obscure,
+      keyboardType: widget.keyboardType,
+      validator: widget.validator,
+      style: const TextStyle(
+        fontSize: 14,
+        color: textDark,
+        fontWeight: FontWeight.w500,
       ),
-      child: TextFormField(
-        controller: widget.controller,
-        focusNode: _focusNode,
-        obscureText: widget.obscure,
-        keyboardType: widget.keyboardType,
-        validator: widget.validator,
-        decoration: InputDecoration(
-          labelText: widget.label,
-          labelStyle: TextStyle(
-            color: _isFocused ? forestGreen : Colors.black45,
-            fontSize: 14,
-          ),
-          hintText: widget.hint,
-          hintStyle: const TextStyle(color: Colors.black26),
-          prefixIcon: widget.icon != null
-              ? Icon(
-                  widget.icon,
-                  color: _isFocused ? forestGreen : Colors.black38,
-                  size: 20,
-                )
-              : null,
-          suffixIcon: widget.onToggleObscure != null
-              ? IconButton(
-                  icon: Icon(
-                    widget.obscure
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    color: Colors.black38,
-                    size: 20,
-                  ),
-                  onPressed: widget.onToggleObscure,
-                )
-              : null,
-          filled: true,
-          fillColor: _isFocused ? Colors.white : creamBg,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade200),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: forestGreen, width: 1.5),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Colors.red, width: 1),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Colors.red, width: 1.5),
-          ),
-          errorStyle: const TextStyle(fontSize: 11, color: Colors.red),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
+      decoration: InputDecoration(
+        labelText: widget.label,
+        labelStyle: TextStyle(
+          color: _isFocused ? darkForest : const Color(0xFF64748B),
+          fontSize: 13,
+          fontWeight: _isFocused ? FontWeight.w600 : FontWeight.normal,
+        ),
+        hintText: widget.hint,
+        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+        prefixIcon: Icon(
+          widget.icon,
+          color: _isFocused ? darkForest : Colors.grey.shade400,
+          size: 19,
+        ),
+        suffixIcon: widget.onToggleObscure != null
+            ? IconButton(
+                icon: Icon(
+                  widget.obscure
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: Colors.grey.shade400,
+                  size: 19,
+                ),
+                onPressed: widget.onToggleObscure,
+              )
+            : null,
+        filled: true,
+        fillColor: _isFocused
+            ? const Color(0xFFE8F7F0).withValues(alpha: 0.35)
+            : const Color(0xFFF8FAFC),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey.shade200),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey.shade200),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: emeraldTint, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+        ),
+        errorStyle: const TextStyle(fontSize: 11, color: Color(0xFFEF4444)),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
         ),
       ),
     );

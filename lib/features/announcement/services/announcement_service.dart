@@ -2,8 +2,18 @@ import 'package:greenpass/core/network/dio_client.dart';
 import 'package:greenpass/features/announcement/dtos/announcement_response.dart';
 
 class AnnoucementService {
-  Future<List<AnnouncementResponse>> getAllAnnouncements() async {
-    final res = await DioClient.dio.get("/announcement/all-announcement");
+  Future<List<AnnouncementResponse>> getAllAnnouncements({
+    int? page,
+    int? limit,
+  }) async {
+    final queryParams = <String, dynamic>{};
+    if (page != null) queryParams['page'] = page;
+    if (limit != null) queryParams['limit'] = limit;
+
+    final res = await DioClient.dio.get(
+      "/announcement/all-announcement",
+      queryParameters: queryParams.isNotEmpty ? queryParams : null,
+    );
 
     if (res.statusCode == 204 || res.data == null) {
       return [];
@@ -15,15 +25,21 @@ class AnnoucementService {
 
     final data = Map<String, dynamic>.from(res.data as Map);
     final rawResult = data["result"];
-    final announcements = rawResult is List
-        ? rawResult
-              .whereType<Map>()
-              .map(
-                (e) =>
-                    AnnouncementResponse.fromMap(Map<String, dynamic>.from(e)),
-              )
-              .toList()
-        : <AnnouncementResponse>[];
+    List rawList = [];
+    if (rawResult is List) {
+      rawList = rawResult;
+    } else if (rawResult is Map && rawResult["content"] is List) {
+      rawList = rawResult["content"] as List;
+    } else if (data["content"] is List) {
+      rawList = data["content"] as List;
+    }
+
+    final announcements = rawList
+        .whereType<Map>()
+        .map(
+          (e) => AnnouncementResponse.fromMap(Map<String, dynamic>.from(e)),
+        )
+        .toList();
 
     return announcements;
   }

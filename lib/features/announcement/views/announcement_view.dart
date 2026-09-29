@@ -12,8 +12,13 @@ class AnnouncementView extends StatefulWidget {
 
 class _AnnouncementViewState extends State<AnnouncementView> {
   final AnnoucementService _announcementService = AnnoucementService();
+  final ScrollController _scrollController = ScrollController();
   List<AnnouncementResponse> _announcements = [];
   bool _isLoading = true;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+  static const int _pageSize = 20;
   String? _error;
 
   // ── Vibrant Wilderness Palette ─────────────────────────────────
@@ -31,6 +36,23 @@ class _AnnouncementViewState extends State<AnnouncementView> {
   void initState() {
     super.initState();
     _loadAnnouncements();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 250 &&
+        !_isLoadingMore &&
+        !_isLoading &&
+        _hasMore) {
+      _loadMoreAnnouncements();
+    }
   }
 
   Future<void> _loadAnnouncements() async {
@@ -38,9 +60,14 @@ class _AnnouncementViewState extends State<AnnouncementView> {
     setState(() {
       _isLoading = true;
       _error = null;
+      _currentPage = 1;
+      _hasMore = true;
     });
     try {
-      final announcements = await _announcementService.getAllAnnouncements();
+      final announcements = await _announcementService.getAllAnnouncements(
+        page: 1,
+        limit: _pageSize,
+      );
       if (!mounted) return;
       final sortedAnnouncements = List<AnnouncementResponse>.from(
         announcements,
@@ -56,6 +83,7 @@ class _AnnouncementViewState extends State<AnnouncementView> {
       setState(() {
         _announcements = sortedAnnouncements;
         _isLoading = false;
+        _hasMore = announcements.length >= _pageSize;
       });
     } catch (error) {
       if (!mounted) return;
@@ -63,6 +91,51 @@ class _AnnouncementViewState extends State<AnnouncementView> {
         _error = "ไม่สามารถโหลดประกาศได้\n$error";
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadMoreAnnouncements() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+    final nextPage = _currentPage + 1;
+    try {
+      final newAnnouncements = await _announcementService.getAllAnnouncements(
+        page: nextPage,
+        limit: _pageSize,
+      );
+      if (!mounted) return;
+      if (newAnnouncements.isEmpty) {
+        setState(() {
+          _hasMore = false;
+          _isLoadingMore = false;
+        });
+        return;
+      }
+
+      final sortedNew = List<AnnouncementResponse>.from(newAnnouncements)
+        ..sort((first, second) {
+          final firstDate = DateTime.tryParse(first.postDate);
+          final secondDate = DateTime.tryParse(second.postDate);
+          if (firstDate != null && secondDate != null) {
+            return secondDate.compareTo(firstDate);
+          }
+          return second.postDate.compareTo(first.postDate);
+        });
+
+      final existingIds = _announcements.map((e) => e.announcementId).toSet();
+      final filteredNew = sortedNew
+          .where((e) => !existingIds.contains(e.announcementId))
+          .toList();
+
+      setState(() {
+        _currentPage = nextPage;
+        _announcements.addAll(filteredNew);
+        _isLoadingMore = false;
+        _hasMore = newAnnouncements.length >= _pageSize;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoadingMore = false);
     }
   }
 
@@ -138,57 +211,97 @@ class _AnnouncementViewState extends State<AnnouncementView> {
           : RefreshIndicator(
               color: emeraldTint,
               onRefresh: _loadAnnouncements,
-              child: ListView(
+              child: ListView.builder(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
-                children: [
-                  // Summary row
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 2,
-                      vertical: 6,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "พบ ${_announcements.length} ประกาศล่าสุด",
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: textMuted,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 3.5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: mintPillBg,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Text(
-                            "อัปเดตแบบเรียลไทม์",
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: mintDark,
+                itemCount: _announcements.length + 2,
+                itemBuilder: (context, index) {
+                  // Summary row header
+                  if (index == 0) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 2,
+                        vertical: 6,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "แสดง ${_announcements.length} ประกาศ",
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: textMuted,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 3.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: mintPillBg,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              "อัปเดตแบบเรียลไทม์",
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: mintDark,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
 
                   // Cards
-                  for (final announcement in _announcements)
-                    Padding(
+                  if (index <= _announcements.length) {
+                    final announcement = _announcements[index - 1];
+                    return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _buildAnnouncementCard(announcement),
-                    ),
-                ],
+                    );
+                  }
+
+                  // Bottom Loader or End Indicator
+                  if (_isLoadingMore) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 18),
+                      child: Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation(emeraldTint),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (!_hasMore && _announcements.isNotEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 18),
+                      child: Center(
+                        child: Text(
+                          "แสดงประกาศทั้งหมดแล้ว",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: textMuted,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return const SizedBox.shrink();
+                },
               ),
             ),
     );

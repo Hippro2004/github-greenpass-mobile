@@ -40,24 +40,37 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
   bool isLoading = false;
   int? gender;
   bool isForeigner = false;
+  bool _genderHasError = false;
 
-  DateFormat dateFormat = DateFormat("yyyy-MM-dd");
+  final DateFormat dateFormat = DateFormat("yyyy-MM-dd");
 
-  late final birthDateController = TextEditingController();
-  late final districtController = TextEditingController();
-  late final subDistrictController = TextEditingController();
-  late final provinceController = TextEditingController();
-  late final zipcodeController = TextEditingController();
+  late final TextEditingController birthDateController;
+  late final TextEditingController districtController;
+  late final TextEditingController subDistrictController;
+  late final TextEditingController provinceController;
+  late final TextEditingController zipcodeController;
 
-  static const Color forestGreen = Color(0xFF2D6A4F);
-  static const Color lightGreen = Color(0xFF74C69D);
-  static const Color creamBg = Color(0xFFF8F5F0);
-  static const Color darkGreen = Color(0xFF1B4332);
-  static const Color midGreen = Color(0xFF40916C);
+  // ── Vibrant Wilderness Palette ─────────────────────────────────
+  static const Color screenBg = Color(0xFFF3F7F5);
+  static const Color darkForest = Color(0xFF064E3B);
+  static const Color midForest = Color(0xFF0F5A3E);
+  static const Color emeraldTint = Color(0xFF00A86B);
+  static const Color mintLight = Color(0xFFE8F7F0);
+  static const Color mintBorder = Color(0xFFD6EFE2);
+  static const Color mintPillBg = Color(0xFFD1FAE5);
+  static const Color mintDark = Color(0xFF065F46);
+  static const Color textDark = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
 
   @override
   void initState() {
     super.initState();
+    birthDateController = TextEditingController();
+    districtController = TextEditingController();
+    subDistrictController = TextEditingController();
+    provinceController = TextEditingController();
+    zipcodeController = TextEditingController();
+
     if (widget.savedBirthDate != null) {
       birthDateController.text = dateFormat.format(widget.savedBirthDate!);
     }
@@ -69,747 +82,771 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
     zipcodeController.text = widget.savedZipcode;
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-    String? label,
-    IconData? icon,
-    TextInputType? keyboardType,
-    Future<void> Function()? onTap,
-    String? Function(String?)? validator,
+  @override
+  void dispose() {
+    birthDateController.dispose();
+    districtController.dispose();
+    subDistrictController.dispose();
+    provinceController.dispose();
+    zipcodeController.dispose();
+    super.dispose();
+  }
+
+  void _handlePop() {
+    DateTime? parsedDate;
+    if (birthDateController.text.isNotEmpty) {
+      try {
+        parsedDate = dateFormat.parse(birthDateController.text);
+      } catch (_) {}
+    }
+
+    Navigator.of(context).pop({
+      'birthDate': parsedDate,
+      'gender': gender,
+      'isForeigner': isForeigner,
+      'district': districtController.text,
+      'subDistrict': subDistrictController.text,
+      'province': provinceController.text,
+      'zipcode': zipcodeController.text,
+    });
+  }
+
+  Future<void> _handleRegister() async {
+    setState(() {
+      _genderHasError = gender == null;
+    });
+
+    if (!formkey.currentState!.validate() || gender == null) {
+      setState(() {
+        autovalidateMode = AutovalidateMode.onUserInteraction;
+      });
+      return;
+    }
+
+    try {
+      setState(() => isLoading = true);
+      await userservice.register(
+        RegisterRequest(
+          username: widget.username,
+          firstname: widget.firstname,
+          lastname: widget.lastname,
+          email: widget.email,
+          phone: widget.phone,
+          dateOfBirth: birthDateController.text,
+          gender: gender!,
+          isForeigner: isForeigner,
+          distrcict: districtController.text.trim(),
+          subDistrict: subDistrictController.text.trim(),
+          province: provinceController.text.trim(),
+          zipcode: zipcodeController.text.trim(),
+          password: widget.password,
+        ),
+      );
+
+      if (!mounted) return;
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: mintPillBg,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: mintBorder),
+                  ),
+                  child: const Icon(
+                    Icons.check_circle_rounded,
+                    color: darkForest,
+                    size: 36,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  "สมัครสมาชิกสำเร็จ",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: textDark,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "ยินดีต้อนรับสู่ระบบ GreenPass\nสามารถเข้าสู่ระบบเพื่อเริ่มใช้งานได้ทันที",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: textMuted, height: 1.5),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (_) => const LoginView()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: darkForest,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text(
+                      "เข้าสู่ระบบ",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final serverMsg =
+          e.response?.data?["message"]?.toString() ??
+          "เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่อีกครั้ง";
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.error_outline_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: Text(serverMsg)),
+            ],
+          ),
+          backgroundColor: const Color(0xFFDC2626),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("เกิดข้อผิดพลาด: $e"),
+          backgroundColor: const Color(0xFFDC2626),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  Widget _buildGenderCard({
+    required int value,
+    required String label,
+    required IconData icon,
+    required Color activeColor,
   }) {
-    return _AnimatedTextField(
-      controller: controller,
-      label: label ?? hint,
-      hint: hint,
-      icon: icon,
-      keyboardType: keyboardType,
-      onTap: onTap,
-      validator: validator,
+    final isSelected = gender == value;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          gender = value;
+          _genderHasError = false;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? mintLight.withValues(alpha: 0.6)
+              : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? darkForest : Colors.grey.shade200,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? activeColor : Colors.grey.shade400,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? textDark : textMuted,
+              ),
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 6),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: darkForest,
+                size: 16,
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
-      body: isLoading
-          ? Container(
-              color: Colors.black.withOpacity(0.3),
+      backgroundColor: screenBg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 14),
+          child: Center(
+            child: GestureDetector(
+              onTap: _handlePop,
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: mintLight,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: mintBorder),
+                ),
+                child: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: darkForest,
+                  size: 26,
+                ),
+              ),
+            ),
+          ),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "ข้อมูลส่วนตัว",
+              style: TextStyle(
+                color: textDark,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                letterSpacing: -0.2,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              width: 7,
+              height: 7,
+              decoration: const BoxDecoration(
+                color: emeraldTint,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: mintPillBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  "2 / 2",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: mintDark,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Title & Progress Indicator
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "ข้อมูลส่วนตัวและที่อยู่",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: textDark,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          "ระบุข้อมูลเพิ่มเติมสำหรับการสะสมตราประทับและบริการ",
+                          style: TextStyle(fontSize: 13, color: textMuted),
+                        ),
+                        const SizedBox(height: 12),
+                        // Progress Indicator
+                        Row(
+                          children: [
+                            Container(
+                              width: 10,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: emeraldTint,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              width: 44,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: darkForest,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Main Form Card
+                  Container(
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: mintBorder),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 18,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: formkey,
+                      autovalidateMode: autovalidateMode,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Birth Date
+                          _AuthInputField(
+                            controller: birthDateController,
+                            label: "วันเกิด (พ.ศ./ค.ศ.)",
+                            hint: "เลือกวันเกิดของคุณ",
+                            icon: Icons.calendar_today_outlined,
+                            onTap: () async {
+                              final initialDate =
+                                  DateTime.tryParse(birthDateController.text) ??
+                                  DateTime(2000, 1, 1);
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: initialDate,
+                                firstDate: DateTime(1920),
+                                lastDate: DateTime.now(),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: const ColorScheme.light(
+                                        primary: darkForest,
+                                        onPrimary: Colors.white,
+                                        onSurface: textDark,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  birthDateController.text = dateFormat.format(
+                                    picked,
+                                  );
+                                });
+                              }
+                            },
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return "กรุณาเลือกวันเกิด";
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 18),
+
+                          // Gender Selection
+                          const Text(
+                            "เพศ",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: textDark,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildGenderCard(
+                                  value: 0,
+                                  label: "ชาย",
+                                  icon: Icons.male_rounded,
+                                  activeColor: const Color(0xFF2563EB),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildGenderCard(
+                                  value: 1,
+                                  label: "หญิง",
+                                  icon: Icons.female_rounded,
+                                  activeColor: const Color(0xFFEC4899),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (_genderHasError)
+                            const Padding(
+                              padding: EdgeInsets.only(left: 4, top: 6),
+                              child: Text(
+                                "กรุณาเลือกเพศ",
+                                style: TextStyle(
+                                  color: Color(0xFFEF4444),
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 16),
+
+                          // Foreigner Checkbox
+                          GestureDetector(
+                            onTap: () =>
+                                setState(() => isForeigner = !isForeigner),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isForeigner
+                                    ? mintLight.withValues(alpha: 0.5)
+                                    : const Color(0xFFF8FAFC),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isForeigner
+                                      ? darkForest
+                                      : Colors.grey.shade200,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.public_rounded,
+                                    color: isForeigner
+                                        ? darkForest
+                                        : Colors.grey.shade400,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Expanded(
+                                    child: Text(
+                                      "ชาวต่างชาติ (Foreigner)",
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: textDark,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: Checkbox(
+                                      value: isForeigner,
+                                      onChanged: (v) => setState(
+                                        () => isForeigner = v ?? false,
+                                      ),
+                                      activeColor: darkForest,
+                                      checkColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 22),
+
+                          // Address Group Title
+                          const Row(
+                            children: [
+                              Icon(
+                                Icons.location_on_outlined,
+                                size: 18,
+                                color: darkForest,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                "ข้อมูลที่อยู่",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: textDark,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          _AuthInputField(
+                            controller: districtController,
+                            label: "อำเภอ/เขต",
+                            hint: "อำเภอ/เขต",
+                            icon: Icons.domain_outlined,
+                            validator: (value) =>
+                                value == null || value.trim().isEmpty
+                                ? "กรุณาระบุอำเภอ"
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+
+                          _AuthInputField(
+                            controller: subDistrictController,
+                            label: "ตำบล/แขวง",
+                            hint: "ตำบล/แขวง",
+                            icon: Icons.home_work_outlined,
+                            validator: (value) =>
+                                value == null || value.trim().isEmpty
+                                ? "กรุณาระบุตำบล"
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Province
+                          _AuthInputField(
+                            controller: provinceController,
+                            label: "จังหวัด",
+                            hint: "ระบุจังหวัดที่อยู่",
+                            icon: Icons.map_outlined,
+                            validator: (value) =>
+                                value == null || value.trim().isEmpty
+                                ? "กรุณาระบุจังหวัด"
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
+
+                          // District & SubDistrict
+
+                          // Zipcode
+                          _AuthInputField(
+                            controller: zipcodeController,
+                            label: "รหัสไปรษณีย์",
+                            hint: "รหัสไปรษณีย์ 5 หลัก",
+                            icon: Icons.local_post_office_outlined,
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return "กรุณากรอกรหัสไปรษณีย์";
+                              }
+                              if (value.trim().length != 5) {
+                                return "รหัสไปรษณีย์ต้องมี 5 หลัก";
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Submit Button
+                  Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [darkForest, midForest],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: darkForest.withValues(alpha: 0.25),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _handleRegister,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_rounded, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            "ยืนยันการสมัครสมาชิก",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+
+          // Loading Overlay
+          if (isLoading)
+            Container(
+              color: Colors.black.withValues(alpha: 0.25),
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.all(28),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 24,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: mintBorder),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                  child: Column(
+                  child: const Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(forestGreen),
-                        strokeWidth: 3,
+                      SizedBox(
+                        width: 38,
+                        height: 38,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation(emeraldTint),
+                          strokeWidth: 3,
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        "กำลังสมัครสมาชิก...",
-                        style: TextStyle(color: Colors.black54, fontSize: 14),
+                      SizedBox(height: 16),
+                      Text(
+                        "กำลังบันทึกข้อมูลการสมัครสมาชิก...",
+                        style: TextStyle(
+                          color: textDark,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-            )
-          : Stack(
-              children: [
-                // gradient ส่วนบน
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: size.height * 0.28,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [darkGreen, midGreen, forestGreen],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // cream ส่วนล่าง
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: size.height * 0.72,
-                  child: Container(color: creamBg),
-                ),
-
-                // ลายตกแต่ง
-                Positioned(
-                  top: 20,
-                  right: -20,
-                  child: Icon(
-                    Icons.forest,
-                    size: 100,
-                    color: Colors.white.withOpacity(0.06),
-                  ),
-                ),
-                Positioned(
-                  top: 40,
-                  left: -20,
-                  child: Icon(
-                    Icons.eco,
-                    size: 80,
-                    color: Colors.white.withOpacity(0.06),
-                  ),
-                ),
-                Positioned(
-                  bottom: -80,
-                  left: -50,
-                  child: Container(
-                    width: 250,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: forestGreen.withOpacity(0.06),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: -40,
-                  right: -60,
-                  child: Container(
-                    width: 180,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: lightGreen.withOpacity(0.1),
-                    ),
-                  ),
-                ),
-
-                SafeArea(
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverAppBar(
-                        backgroundColor: Colors.transparent,
-                        elevation: 0,
-                        forceMaterialTransparency: true,
-                        floating: true,
-                        snap: true,
-                        leading: IconButton(
-                          onPressed: () => Navigator.of(context).pop({
-                            'birthDate': birthDateController.text.isNotEmpty
-                                ? dateFormat.parse(birthDateController.text)
-                                : null,
-                            'gender': gender,
-                            'isForeigner': isForeigner,
-                            'district': districtController.text,
-                            'subDistrict': subDistrictController.text,
-                            'province': provinceController.text,
-                            'zipcode': zipcodeController.text,
-                          }),
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-
-                      SliverToBoxAdapter(
-                        child: Column(
-                          children: [
-                            // Header
-                            SizedBox(
-                              height: size.height * 0.14,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    "สมัครสมาชิก",
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "เริ่มต้นการเดินทางกับ GreenPass",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.white.withOpacity(0.8),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // Step indicator
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.4),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Container(
-                                        width: 24,
-                                        height: 8,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // Form card
-                            Container(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                              ),
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
-                                    blurRadius: 24,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Form(
-                                key: formkey,
-                                autovalidateMode: autovalidateMode,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "ข้อมูลส่วนตัว",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "กรอกข้อมูลส่วนตัวเพิ่มเติม",
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-
-                                    // วันเกิด
-                                    _buildTextField(
-                                      controller: birthDateController,
-                                      label: "วันเดือนปีเกิด",
-                                      hint: "กรอกวันเดือนปีเกิด",
-                                      icon: Icons.calendar_today_outlined,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return "กรุณาเลือกวันเดือนปีเกิด";
-                                        }
-                                        return null;
-                                      },
-                                      onTap: () async {
-                                        final picked = await showDatePicker(
-                                          context: context,
-                                          initialDate: DateTime(2000),
-                                          firstDate: DateTime(1900),
-                                          lastDate: DateTime.now(),
-                                          builder: (context, child) => Theme(
-                                            data: Theme.of(context).copyWith(
-                                              colorScheme:
-                                                  const ColorScheme.light(
-                                                    primary: forestGreen,
-                                                  ),
-                                            ),
-                                            child: child!,
-                                          ),
-                                        );
-                                        if (picked != null) {
-                                          setState(
-                                            () => birthDateController.text =
-                                                dateFormat.format(picked),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                    const SizedBox(height: 12),
-
-                                    // เพศ
-                                    FormField<int>(
-                                      validator: (value) {
-                                        if (gender == null) {
-                                          return "กรุณาเลือกเพศ";
-                                        }
-                                        return null;
-                                      },
-                                      builder: (field) => Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          DropdownMenu<int>(
-                                            width: double.infinity,
-                                            initialSelection: gender,
-                                            label: const Text("เพศ"),
-                                            leadingIcon: Icon(
-                                              gender == 0
-                                                  ? Icons.male
-                                                  : gender == 1
-                                                  ? Icons.female
-                                                  : Icons.person_outline,
-                                              color: gender == 0
-                                                  ? Colors.blue
-                                                  : gender == 1
-                                                  ? Colors.pink
-                                                  : forestGreen,
-                                              size: 20,
-                                            ),
-                                            trailingIcon: const Icon(
-                                              Icons.keyboard_arrow_down,
-                                              color: forestGreen,
-                                            ),
-                                            selectedTrailingIcon: const Icon(
-                                              Icons.keyboard_arrow_up,
-                                              color: forestGreen,
-                                            ),
-                                            menuStyle: MenuStyle(
-                                              backgroundColor:
-                                                  WidgetStatePropertyAll(
-                                                    Colors.white,
-                                                  ),
-                                              shape: WidgetStatePropertyAll(
-                                                RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(14),
-                                                ),
-                                              ),
-                                            ),
-                                            inputDecorationTheme:
-                                                InputDecorationTheme(
-                                                  filled: true,
-                                                  fillColor: creamBg,
-                                                  labelStyle: const TextStyle(
-                                                    color: Colors.black45,
-                                                  ),
-                                                  border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          14,
-                                                        ),
-                                                    borderSide: BorderSide.none,
-                                                  ),
-                                                  enabledBorder:
-                                                      OutlineInputBorder(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              14,
-                                                            ),
-                                                        borderSide: BorderSide(
-                                                          color: Colors
-                                                              .grey
-                                                              .shade200,
-                                                        ),
-                                                      ),
-                                                  focusedBorder:
-                                                      OutlineInputBorder(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              14,
-                                                            ),
-                                                        borderSide:
-                                                            const BorderSide(
-                                                              color:
-                                                                  forestGreen,
-                                                              width: 1.5,
-                                                            ),
-                                                      ),
-                                                  contentPadding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 16,
-                                                      ),
-                                                ),
-                                            dropdownMenuEntries: const [
-                                              DropdownMenuEntry(
-                                                value: 0,
-                                                label: "ชาย",
-                                              ),
-                                              DropdownMenuEntry(
-                                                value: 1,
-                                                label: "หญิง",
-                                              ),
-                                            ],
-                                            onSelected: (value) {
-                                              setState(() => gender = value);
-                                              field.didChange(value);
-                                            },
-                                          ),
-                                          if (field.hasError)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                left: 12,
-                                                top: 6,
-                                              ),
-                                              child: Text(
-                                                field.errorText!,
-                                                style: const TextStyle(
-                                                  color: Colors.red,
-                                                  fontSize: 11,
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-
-                                    // ชาวต่างชาติ
-                                    Row(
-                                      children: [
-                                        Transform.scale(
-                                          scale: 1.1,
-                                          child: Checkbox(
-                                            value: isForeigner,
-                                            onChanged: (value) => setState(
-                                              () => isForeigner = value!,
-                                            ),
-                                            activeColor: forestGreen,
-                                            checkColor: Colors.white,
-                                            side: BorderSide(
-                                              color: Colors.grey.shade300,
-                                              width: 1.5,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                            ),
-                                          ),
-                                        ),
-                                        Text(
-                                          "Is a foreigner? / เป็นชาวต่างชาติ",
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.black54,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    if (!isForeigner) ...[
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: _buildTextField(
-                                              controller: districtController,
-                                              label: "เขต / อำเภอ",
-                                              hint: "กรอกเขต / อำเภอ",
-                                              validator: (v) =>
-                                                  v == null || v.isEmpty
-                                                  ? "กรุณากรอก"
-                                                  : null,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: _buildTextField(
-                                              controller: subDistrictController,
-                                              label: "ตำบล / แขวง",
-                                              hint: "กรอกตำบล / แขวง",
-                                              validator: (v) =>
-                                                  v == null || v.isEmpty
-                                                  ? "กรุณากรอก"
-                                                  : null,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      _buildTextField(
-                                        controller: provinceController,
-                                        label: "จังหวัด",
-                                        hint: "กรอกจังหวัด",
-                                        icon: Icons.location_on_outlined,
-                                        validator: (v) => v == null || v.isEmpty
-                                            ? "กรุณากรอกจังหวัด"
-                                            : null,
-                                      ),
-                                      const SizedBox(height: 12),
-                                      _buildTextField(
-                                        controller: zipcodeController,
-                                        label: "เลขไปรษณีย์",
-                                        hint: "กรอกเลขไปรษณีย์",
-                                        icon: Icons.markunread_mailbox_outlined,
-                                        keyboardType: TextInputType.number,
-                                        validator: (v) => v == null || v.isEmpty
-                                            ? "กรุณากรอกเลขไปรษณีย์"
-                                            : null,
-                                      ),
-                                    ],
-
-                                    const SizedBox(height: 24),
-
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 52,
-                                      child: ElevatedButton.icon(
-                                        onPressed: () async {
-                                          if (!formkey.currentState!
-                                              .validate()) {
-                                            setState(
-                                              () => autovalidateMode =
-                                                  AutovalidateMode.always,
-                                            );
-                                            return;
-                                          }
-                                          try {
-                                            setState(() => isLoading = true);
-                                            await userservice.register(
-                                              RegisterRequest(
-                                                username: widget.username,
-                                                firstname: widget.firstname,
-                                                lastname: widget.lastname,
-                                                email: widget.email,
-                                                phone: widget.phone,
-                                                dateOfBirth:
-                                                    birthDateController.text,
-                                                gender: gender!,
-                                                isForeigner: isForeigner,
-                                                distrcict:
-                                                    districtController.text,
-                                                subDistrict:
-                                                    subDistrictController.text,
-                                                province:
-                                                    provinceController.text,
-                                                zipcode: zipcodeController.text,
-                                                password: widget.password,
-                                              ),
-                                            );
-                                            if (!mounted) return;
-                                            await showDialog(
-                                              context: context,
-                                              barrierDismissible: false,
-                                              builder: (_) => AlertDialog(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                ),
-                                                title: const Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons
-                                                          .check_circle_outline,
-                                                      color: forestGreen,
-                                                      size: 24,
-                                                    ),
-                                                    SizedBox(width: 8),
-                                                    Text(
-                                                      "สมัครสมาชิกสำเร็จ",
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                content: const Text(
-                                                  "ยินดีต้อนรับสู่ GreenPass\nสามารถเข้าสู่ระบบได้เลยครับ",
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                                actions: [
-                                                  ElevatedButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(context),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor:
-                                                          forestGreen,
-                                                      foregroundColor:
-                                                          Colors.white,
-                                                      elevation: 0,
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              12,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    child: const Text(
-                                                      "เข้าสู่ระบบ",
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                            if (!mounted) return;
-                                            Navigator.of(
-                                              context,
-                                            ).pushReplacement(
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const LoginView(),
-                                              ),
-                                            );
-                                          } on DioException catch (e) {
-                                            if (!mounted) return;
-                                            showDialog(
-                                              context: context,
-                                              builder: (_) => AlertDialog(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                ),
-                                                title: const Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.error_outline,
-                                                      color: Colors.red,
-                                                      size: 24,
-                                                    ),
-                                                    SizedBox(width: 8),
-                                                    Text(
-                                                      "สมัครสมาชิกไม่สำเร็จ",
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                content: Text(
-                                                  e.response?.data['message'] ??
-                                                      "เกิดข้อผิดพลาด",
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                                actions: [
-                                                  ElevatedButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(context),
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor:
-                                                          Colors.red,
-                                                      foregroundColor:
-                                                          Colors.white,
-                                                      elevation: 0,
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              12,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    child: const Text("ตกลง"),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          } finally {
-                                            setState(() => isLoading = false);
-                                          }
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: forestGreen,
-                                          foregroundColor: Colors.white,
-                                          elevation: 0,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              14,
-                                            ),
-                                          ),
-                                        ),
-                                        label: const Text(
-                                          "สมัครสมาชิก",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        icon: const Icon(Icons.check),
-                                        iconAlignment: IconAlignment.end,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 32),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
+        ],
+      ),
     );
   }
 }
 
-// ── Animated TextField
-class _AnimatedTextField extends StatefulWidget {
+// ── Standardized Modern Auth Input Field ───────────────────────────
+class _AuthInputField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
   final String hint;
-  final IconData? icon;
-  final String? Function(String?)? validator;
+  final IconData icon;
   final TextInputType? keyboardType;
   final Future<void> Function()? onTap;
+  final String? Function(String?)? validator;
 
-  const _AnimatedTextField({
+  const _AuthInputField({
     required this.controller,
     required this.label,
     required this.hint,
-    this.icon,
-    this.validator,
+    required this.icon,
     this.keyboardType,
     this.onTap,
+    this.validator,
   });
 
   @override
-  State<_AnimatedTextField> createState() => _AnimatedTextFieldState();
+  State<_AuthInputField> createState() => _AuthInputFieldState();
 }
 
-class _AnimatedTextFieldState extends State<_AnimatedTextField> {
+class _AuthInputFieldState extends State<_AuthInputField> {
   final FocusNode _focusNode = FocusNode();
   bool _isFocused = false;
 
-  static const Color forestGreen = Color(0xFF2D6A4F);
-  static const Color creamBg = Color(0xFFF8F5F0);
+  static const Color darkForest = Color(0xFF064E3B);
+  static const Color emeraldTint = Color(0xFF00A86B);
+  static const Color textDark = Color(0xFF0F172A);
 
   @override
   void initState() {
     super.initState();
-    _focusNode.addListener(
-      () => setState(() => _isFocused = _focusNode.hasFocus),
-    );
+    _focusNode.addListener(() {
+      if (mounted) setState(() => _isFocused = _focusNode.hasFocus);
+    });
   }
 
   @override
@@ -820,69 +857,67 @@ class _AnimatedTextFieldState extends State<_AnimatedTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: _isFocused
-            ? [
-                BoxShadow(
-                  color: forestGreen.withOpacity(0.15),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : [],
+    return TextFormField(
+      controller: widget.controller,
+      focusNode: _focusNode,
+      keyboardType: widget.keyboardType,
+      readOnly: widget.onTap != null,
+      onTap: widget.onTap,
+      validator: widget.validator,
+      style: const TextStyle(
+        fontSize: 14,
+        color: textDark,
+        fontWeight: FontWeight.w500,
       ),
-      child: TextFormField(
-        controller: widget.controller,
-        focusNode: _focusNode,
-        keyboardType: widget.keyboardType,
-        readOnly: widget.onTap != null,
-        onTap: widget.onTap,
-        validator: widget.validator,
-        decoration: InputDecoration(
-          labelText: widget.label,
-          labelStyle: TextStyle(
-            color: _isFocused ? forestGreen : Colors.black45,
-            fontSize: 14,
-          ),
-          hintText: widget.hint,
-          hintStyle: const TextStyle(color: Colors.black26),
-          prefixIcon: widget.icon != null
-              ? Icon(
-                  widget.icon,
-                  color: _isFocused ? forestGreen : Colors.black38,
-                  size: 20,
-                )
-              : null,
-          filled: true,
-          fillColor: _isFocused ? Colors.white : creamBg,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade200),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: forestGreen, width: 1.5),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Colors.red, width: 1),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Colors.red, width: 1.5),
-          ),
-          errorStyle: const TextStyle(fontSize: 11, color: Colors.red),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
+      decoration: InputDecoration(
+        labelText: widget.label,
+        labelStyle: TextStyle(
+          color: _isFocused ? darkForest : const Color(0xFF64748B),
+          fontSize: 13,
+          fontWeight: _isFocused ? FontWeight.w600 : FontWeight.normal,
+        ),
+        hintText: widget.hint,
+        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+        prefixIcon: Icon(
+          widget.icon,
+          color: _isFocused ? darkForest : Colors.grey.shade400,
+          size: 19,
+        ),
+        suffixIcon: widget.onTap != null
+            ? Icon(
+                Icons.calendar_month_rounded,
+                color: Colors.grey.shade400,
+                size: 19,
+              )
+            : null,
+        filled: true,
+        fillColor: _isFocused
+            ? const Color(0xFFE8F7F0).withValues(alpha: 0.35)
+            : const Color(0xFFF8FAFC),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey.shade200),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey.shade200),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: emeraldTint, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+        ),
+        errorStyle: const TextStyle(fontSize: 11, color: Color(0xFFEF4444)),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
         ),
       ),
     );
