@@ -49,5 +49,9 @@
 		<true />
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>ต้องการตำแหน่งเพื่อแสดงอุทยานใกล้เคียง</string>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>tel</string>
+		</array>
 	</dict>
 </plist>

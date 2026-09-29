@@ -19,9 +19,12 @@ import 'package:greenpass/features/stamp/views/show_qr_view.dart';
 import 'package:greenpass/features/stamp/views/travel_book_view.dart';
 import 'package:greenpass/features/notification/services/notification_service.dart';
 import 'package:greenpass/features/notification/views/notification_view.dart';
+import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:greenpass/features/notification/models/notification_model.dart';
 import 'package:greenpass/features/notification/services/notification_websocket_service.dart';
 import 'package:greenpass/features/notification/widgets/top_notification_banner.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MainView extends StatefulWidget {
   const MainView({super.key});
@@ -331,6 +334,64 @@ class _MainViewState extends State<MainView> {
     ]);
   }
 
+  static const MethodChannel _nativeChannel = MethodChannel(
+    'com.example.greenpass/native_launcher',
+  );
+
+  Future<void> _callEmergency() async {
+    const phoneNumber = '1362';
+
+    // 1. On Android, use native Intent.ACTION_DIAL to directly open the Phone Dialer keypad
+    // instead of Intent.ACTION_VIEW which Android can mistake for "Add to Contacts".
+    if (Platform.isAndroid) {
+      try {
+        await _nativeChannel.invokeMethod('openDialer', {
+          'number': phoneNumber,
+        });
+        return;
+      } catch (e) {
+        debugPrint('Native openDialer error: $e');
+        // Fallback to url_launcher below if native channel fails
+      }
+    }
+
+    // 2. On iOS or fallback, use url_launcher with tel:
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+    try {
+      final launched = await launchUrl(
+        phoneUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        final fallbackLaunched = await launchUrl(phoneUri);
+        if (!fallbackLaunched && mounted) {
+          _showEmergencyCallError();
+        }
+      }
+    } catch (e) {
+      debugPrint('Emergency call error: $e');
+      if (mounted) {
+        final isMissingPlugin = e.toString().contains('MissingPluginException');
+        _showEmergencyCallError(isMissingPlugin: isMissingPlugin);
+      }
+    }
+  }
+
+  void _showEmergencyCallError({bool isMissingPlugin = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isMissingPlugin
+              ? 'กรุณา Stop แอพแล้วกด Run ใหม่ (Full Rebuild) เพื่อเปิดใช้งาน url_launcher'
+              : 'ไม่สามารถเปิดแอพโทรศัพท์ได้ กรุณากดโทร 1362 ด้วยตนเอง',
+        ),
+        backgroundColor: const Color(0xFFD94C5F),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -417,7 +478,7 @@ class _MainViewState extends State<MainView> {
                   const SizedBox(height: 18),
                   // _buildHeroSection(),
                   // const SizedBox(height: 18),
-                  _buildLocationPill(),
+                  // _buildLocationPill(),
                   const SizedBox(height: 18),
                   GridView.count(
                     shrinkWrap: true,
@@ -511,11 +572,12 @@ class _MainViewState extends State<MainView> {
                   ),
                   const SizedBox(height: 18),
                   _buildWideButton(
-                    icon: Icons.warning_amber_rounded,
+                    icon: Icons.phone_in_talk_rounded,
                     label: "เหตุฉุกเฉิน",
+                    subLabel: "โทรสายด่วนอุทยานฯ",
                     accentColor: Colors.white,
                     tileColor: const Color(0xFFD94C5F),
-                    onTap: () {},
+                    onTap: _callEmergency,
                   ),
                   const SizedBox(height: 22),
                   _buildSectionTitle(),
@@ -1188,6 +1250,8 @@ class _MainViewState extends State<MainView> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    String? subLabel,
+    String? badgeText,
     Color? accentColor,
     Color? tileColor,
   }) {
@@ -1206,7 +1270,7 @@ class _MainViewState extends State<MainView> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFB72E4C).withOpacity(0.25),
+                color: const Color(0xFFB72E4C).withValues(alpha: 0.25),
                 blurRadius: 14,
                 offset: const Offset(0, 8),
               ),
@@ -1215,30 +1279,83 @@ class _MainViewState extends State<MainView> {
           child: Row(
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: accentColor ?? Colors.white, size: 20),
+                child: Icon(icon, color: accentColor ?? Colors.white, size: 22),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    if (subLabel != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subLabel,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-              const Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: Colors.white,
-                size: 17,
-              ),
+              if (badgeText != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.22),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.call_rounded,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        badgeText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 17,
+                ),
             ],
           ),
         ),
