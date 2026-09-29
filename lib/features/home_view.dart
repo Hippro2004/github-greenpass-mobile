@@ -983,26 +983,50 @@ class _MainViewState extends State<MainView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'ข่าวสารล่าสุด',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 20,
+              decoration: BoxDecoration(
+                color: forestGreen,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'ข่าวสารล่าสุด',
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
-        TextButton(
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AnnouncementView()),
-          ),
-          style: TextButton.styleFrom(padding: EdgeInsets.zero),
-          child: const Text(
-            'ดูทั้งหมด',
-            style: TextStyle(
-              color: forestGreen,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+        GestureDetector(
+          onTap: () => setState(() => _currentIndex = 1),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F5EE),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'ดูทั้งหมด',
+                  style: TextStyle(
+                    color: forestGreen,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(Icons.arrow_forward_ios_rounded,
+                    size: 10, color: forestGreen),
+              ],
             ),
           ),
         ),
@@ -1011,161 +1035,226 @@ class _MainViewState extends State<MainView> {
   }
 
   Widget _buildAnnouncementCarousel() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: _announcementLoading
-          ? Row(
-              children: [
-                SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(forestGreen),
-                  ),
+    if (_announcementLoading) {
+      return Container(
+        height: 130,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(forestGreen),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  "กำลังโหลดข่าวสาร...",
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
-                ),
-              ],
-            )
-          : _announcementError != null
-          ? InkWell(
-              onTap: _loadAnnouncements,
-              child: Row(
-                children: [
-                  Icon(Icons.refresh, size: 18, color: softBrown),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      "โหลดข่าวสารไม่สำเร็จ แตะเพื่อลองใหม่",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
-                ],
               ),
-            )
-          : _announcements.isEmpty
-          ? Row(
-              children: [
-                Icon(Icons.campaign_outlined, size: 18, color: softBrown),
-                const SizedBox(width: 8),
-                Text(
-                  "ยังไม่มีข่าวสาร",
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
-                ),
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.campaign_outlined, size: 16, color: softBrown),
-                    const SizedBox(width: 6),
-                    const Text(
-                      "ข่าวสาร",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
+              const SizedBox(width: 10),
+              Text(
+                'กำลังโหลดข่าวสาร...',
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_announcementError != null || _announcements.isEmpty) {
+      return Container(
+        height: 100,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.campaign_outlined, size: 28, color: Colors.grey.shade400),
+              const SizedBox(height: 6),
+              Text(
+                _announcementError != null
+                    ? 'โหลดไม่สำเร็จ แตะเพื่อลองใหม่'
+                    : 'ยังไม่มีข่าวสาร',
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 110,
+          child: PageView.builder(
+            controller: _announcementController,
+            itemCount: _announcements.length,
+            onPageChanged: (index) =>
+                setState(() => _announcementIndex = index),
+            itemBuilder: (context, index) {
+              final a = _announcements[index];
+              return Padding(
+                padding: const EdgeInsets.only(right: 2),
+                child: GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          AnnouncementDetailView(announcementId: a.announcementId),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  height: 74,
-                  child: PageView.builder(
-                    controller: _announcementController,
-                    itemCount: _announcements.length,
-                    onPageChanged: (index) =>
-                        setState(() => _announcementIndex = index),
-                    itemBuilder: (context, index) {
-                      final announcement = _announcements[index];
-                      return InkWell(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AnnouncementDetailView(
-                              announcementId: announcement.announcementId,
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFEAF3EE)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        // Left accent bar
+                        Container(
+                          width: 5,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                forestGreen,
+                                lightGreen,
+                              ],
+                            ),
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(20),
+                              bottomLeft: Radius.circular(20),
                             ),
                           ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              announcement.parkName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: forestGreen,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              announcement.announcementTitle.trim().isEmpty
-                                  ? "ประกาศจากอุทยาน"
-                                  : announcement.announcementTitle,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.black87,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(width: 14),
+                        // Icon
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F5EE),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(
+                            Icons.campaign_rounded,
+                            color: forestGreen,
+                            size: 22,
+                          ),
                         ),
-                      );
-                    },
-                  ),
-                ),
-                if (_announcements.length > 1) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _announcements.length,
-                      (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        width: index == _announcementIndex ? 16 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: index == _announcementIndex
-                              ? forestGreen
-                              : Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(4),
+                        const SizedBox(width: 12),
+                        // Text
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                a.parkName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: forestGreen,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                a.announcementTitle.trim().isEmpty
+                                    ? 'ประกาศจากอุทยาน'
+                                    : a.announcementTitle,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        // Chevron
+                        Container(
+                          width: 28,
+                          height: 28,
+                          margin: const EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F5EE),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 12,
+                            color: forestGreen,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ],
+                ),
+              );
+            },
+          ),
+        ),
+        if (_announcements.length > 1) ...[
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              _announcements.length,
+              (index) => AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: index == _announcementIndex ? 20 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: index == _announcementIndex
+                      ? forestGreen
+                      : Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
             ),
+          ),
+        ],
+      ],
     );
   }
 
