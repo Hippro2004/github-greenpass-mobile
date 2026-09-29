@@ -12,6 +12,7 @@ class NotificationWebSocketService {
 
   StompClient? _stompClient;
   String? _connectedUsername;
+  final Set<String> _recentMessageBodies = {};
 
   final StreamController<NotificationModel> _notificationStreamController =
       StreamController<NotificationModel>.broadcast();
@@ -74,28 +75,52 @@ class NotificationWebSocketService {
   void _onConnect(StompFrame frame) {
     if (_connectedUsername == null || _stompClient == null) return;
 
-    final topic = '/topic/user/$_connectedUsername/notifications';
-    print('>>> [WebSocket] CONNECTED SUCCESSFULLY! Subscribing to: $topic');
+    final uname = _connectedUsername!;
+    final lowerUname = uname.toLowerCase();
 
-    _stompClient!.subscribe(
-      destination: topic,
-      callback: (StompFrame frame) {
-        if (frame.body == null || frame.body!.isEmpty) return;
+    final topicsToSubscribe = <String>{
+      '/topic/user/$uname/reply-reports',
+      '/topic/user/$lowerUname/reply-reports',
+      '/topic/user/$uname/notifications',
+      '/topic/user/$lowerUname/notifications',
+      '/topic/reply-reports',
+    };
 
-        try {
-          debugPrint('>>> [WebSocket] Raw message body received: ${frame.body}');
-          final dynamic decoded = json.decode(frame.body!);
-          if (decoded is Map) {
-            final Map<String, dynamic> data = Map<String, dynamic>.from(decoded);
-            final notification = NotificationModel.fromMap(data);
-            debugPrint('>>> [WebSocket] Parsed Notification: ${notification.title}');
-            _notificationStreamController.add(notification);
-          }
-        } catch (e, stack) {
-          debugPrint('>>> [WebSocket] Error parsing notification: $e\n$stack');
-        }
-      },
-    );
+    for (final topic in topicsToSubscribe) {
+      print('>>> [WebSocket] Subscribing to: $topic');
+      _stompClient!.subscribe(
+        destination: topic,
+        callback: _handleIncomingFrame,
+      );
+    }
+  }
+
+  void _handleIncomingFrame(StompFrame frame) {
+    if (frame.body == null || frame.body!.isEmpty) return;
+
+    final rawBody = frame.body!.trim();
+    if (_recentMessageBodies.contains(rawBody)) {
+      return;
+    }
+    _recentMessageBodies.add(rawBody);
+    Timer(const Duration(seconds: 3), () {
+      _recentMessageBodies.remove(rawBody);
+    });
+
+    try {
+      debugPrint('>>> [WebSocket] Raw message body received: $rawBody');
+      final dynamic decoded = json.decode(rawBody);
+      if (decoded is Map) {
+        final Map<String, dynamic> data = Map<String, dynamic>.from(decoded);
+        final notification = NotificationModel.fromMap(data);
+        debugPrint(
+            '>>> [WebSocket] Parsed Notification/Reply: ${notification.title}');
+        _notificationStreamController.add(notification);
+      }
+    } catch (e, stack) {
+      debugPrint(
+          '>>> [WebSocket] Error parsing notification frame: $e\n$stack');
+    }
   }
 
   void disconnect() {
@@ -104,5 +129,6 @@ class NotificationWebSocketService {
     } catch (_) {}
     _stompClient = null;
     _connectedUsername = null;
+    _recentMessageBodies.clear();
   }
 }

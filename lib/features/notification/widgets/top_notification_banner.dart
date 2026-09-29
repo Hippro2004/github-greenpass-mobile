@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:greenpass/features/notification/models/notification_model.dart';
+import 'package:greenpass/features/report/services/report_service.dart';
 import 'package:greenpass/features/report/views/report_view_detail.dart';
 import 'package:greenpass/main.dart';
 
@@ -45,6 +46,19 @@ class TopNotificationBanner {
                 builder: (_) => ReportViewDetail(report: notification.report!),
               ),
             );
+          } else if (notification.reportId != null) {
+            ReportService().getMyReport().then((reports) {
+              final match = reports
+                  .where((r) => r.reportId == notification.reportId)
+                  .firstOrNull;
+              if (match != null) {
+                rootNavigatorKey.currentState?.push(
+                  MaterialPageRoute(
+                    builder: (_) => ReportViewDetail(report: match),
+                  ),
+                );
+              }
+            }).catchError((_) {});
           }
         },
       ),

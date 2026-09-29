@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:greenpass/features/notification/models/notification_model.dart';
 import 'package:greenpass/features/notification/services/notification_service.dart';
 import 'package:greenpass/features/notification/services/notification_websocket_service.dart';
+import 'package:greenpass/features/report/services/report_service.dart';
 import 'package:greenpass/features/report/views/report_view_detail.dart';
 
 class NotificationView extends StatefulWidget {
@@ -99,9 +100,8 @@ class _NotificationViewState extends State<NotificationView> {
           .toList();
     });
 
-    for (final n in unreadList) {
-      await _notificationService.markAsRead(n.notificationId);
-    }
+    final ids = unreadList.map((n) => n.notificationId);
+    await _notificationService.markAllAsRead(ids);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -126,6 +126,20 @@ class _NotificationViewState extends State<NotificationView> {
           builder: (_) => ReportViewDetail(report: item.report!),
         ),
       );
+    } else if (item.reportId != null) {
+      try {
+        final reports = await ReportService().getMyReport();
+        final match =
+            reports.where((r) => r.reportId == item.reportId).firstOrNull;
+        if (match != null && mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ReportViewDetail(report: match),
+            ),
+          );
+        }
+      } catch (_) {}
     }
   }
 

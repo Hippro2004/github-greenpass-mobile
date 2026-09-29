@@ -49,7 +49,10 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
           (notif.report != null &&
               notif.report!.reportId == widget.report.reportId)) {
         setState(() {
-          if (notif.report?.status != null && notif.report!.status.isNotEmpty) {
+          if (notif.currentStatus != null && notif.currentStatus!.isNotEmpty) {
+            _currentStatus = notif.currentStatus!;
+          } else if (notif.report?.status != null &&
+              notif.report!.status.isNotEmpty) {
             _currentStatus = notif.report!.status;
           }
         });
