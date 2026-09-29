@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:greenpass/core/network/image_helper.dart';
 import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/features/home_view.dart';
 import 'package:greenpass/features/user/dtos/login_request.dart';
@@ -149,38 +150,45 @@ class _LoginViewState extends State<LoginView> {
                   children: [
                     // Brand Logo & Title Hero
                     Container(
-                      width: 76,
-                      height: 76,
+                      width: 84,
+                      height: 84,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(26),
                         border: Border.all(color: mintBorder, width: 1.5),
                         boxShadow: [
                           BoxShadow(
                             color: emeraldTint.withValues(alpha: 0.12),
                             blurRadius: 20,
-                            offset: const Offset(0, 6),
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: Center(
-                        child: Container(
-                          width: 58,
-                          height: 58,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [darkForest, midForest],
+                      padding: const EdgeInsets.all(14),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.network(
+                            resolveImageUrl('/logo/logo.png'),
+                            fit: BoxFit.contain,
+                            errorBuilder: (ctx, err, stack) => Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [darkForest, midForest],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Icon(
+                                Icons.forest_rounded,
+                                color: Colors.white,
+                                size: 30,
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: const Icon(
-                            Icons.forest_rounded,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                        ),
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(height: 16),

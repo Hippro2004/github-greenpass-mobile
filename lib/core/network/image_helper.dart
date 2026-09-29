@@ -44,6 +44,7 @@ String resolveImageUrl(String? imagePath, {String defaultCategory = 'users'}) {
         cleanPath.startsWith('/reports/') ||
         cleanPath.startsWith('/rewards/') ||
         cleanPath.startsWith('/announcements/') ||
+        cleanPath.startsWith('/logo/') ||
         cleanPath.startsWith('/$defaultCategory/')) {
       cleanPath = '/uploads$cleanPath';
     } else {

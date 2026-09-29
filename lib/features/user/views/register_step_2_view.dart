@@ -104,10 +104,10 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
       'birthDate': parsedDate,
       'gender': gender,
       'isForeigner': isForeigner,
-      'district': districtController.text,
-      'subDistrict': subDistrictController.text,
-      'province': provinceController.text,
-      'zipcode': zipcodeController.text,
+      'district': isForeigner ? '' : districtController.text,
+      'subDistrict': isForeigner ? '' : subDistrictController.text,
+      'province': isForeigner ? '' : provinceController.text,
+      'zipcode': isForeigner ? '' : zipcodeController.text,
     });
   }
 
@@ -135,10 +135,10 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
           dateOfBirth: birthDateController.text,
           gender: gender!,
           isForeigner: isForeigner,
-          distrcict: districtController.text.trim(),
-          subDistrict: subDistrictController.text.trim(),
-          province: provinceController.text.trim(),
-          zipcode: zipcodeController.text.trim(),
+          distrcict: isForeigner ? '' : districtController.text.trim(),
+          subDistrict: isForeigner ? '' : subDistrictController.text.trim(),
+          province: isForeigner ? '' : provinceController.text.trim(),
+          zipcode: isForeigner ? '' : zipcodeController.text.trim(),
           password: widget.password,
         ),
       );
@@ -618,85 +618,99 @@ class _RegisterStep2ViewState extends State<RegisterStep2View> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 22),
-
-                          // Address Group Title
-                          const Row(
-                            children: [
-                              Icon(
-                                Icons.location_on_outlined,
-                                size: 18,
-                                color: darkForest,
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                "ข้อมูลที่อยู่",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: textDark,
+                          // Address Group Title & Fields (เฉพาะกรณีไม่ใช่ชาวต่างชาติ เหมือนหน้า Edit Profile)
+                          if (!isForeigner) ...[
+                            const SizedBox(height: 22),
+                            const Row(
+                              children: [
+                                Icon(
+                                  Icons.location_on_outlined,
+                                  size: 18,
+                                  color: darkForest,
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
+                                SizedBox(width: 6),
+                                Text(
+                                  "ข้อมูลที่อยู่",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: textDark,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
 
-                          _AuthInputField(
-                            controller: districtController,
-                            label: "อำเภอ/เขต",
-                            hint: "อำเภอ/เขต",
-                            icon: Icons.domain_outlined,
-                            validator: (value) =>
-                                value == null || value.trim().isEmpty
-                                ? "กรุณาระบุอำเภอ"
-                                : null,
-                          ),
-                          const SizedBox(height: 12),
+                            _AuthInputField(
+                              controller: districtController,
+                              label: "อำเภอ/เขต",
+                              hint: "อำเภอ/เขต",
+                              icon: Icons.domain_outlined,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return "กรุณาระบุอำเภอ";
+                                } else if (value.trim().length < 4 ||
+                                    value.trim().length > 20) {
+                                  return "อำเภอต้องมีจำนวน 4 - 20 ตัวอักษร";
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 12),
 
-                          _AuthInputField(
-                            controller: subDistrictController,
-                            label: "ตำบล/แขวง",
-                            hint: "ตำบล/แขวง",
-                            icon: Icons.home_work_outlined,
-                            validator: (value) =>
-                                value == null || value.trim().isEmpty
-                                ? "กรุณาระบุตำบล"
-                                : null,
-                          ),
-                          const SizedBox(height: 12),
+                            _AuthInputField(
+                              controller: subDistrictController,
+                              label: "ตำบล/แขวง",
+                              hint: "ตำบล/แขวง",
+                              icon: Icons.home_work_outlined,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return "กรุณาระบุตำบล";
+                                } else if (value.trim().length < 4 ||
+                                    value.trim().length > 20) {
+                                  return "ตำบลต้องมีจำนวน 4 - 20 ตัวอักษร";
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 12),
 
-                          // Province
-                          _AuthInputField(
-                            controller: provinceController,
-                            label: "จังหวัด",
-                            hint: "ระบุจังหวัดที่อยู่",
-                            icon: Icons.map_outlined,
-                            validator: (value) =>
-                                value == null || value.trim().isEmpty
-                                ? "กรุณาระบุจังหวัด"
-                                : null,
-                          ),
-                          const SizedBox(height: 12),
+                            // Province
+                            _AuthInputField(
+                              controller: provinceController,
+                              label: "จังหวัด",
+                              hint: "ระบุจังหวัดที่อยู่",
+                              icon: Icons.map_outlined,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return "กรุณาระบุจังหวัด";
+                                } else if (value.trim().length < 4 ||
+                                    value.trim().length > 20) {
+                                  return "จังหวัดต้องมีจำนวน 4 - 20 ตัวอักษร";
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 12),
 
-                          // District & SubDistrict
-
-                          // Zipcode
-                          _AuthInputField(
-                            controller: zipcodeController,
-                            label: "รหัสไปรษณีย์",
-                            hint: "รหัสไปรษณีย์ 5 หลัก",
-                            icon: Icons.local_post_office_outlined,
-                            keyboardType: TextInputType.number,
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return "กรุณากรอกรหัสไปรษณีย์";
-                              }
-                              if (value.trim().length != 5) {
-                                return "รหัสไปรษณีย์ต้องมี 5 หลัก";
-                              }
-                              return null;
-                            },
-                          ),
+                            // Zipcode
+                            _AuthInputField(
+                              controller: zipcodeController,
+                              label: "รหัสไปรษณีย์",
+                              hint: "รหัสไปรษณีย์ 5 หลัก",
+                              icon: Icons.local_post_office_outlined,
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return "กรุณากรอกรหัสไปรษณีย์";
+                                }
+                                if (value.trim().length != 5) {
+                                  return "รหัสไปรษณีย์ต้องมี 5 หลัก";
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
                         ],
                       ),
                     ),

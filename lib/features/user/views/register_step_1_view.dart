@@ -274,9 +274,13 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return "กรุณากรอกชื่อผู้ใช้งาน";
-                          }
-                          if (value.trim().length < 3) {
-                            return "ชื่อผู้ใช้งานต้องมีอย่างน้อย 3 ตัวอักษร";
+                          } else if (value.trim().contains(
+                            RegExp(r'[^a-zA-Z0-9]'),
+                          )) {
+                            return "ชื่อผู้ใช้งานต้องเป็นตัวอักษรภาษาอังกฤษและตัวเลขเท่านั้น";
+                          } else if (value.trim().length < 4 ||
+                              value.trim().length > 50) {
+                            return "ชื่อผู้ใช้งานต้องมีจำนวน 4-50 ตัวอักษร";
                           }
                           return null;
                         },
@@ -292,6 +296,9 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return "กรุณากรอกชื่อ";
+                          } else if (value.trim().length < 4 ||
+                              value.trim().length > 50) {
+                            return "ชื่อจริงต้องมีจำนวน 4 - 50 ตัวอักษร";
                           }
                           return null;
                         },
@@ -306,6 +313,9 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return "กรุณากรอกนามสกุล";
+                          } else if (value.trim().length < 4 ||
+                              value.trim().length > 50) {
+                            return "นามสกุลต้องมีจำนวน 4 - 50 ตัวอักษร";
                           }
                           return null;
                         },
@@ -343,9 +353,16 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return "กรุณากรอกหมายเลขโทรศัพท์";
-                          }
-                          if (value.trim().length != 10) {
+                          } else if (value.trim().length != 10) {
                             return "กรุณากรอกหมายเลข 10 หลัก";
+                          } else if (!RegExp(
+                            r'^[0-9]+$',
+                          ).hasMatch(value.trim())) {
+                            return "กรุณากรอกเฉพาะตัวเลข";
+                          } else if (!value.trim().startsWith('09') &&
+                              !value.trim().startsWith('08') &&
+                              !value.trim().startsWith('06')) {
+                            return "กรุณากรอกหมายเลขขึ้นต้นด้วย 09, 08, หรือ 06";
                           }
                           return null;
                         },
@@ -365,9 +382,9 @@ class _RegisterStep1ViewState extends State<RegisterStep1View> {
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return "กรุณากรอกรหัสผ่าน";
-                          }
-                          if (value.length < 4) {
-                            return "รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร";
+                          } else if (value.trim().length < 4 ||
+                              value.trim().length > 50) {
+                            return "รหัสผ่านต้องมีจำนวน 4 - 50 ตัวอักษร";
                           }
                           return null;
                         },
