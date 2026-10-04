@@ -207,9 +207,7 @@ class _AddReportViewState extends State<AddReportView> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         child: Padding(
@@ -223,10 +221,7 @@ class _AddReportViewState extends State<AddReportView> {
                 decoration: BoxDecoration(
                   color: const Color(0xFFFEF2F2),
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFFFECACA),
-                    width: 2,
-                  ),
+                  border: Border.all(color: const Color(0xFFFECACA), width: 2),
                 ),
                 child: const Icon(
                   Icons.lock_clock_rounded,
@@ -272,10 +267,7 @@ class _AddReportViewState extends State<AddReportView> {
                   ),
                   child: const Text(
                     "ตกลง",
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -292,7 +284,7 @@ class _AddReportViewState extends State<AddReportView> {
   }
 
   Future<void> _checkParkStatus() async {
-    final username = Session.currentUser?.username;
+    final username = Session.currentUser!.username;
     if (username == null || username.isEmpty) {
       await _showNotStampedDialog("กรุณาเข้าสู่ระบบก่อนแจ้งรายงานปัญหา");
       return;
@@ -528,10 +520,7 @@ class _AddReportViewState extends State<AddReportView> {
             const SizedBox(height: 6),
             const Text(
               "ตรวจสอบตราประทับเข้าชมอุทยานของวันนี้",
-              style: TextStyle(
-                fontSize: 12.5,
-                color: textMuted,
-              ),
+              style: TextStyle(fontSize: 12.5, color: textMuted),
             ),
           ],
         ),
@@ -562,197 +551,193 @@ class _AddReportViewState extends State<AddReportView> {
               _buildParkSelectorCard(),
               const SizedBox(height: 24),
 
-                // ── Section 2: ข้อมูลรายงาน ──────────────────────────
-                _buildSectionHeader(
-                  icon: Icons.assignment_rounded,
-                  title: "รายละเอียดปัญหา",
-                  subtitle: "กรอกข้อมูลและระบุหมวดหมู่ของปัญหาให้ชัดเจน",
+              // ── Section 2: ข้อมูลรายงาน ──────────────────────────
+              _buildSectionHeader(
+                icon: Icons.assignment_rounded,
+                title: "รายละเอียดปัญหา",
+                subtitle: "กรอกข้อมูลและระบุหมวดหมู่ของปัญหาให้ชัดเจน",
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: Colors.grey.shade100),
+                  boxShadow: [
+                    BoxShadow(
+                      color: darkForest.withValues(alpha: 0.03),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(color: Colors.grey.shade100),
-                    boxShadow: [
-                      BoxShadow(
-                        color: darkForest.withValues(alpha: 0.03),
-                        blurRadius: 12,
-                        offset: const Offset(0, 3),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // หัวข้อรายงาน
+                    TextFormField(
+                      controller: _nameController,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        color: textDark,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // หัวข้อรายงาน
-                      TextFormField(
-                        controller: _nameController,
-                        style: const TextStyle(
-                          fontSize: 14.5,
-                          color: textDark,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        decoration: _buildInputDecoration(
-                          label: "หัวข้อรายงาน",
-                          hint: "เช่น ทางเดินไม้ชำรุด, ขยะตกค้างริมลำธาร",
-                          icon: Icons.edit_note_rounded,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return "กรุณากรอกหัวข้อรายงาน";
-                          } else if (value.trim().length < 2 ||
-                              value.trim().length > 25) {
-                            return "หัวข้อต้องมีความยาว 2 - 25 ตัวอักษร";
-                          }
-                          return null;
-                        },
+                      decoration: _buildInputDecoration(
+                        label: "หัวข้อรายงาน",
+                        hint: "เช่น ทางเดินไม้ชำรุด, ขยะตกค้างริมลำธาร",
+                        icon: Icons.edit_note_rounded,
                       ),
-                      const SizedBox(height: 16),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return "กรุณากรอกหัวข้อรายงาน";
+                        } else if (value.trim().length < 2 ||
+                            value.trim().length > 25) {
+                          return "หัวข้อต้องมีความยาว 2 - 25 ตัวอักษร";
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
 
-                      // ประเภทรายงาน
-                      FormField<String>(
-                        validator: (_) => _selectedReportTypeName == null
-                            ? "กรุณาเลือกประเภทรายงาน"
-                            : null,
-                        builder: (field) => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DropdownButtonFormField<String>(
-                              initialValue: _selectedReportTypeName,
-                              isExpanded: true,
-                              dropdownColor: Colors.white,
-                              menuMaxHeight: 250,
-                              borderRadius: BorderRadius.circular(16),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: textDark,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              icon: const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: darkForest,
-                              ),
-                              decoration: _buildInputDecoration(
-                                label: "ประเภทรายงาน",
-                                hint: "เลือกประเภทปัญหา",
-                                icon: Icons.category_outlined,
-                              ),
-                              hint: const Text(
-                                "เลือกประเภทรายงาน",
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  color: textMuted,
-                                ),
-                              ),
-                              items: _reportTypeNames
-                                  .map(
-                                    (typeName) => DropdownMenuItem<String>(
-                                      value: typeName,
-                                      child: Text(
-                                        typeName,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: textDark,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (value) {
-                                if (value == null) return;
-                                setState(() => _selectedReportTypeName = value);
-                                field.didChange(value);
-                              },
+                    // ประเภทรายงาน
+                    FormField<String>(
+                      validator: (_) => _selectedReportTypeName == null
+                          ? "กรุณาเลือกประเภทรายงาน"
+                          : null,
+                      builder: (field) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DropdownButtonFormField<String>(
+                            initialValue: _selectedReportTypeName,
+                            isExpanded: true,
+                            dropdownColor: Colors.white,
+                            menuMaxHeight: 250,
+                            borderRadius: BorderRadius.circular(16),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: textDark,
+                              fontWeight: FontWeight.w500,
                             ),
-                            if (_isLoadingTypes)
-                              const Padding(
-                                padding: EdgeInsets.only(top: 8, left: 4),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      height: 14,
-                                      width: 14,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: emeraldTint,
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      "กำลังโหลดประเภทรายงาน...",
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        color: textMuted,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: darkForest,
+                            ),
+                            decoration: _buildInputDecoration(
+                              label: "ประเภทรายงาน",
+                              hint: "เลือกประเภทปัญหา",
+                              icon: Icons.category_outlined,
+                            ),
+                            hint: const Text(
+                              "เลือกประเภทรายงาน",
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                color: textMuted,
                               ),
-                            if (field.hasError)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 12,
-                                  top: 6,
-                                ),
-                                child: Text(
-                                  field.errorText!,
-                                  style: const TextStyle(
-                                    color: Color(0xFFEF4444),
-                                    fontSize: 11.5,
+                            ),
+                            items: _reportTypeNames
+                                .map(
+                                  (typeName) => DropdownMenuItem<String>(
+                                    value: typeName,
+                                    child: Text(
+                                      typeName,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: textDark,
+                                      ),
+                                    ),
                                   ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              if (value == null) return;
+                              setState(() => _selectedReportTypeName = value);
+                              field.didChange(value);
+                            },
+                          ),
+                          if (_isLoadingTypes)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 8, left: 4),
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    height: 14,
+                                    width: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: emeraldTint,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "กำลังโหลดประเภทรายงาน...",
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: textMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (field.hasError)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 12, top: 6),
+                              child: Text(
+                                field.errorText!,
+                                style: const TextStyle(
+                                  color: Color(0xFFEF4444),
+                                  fontSize: 11.5,
                                 ),
                               ),
-                          ],
-                        ),
+                            ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
+                    ),
+                    const SizedBox(height: 16),
 
-                      // รายละเอียดรายงาน
-                      TextFormField(
-                        controller: _descriptionController,
-                        maxLines: 4,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          height: 1.45,
-                          color: textDark,
-                        ),
-                        decoration: _buildInputDecoration(
-                          label: "รายละเอียดเพิ่มเติม",
-                          hint:
-                              "อธิบายลักษณะปัญหา พิกัด หรือจุดสังเกตโดยละเอียด...",
-                          icon: Icons.notes_rounded,
-                        ).copyWith(alignLabelWithHint: true),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return "กรุณากรอกรายละเอียดปัญหา";
-                          }
-                          return null;
-                        },
+                    // รายละเอียดรายงาน
+                    TextFormField(
+                      controller: _descriptionController,
+                      maxLines: 4,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        height: 1.45,
+                        color: textDark,
                       ),
-                    ],
-                  ),
+                      decoration: _buildInputDecoration(
+                        label: "รายละเอียดเพิ่มเติม",
+                        hint:
+                            "อธิบายลักษณะปัญหา พิกัด หรือจุดสังเกตโดยละเอียด...",
+                        icon: Icons.notes_rounded,
+                      ).copyWith(alignLabelWithHint: true),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return "กรุณากรอกรายละเอียดปัญหา";
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 24),
 
-                // ── Section 3: แนบรูปภาพ ──────────────────────────────
-                _buildSectionHeader(
-                  icon: Icons.add_photo_alternate_rounded,
-                  title: "ภาพถ่ายประกอบ (จำเป็น)",
-                  subtitle:
-                      "เพิ่มรูปภาพเพื่อช่วยให้เจ้าหน้าที่ตรวจสอบได้เร็วขึ้น",
-                ),
-                const SizedBox(height: 10),
-                _buildImagePickerBox(),
-                const SizedBox(height: 24),
-              ],
-            ),
+              // ── Section 3: แนบรูปภาพ ──────────────────────────────
+              _buildSectionHeader(
+                icon: Icons.add_photo_alternate_rounded,
+                title: "ภาพถ่ายประกอบ (จำเป็น)",
+                subtitle:
+                    "เพิ่มรูปภาพเพื่อช่วยให้เจ้าหน้าที่ตรวจสอบได้เร็วขึ้น",
+              ),
+              const SizedBox(height: 10),
+              _buildImagePickerBox(),
+              const SizedBox(height: 24),
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
-
 
   Widget _buildParkSelectorCard() {
     final park = _parkStamped!;
@@ -762,10 +747,7 @@ class _AddReportViewState extends State<AddReportView> {
       children: [
         Container(
           margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 6,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: mintPillBg,
             borderRadius: BorderRadius.circular(12),
@@ -774,11 +756,7 @@ class _AddReportViewState extends State<AddReportView> {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.verified_rounded,
-                size: 15,
-                color: emeraldTint,
-              ),
+              Icon(Icons.verified_rounded, size: 15, color: emeraldTint),
               SizedBox(width: 6),
               Text(
                 "ประทับตราแล้ววันนี้ (อ้างอิงจากแสตมป์ล่าสุด)",
@@ -827,10 +805,7 @@ class _AddReportViewState extends State<AddReportView> {
                       park.address ?? "อ้างอิงจากตราประทับของคุณในวันนี้",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: textMuted,
-                        fontSize: 12,
-                      ),
+                      style: const TextStyle(color: textMuted, fontSize: 12),
                     ),
                   ],
                 ),
@@ -848,11 +823,7 @@ class _AddReportViewState extends State<AddReportView> {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.lock_rounded,
-                      size: 13,
-                      color: darkForest,
-                    ),
+                    Icon(Icons.lock_rounded, size: 13, color: darkForest),
                     SizedBox(width: 4),
                     Text(
                       "แสตมป์วันนี้",
