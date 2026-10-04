@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenpass/core/network/image_helper.dart';
 import 'package:greenpass/features/reward/dtos/reward_response.dart';
-import 'package:greenpass/features/park/views/park_search_view.dart';
-import 'package:greenpass/features/stamp/views/travel_book_view.dart';
 
 class RewardDetailView extends StatelessWidget {
   final RewardResponse reward;

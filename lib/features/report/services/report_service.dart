@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:greenpass/core/network/dio_client.dart';
+import 'package:greenpass/features/park/models/park.dart';
 import 'package:greenpass/features/report/dtos/report_response.dart';
 
 import '../../../core/storage/session_strorage.dart';
@@ -15,19 +16,18 @@ class ReportService {
         "category": "reports",
       });
 
-      final response = await DioClient.dio.post(
-        "/upload",
-        data: formData,
-      );
+      final response = await DioClient.dio.post("/upload", data: formData);
 
       final result = response.data['result'];
       final rawName =
-          (result['fileName'] ?? result['image'] ?? result['fileUrl']) as String;
+          (result['fileName'] ?? result['image'] ?? result['fileUrl'])
+              as String;
       return rawName.split('/').last.split(Platform.pathSeparator).last;
     } catch (e) {
       rethrow;
     }
   }
+
   Future<List<ReportResponse>> getMyReport() async {
     try {
       final response = await DioClient.dio.get(
@@ -48,6 +48,26 @@ class ReportService {
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
         return [];
+      }
+      rethrow;
+    }
+  }
+
+  Future<Park?> hasStamped(String username) async {
+    try {
+      final response = await DioClient.dio.get(
+        "/report/has-stamped",
+        options: Options(headers: {"username": username}),
+      );
+
+      final rawResult = response.data["result"];
+      if (rawResult != null && rawResult is Map<String, dynamic>) {
+        return Park.fromJson(rawResult);
+      }
+      return null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return null;
       }
       rethrow;
     }

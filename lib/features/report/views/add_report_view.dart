@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:greenpass/core/storage/session_strorage.dart';
 import 'package:greenpass/features/park/models/park.dart';
-import 'package:greenpass/features/park/views/park_search_view.dart';
 import 'package:greenpass/features/report/dtos/add_report_request.dart';
 import 'package:greenpass/features/report/services/report_service.dart';
 import 'package:greenpass/features/report/services/report_type_service.dart';
@@ -20,10 +20,12 @@ class _AddReportViewState extends State<AddReportView> {
   final ReportService reportSerivce = ReportService();
   final ReportTypeService reportTypeService = ReportTypeService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  Park? _parkStamped;
+
+  bool _isCheckingStamp = true;
   bool _isLoading = false;
   bool _isLoadingTypes = false;
   File? _image;
-  Park? _selectedPark;
   String? _selectedReportTypeName;
   List<String> _reportTypeNames = [];
   final _picker = ImagePicker();
@@ -47,6 +49,9 @@ class _AddReportViewState extends State<AddReportView> {
     _nameController = TextEditingController();
     _descriptionController = TextEditingController();
     _loadReportTypes();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkParkStatus();
+    });
   }
 
   @override
@@ -196,17 +201,123 @@ class _AddReportViewState extends State<AddReportView> {
     );
   }
 
-  Future<void> _selectPark() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ParkSearchView(
-          onParkSelected: (park) {
-            setState(() => _selectedPark = park);
-          },
+  Future<void> _showNotStampedDialog([String? customMessage]) async {
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFFFECACA),
+                    width: 2,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.lock_clock_rounded,
+                  color: Color(0xFFDC2626),
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                "ยังไม่สามารถรายงานได้",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: textDark,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                customMessage ??
+                    "คุณยังไม่ได้รับการสแกนตราประทับเข้าชมอุทยานในวันนี้ กรุณาสแกนตราประทับกับเจ้าหน้าที่ก่อนส่งรายงาน",
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  color: textMuted,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: darkForest,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    "ตกลง",
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+
+    // หลังจากปิด Popup ให้ย้อนกลับไปยังหน้าก่อนหน้าทันที
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> _checkParkStatus() async {
+    final username = Session.currentUser?.username;
+    if (username == null || username.isEmpty) {
+      await _showNotStampedDialog("กรุณาเข้าสู่ระบบก่อนแจ้งรายงานปัญหา");
+      return;
+    }
+
+    try {
+      setState(() => _isCheckingStamp = true);
+      final parkStamped = await reportSerivce.hasStamped(username);
+      if (!mounted) return;
+
+      if (parkStamped == null) {
+        await _showNotStampedDialog();
+        return;
+      }
+
+      setState(() {
+        _parkStamped = parkStamped;
+        _isCheckingStamp = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      await _showNotStampedDialog(
+        "ไม่สามารถตรวจสอบข้อมูลตราประทับได้ กรุณาลองใหม่อีกครั้ง",
+      );
+    }
   }
 
   Future<void> _loadReportTypes() async {
@@ -261,12 +372,12 @@ class _AddReportViewState extends State<AddReportView> {
         AddReportRequest(
           name: _nameController.text.trim(),
           description: _descriptionController.text.trim(),
-          parkId: _selectedPark!.id,
+          parkId: _parkStamped!.id,
           typeName: _selectedReportTypeName ?? '',
           reportType: _selectedReportTypeName,
           image: uploadedImageName,
         ),
-        _selectedPark!.id,
+        _parkStamped!.id,
       );
 
       if (!mounted) return;
@@ -288,13 +399,19 @@ class _AddReportViewState extends State<AddReportView> {
     } on DioException catch (e) {
       if (!mounted) return;
       final statusCode = e.response?.statusCode;
-      final apiMessage = e.response?.data?["message"];
+      final apiMessage = e.response?.data?["message"]?.toString();
 
       String message;
-      if (statusCode == 500 && apiMessage == "Failed to add report") {
+      if (statusCode == 400 && apiMessage != null && apiMessage.isNotEmpty) {
+        if (apiMessage.contains("not been stamped")) {
+          message = "คุณยังไม่ได้รับตราประทับเข้าชมอุทยานนี้ในวันนี้";
+        } else {
+          message = apiMessage;
+        }
+      } else if (statusCode == 500 && apiMessage == "Failed to add report") {
         message = "เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่";
       } else {
-        message = "ไม่สามารถบันทึกรายงานได้ กรุณาลองใหม่อีกครั้ง";
+        message = apiMessage ?? "ไม่สามารถบันทึกรายงานได้ กรุณาลองใหม่อีกครั้ง";
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -364,25 +481,86 @@ class _AddReportViewState extends State<AddReportView> {
         ),
         centerTitle: true,
       ),
-      bottomNavigationBar: _buildBottomBar(),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Section 1: อุทยานที่เกี่ยวข้อง ──────────────────────
-                _buildSectionHeader(
-                  icon: Icons.location_on_rounded,
-                  title: "สถานที่เกิดเหตุ / อุทยาน",
-                  subtitle: "ระบุอุทยานแห่งชาติที่ต้องการแจ้งเรื่องหรือพบปัญหา",
+      bottomNavigationBar: (!_isCheckingStamp && _parkStamped != null)
+          ? _buildBottomBar()
+          : null,
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isCheckingStamp || _parkStamped == null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: darkForest.withValues(alpha: 0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const SizedBox(
+                width: 36,
+                height: 36,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: darkForest,
                 ),
-                const SizedBox(height: 10),
-                _buildParkSelectorCard(),
-                const SizedBox(height: 24),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              "กำลังตรวจสอบสิทธิ์การรายงาน...",
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: textDark,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              "ตรวจสอบตราประทับเข้าชมอุทยานของวันนี้",
+              style: TextStyle(
+                fontSize: 12.5,
+                color: textMuted,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _buildFormContent();
+  }
+
+  Widget _buildFormContent() {
+    return SafeArea(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Section 1: อุทยานที่เกี่ยวข้อง ──────────────────────
+              _buildSectionHeader(
+                icon: Icons.location_on_rounded,
+                title: "สถานที่เกิดเหตุ / อุทยาน",
+                subtitle:
+                    "อ้างอิงจากอุทยานที่คุณได้รับการประทับตราเข้าชมในวันนี้",
+              ),
+              const SizedBox(height: 10),
+              _buildParkSelectorCard(),
+              const SizedBox(height: 24),
 
                 // ── Section 2: ข้อมูลรายงาน ──────────────────────────
                 _buildSectionHeader(
@@ -572,140 +750,125 @@ class _AddReportViewState extends State<AddReportView> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
+
   Widget _buildParkSelectorCard() {
-    return FormField<Park>(
-      validator: (_) => _selectedPark == null ? "กรุณาเลือกอุทยาน" : null,
-      builder: (field) {
-        final hasPark = _selectedPark != null;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GestureDetector(
-              onTap: _selectPark,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: field.hasError
-                        ? const Color(0xFFEF4444)
-                        : (hasPark ? mintBorder : Colors.grey.shade100),
-                    width: hasPark ? 1.5 : 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: darkForest.withValues(alpha: 0.03),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+    final park = _parkStamped!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 6,
+          ),
+          decoration: BoxDecoration(
+            color: mintPillBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: mintBorder),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.verified_rounded,
+                size: 15,
+                color: emeraldTint,
+              ),
+              SizedBox(width: 6),
+              Text(
+                "ประทับตราแล้ววันนี้ (อ้างอิงจากแสตมป์ล่าสุด)",
+                style: TextStyle(
+                  color: darkForest,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
                 ),
-                child: Row(
+              ),
+            ],
+          ),
+        ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: mintBorder, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: darkForest.withValues(alpha: 0.03),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              _buildSubstringIconBadge(park.name),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (hasPark)
-                      _buildSubstringIconBadge(_selectedPark!.name)
-                    else
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: mintLight,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: mintBorder),
-                        ),
-                        child: const Icon(
-                          Icons.nature_people_rounded,
-                          color: darkForest,
-                          size: 24,
-                        ),
-                      ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            hasPark
-                                ? _selectedPark!.name
-                                : "เลือกอุทยานแห่งชาติ",
-                            style: TextStyle(
-                              color: hasPark ? textDark : textMuted,
-                              fontSize: 15,
-                              fontWeight: hasPark
-                                  ? FontWeight.bold
-                                  : FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            hasPark
-                                ? (_selectedPark!.address ??
-                                      "แตะเพื่อเปลี่ยนอุทยาน")
-                                : "แตะเพื่อค้นหาและเลือกสถานที่เกิดเหตุ",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: hasPark ? textMuted : Colors.grey.shade400,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+                    Text(
+                      park.name,
+                      style: const TextStyle(
+                        color: textDark,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: hasPark ? mintPillBg : const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            hasPark ? "เปลี่ยน" : "เลือก",
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                              color: hasPark ? darkForest : textMuted,
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            size: 16,
-                            color: hasPark ? darkForest : textMuted,
-                          ),
-                        ],
+                    const SizedBox(height: 4),
+                    Text(
+                      park.address ?? "อ้างอิงจากตราประทับของคุณในวันนี้",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: textMuted,
+                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            if (field.hasError)
-              Padding(
-                padding: const EdgeInsets.only(left: 12, top: 6),
-                child: Text(
-                  field.errorText!,
-                  style: const TextStyle(
-                    color: Color(0xFFEF4444),
-                    fontSize: 11.5,
-                  ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: mintPillBg,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: mintBorder),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.lock_rounded,
+                      size: 13,
+                      color: darkForest,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      "แสตมป์วันนี้",
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: darkForest,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -837,9 +1000,7 @@ class _AddReportViewState extends State<AddReportView> {
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: hasError
-                              ? const Color(0xFFFEE2E2)
-                              : mintLight,
+                          color: hasError ? const Color(0xFFFEE2E2) : mintLight,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: hasError
