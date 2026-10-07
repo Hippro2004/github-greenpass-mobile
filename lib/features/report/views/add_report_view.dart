@@ -48,10 +48,10 @@ class _AddReportViewState extends State<AddReportView> {
     super.initState();
     _nameController = TextEditingController();
     _descriptionController = TextEditingController();
-    _loadReportTypes();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkParkStatus();
     });
+    _loadReportTypes();
   }
 
   @override
@@ -373,19 +373,19 @@ class _AddReportViewState extends State<AddReportView> {
       );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-              SizedBox(width: 8),
-              Text("ส่งรายงานปัญหาเรียบร้อยแล้ว"),
-            ],
-          ),
-          backgroundColor: darkForest,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Row(
+      //       children: [
+      //         Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+      //         SizedBox(width: 8),
+      //         Text("ส่งรายงานปัญหาเรียบร้อยแล้ว"),
+      //       ],
+      //     ),
+      //     backgroundColor: darkForest,
+      //     duration: Duration(seconds: 2),
+      //   ),
+      // );
 
       Navigator.pop(context, true);
     } on DioException catch (e) {

@@ -11,8 +11,6 @@ import 'package:greenpass/features/announcement/services/announcement_service.da
 import 'package:greenpass/features/announcement/views/announcement_detail_view.dart';
 import 'package:greenpass/features/user/views/more_view.dart';
 import 'package:greenpass/features/announcement/views/announcement_view.dart';
-// import 'package:greenpass/features/park/models/park.dart';
-// import 'package:greenpass/features/park/services/park_service.dart';
 import 'package:greenpass/features/park/views/park_search_view.dart';
 import 'package:greenpass/features/report/views/report_view.dart';
 import 'package:greenpass/features/stamp/views/show_qr_view.dart';
@@ -1024,8 +1022,11 @@ class _MainViewState extends State<MainView> {
                   ),
                 ),
                 const SizedBox(width: 4),
-                Icon(Icons.arrow_forward_ios_rounded,
-                    size: 10, color: forestGreen),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 10,
+                  color: forestGreen,
+                ),
               ],
             ),
           ),
@@ -1090,7 +1091,11 @@ class _MainViewState extends State<MainView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.campaign_outlined, size: 28, color: Colors.grey.shade400),
+              Icon(
+                Icons.campaign_outlined,
+                size: 28,
+                color: Colors.grey.shade400,
+              ),
               const SizedBox(height: 6),
               Text(
                 _announcementError != null
@@ -1122,8 +1127,9 @@ class _MainViewState extends State<MainView> {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
-                          AnnouncementDetailView(announcementId: a.announcementId),
+                      builder: (_) => AnnouncementDetailView(
+                        announcementId: a.announcementId,
+                      ),
                     ),
                   ),
                   child: Container(
@@ -1148,10 +1154,7 @@ class _MainViewState extends State<MainView> {
                             gradient: LinearGradient(
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
-                              colors: [
-                                forestGreen,
-                                lightGreen,
-                              ],
+                              colors: [forestGreen, lightGreen],
                             ),
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(20),

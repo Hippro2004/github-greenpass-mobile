@@ -25,10 +25,12 @@ class ParkReportsView extends StatelessWidget {
   List<ReportResponse> get _sortedReports {
     final list = List<ReportResponse>.from(reports);
     list.sort((a, b) {
-      final timeA =
-          a.reportTime.trim().isNotEmpty ? a.reportTime.trim() : "00:00:00";
-      final timeB =
-          b.reportTime.trim().isNotEmpty ? b.reportTime.trim() : "00:00:00";
+      final timeA = a.reportTime.trim().isNotEmpty
+          ? a.reportTime.trim()
+          : "00:00:00";
+      final timeB = b.reportTime.trim().isNotEmpty
+          ? b.reportTime.trim()
+          : "00:00:00";
       final dtA =
           DateTime.tryParse('${a.reportDate} $timeA') ??
           DateTime.tryParse(a.reportDate) ??
@@ -134,10 +136,12 @@ class ParkReportsView extends StatelessWidget {
           if (sorted.isEmpty)
             _buildEmptyState()
           else
-            ...sorted.map((report) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildReportCard(context, report),
-                )),
+            ...sorted.map(
+              (report) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildReportCard(context, report),
+              ),
+            ),
         ],
       ),
     );
@@ -251,7 +255,8 @@ class ParkReportsView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ประเภทรายงาน (ถ้ามี)
-              if (report.typeName != null && report.typeName!.trim().isNotEmpty) ...[
+              if (report.typeName != null &&
+                  report.typeName!.trim().isNotEmpty) ...[
                 Row(
                   children: [
                     Container(
