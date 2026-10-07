@@ -26,6 +26,7 @@ class _AnnouncementViewState extends State<AnnouncementView> {
   static const Color darkForest = Color(0xFF064E3B);
   static const Color emeraldTint = Color(0xFF00A86B);
   static const Color mintLight = Color(0xFFE8F7F0);
+  // ignore: unused_field
   static const Color mintBorder = Color(0xFFD6EFE2);
   static const Color mintPillBg = Color(0xFFD1FAE5);
   static const Color mintDark = Color(0xFF065F46);

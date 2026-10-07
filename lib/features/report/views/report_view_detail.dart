@@ -100,9 +100,12 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
         .replaceAll(' ', '')
         .replaceAll('-', '');
     switch (s) {
+      case 'ACKNOWLEDGE':
       case 'ACKNOWLEDGED':
+      case 'รับทราบ':
+      case 'รับทราบแล้ว':
       case 'รับเรื่องแล้ว':
-        return 'รับเรื่องแล้ว';
+        return 'รับทราบ';
       case 'INPROGRESS':
       case 'กำลังดำเนินการ':
         return 'กำลังดำเนินการ';
@@ -153,7 +156,10 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
       case 'เสร็จสิ้น':
       case 'ปิดเรื่องแล้ว':
         return const Color(0xFF059669); // Emerald Green
+      case 'ACKNOWLEDGE':
       case 'ACKNOWLEDGED':
+      case 'รับทราบ':
+      case 'รับทราบแล้ว':
       case 'รับเรื่องแล้ว':
         return const Color(0xFF0284C7); // Sky Blue
       case 'REJECTED':

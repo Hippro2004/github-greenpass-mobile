@@ -75,21 +75,8 @@ class NotificationModel {
     }
     parsedDate ??= DateTime.now();
 
-    String title = '';
     final status = reply.currentStatus.trim();
-    switch (status) {
-      case 'Pending':
-        title = 'แจ้งรายงานปัญหา';
-        break;
-      case 'InProgress':
-        title = 'กำลังดำเนินการแก้ไข';
-        break;
-      case 'Completed':
-        title = 'ดำเนินการแก้ไขสำเร็จ';
-        break;
-      default:
-        title = status.isNotEmpty ? status : 'อัปเดตรายงาน';
-    }
+    final title = resolveStatusTitle(status);
 
     String message = reply.progress.trim();
     if (message.isEmpty) {
@@ -117,6 +104,68 @@ class NotificationModel {
       parkRangerName: reply.parkRangerName,
       parkRangerUsername: reply.parkRangerUsername,
     );
+  }
+
+  static String resolveStatusTitle(String? status, {String? defaultTitle}) {
+    final s = (status ?? '').trim();
+    final key = s
+        .toUpperCase()
+        .replaceAll('_', '')
+        .replaceAll(' ', '')
+        .replaceAll('-', '');
+    switch (key) {
+      case 'PENDING':
+      case 'รอตอบรับ':
+      case 'รอการตอบรับ':
+        return 'แจ้งรายงานปัญหา';
+      case 'ACKNOWLEDGE':
+      case 'ACKNOWLEDGED':
+      case 'รับทราบ':
+      case 'รับทราบแล้ว':
+      case 'รับเรื่องแล้ว':
+        return 'รับทราบรายงาน';
+      case 'INPROGRESS':
+      case 'กำลังดำเนินการ':
+      case 'ดำเนินการ':
+        return 'กำลังดำเนินการแก้ไข';
+      case 'COMPLETED':
+      case 'RESOLVED':
+      case 'CLOSED':
+      case 'DONE':
+      case 'เสร็จสิ้น':
+      case 'แก้ไขแล้ว':
+      case 'สำเร็จ':
+        return 'ดำเนินการแก้ไขสำเร็จ';
+      case 'REJECTED':
+      case 'CANCELLED':
+      case 'CANCELED':
+      case 'ไม่รับเรื่อง':
+      case 'ปฏิเสธ':
+        return 'ปฏิเสธรายงาน';
+      default:
+        if (defaultTitle != null && defaultTitle.trim().isNotEmpty) {
+          final dtKey = defaultTitle
+              .trim()
+              .toUpperCase()
+              .replaceAll('_', '')
+              .replaceAll(' ', '')
+              .replaceAll('-', '');
+          if (dtKey == 'ACKNOWLEDGE' || dtKey == 'ACKNOWLEDGED') {
+            return 'รับทราบรายงาน';
+          }
+          if (dtKey == 'INPROGRESS') {
+            return 'กำลังดำเนินการแก้ไข';
+          }
+          if (dtKey == 'COMPLETED') {
+            return 'ดำเนินการแก้ไขสำเร็จ';
+          }
+          if (dtKey == 'PENDING') {
+            return 'แจ้งรายงานปัญหา';
+          }
+          return defaultTitle.trim();
+        }
+        return s.isNotEmpty ? s : 'อัปเดตรายงาน';
+    }
   }
 
   factory NotificationModel.fromMap(Map<String, dynamic> map) {
@@ -158,26 +207,8 @@ class NotificationModel {
     final image = map['image']?.toString();
 
     // Determine Title
-    String title = (map['title'] ?? '').toString().trim();
-    if (title.isEmpty) {
-      if (currentStatus != null && currentStatus.isNotEmpty) {
-        switch (currentStatus.trim()) {
-          case 'Pending':
-            title = 'แจ้งรายงานปัญหา';
-            break;
-          case 'InProgress':
-            title = 'กำลังดำเนินการแก้ไข';
-            break;
-          case 'Completed':
-            title = 'ดำเนินการแก้ไขสำเร็จ';
-            break;
-          default:
-            title = currentStatus;
-        }
-      } else {
-        title = 'อัปเดตรายงาน';
-      }
-    }
+    final rawTitle = (map['title'] ?? '').toString().trim();
+    final title = resolveStatusTitle(currentStatus, defaultTitle: rawTitle);
 
     // Determine Message
     String message = (map['message'] ?? '').toString().trim();

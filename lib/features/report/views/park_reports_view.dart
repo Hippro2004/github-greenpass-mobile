@@ -579,9 +579,12 @@ class ParkReportsView extends StatelessWidget {
         .replaceAll(' ', '')
         .replaceAll('-', '');
     switch (s) {
+      case "ACKNOWLEDGE":
       case "ACKNOWLEDGED":
+      case "รับทราบ":
+      case "รับทราบแล้ว":
       case "รับเรื่องแล้ว":
-        return "รับเรื่องแล้ว";
+        return "รับทราบ";
       case "INPROGRESS":
       case "กำลังดำเนินการ":
         return "กำลังดำเนินการ";
@@ -632,7 +635,10 @@ class ParkReportsView extends StatelessWidget {
       case "เสร็จสิ้น":
       case "ปิดเรื่องแล้ว":
         return const Color(0xFF059669); // Emerald
+      case "ACKNOWLEDGE":
       case "ACKNOWLEDGED":
+      case "รับทราบ":
+      case "รับทราบแล้ว":
       case "รับเรื่องแล้ว":
         return const Color(0xFF0284C7); // Sky blue
       case "REJECTED":

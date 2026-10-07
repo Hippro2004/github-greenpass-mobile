@@ -27,10 +27,12 @@ class _RewardViewState extends State<RewardView> {
   int _selectedFilter = 0; // 0: ทั้งหมด, 1: ล่าสุด
 
   static const Color forestGreen = Color(0xFF2D6A4F);
+  // ignore: unused_field
   static const Color darkGreen = Color(0xFF1B4332);
   static const Color lightGreen = Color(0xFFE8F5E9);
   static const Color creamBg = Color(0xFFF5F7FB);
   static const Color textDark = Color(0xFF2E3B57);
+  // ignore: unused_field
   static const Color goldAccent = Color(0xFFD4A373);
 
   @override
@@ -620,7 +622,7 @@ class _RewardViewState extends State<RewardView> {
     return Image.network(
       url,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => _buildFallbackThumbnail(),
+      errorBuilder: (_, err, st) => _buildFallbackThumbnail(),
       loadingBuilder: (context, child, progress) {
         if (progress == null) return child;
         return const Center(

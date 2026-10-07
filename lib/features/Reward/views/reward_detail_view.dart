@@ -418,7 +418,7 @@ class RewardDetailView extends StatelessWidget {
     return Image.network(
       url,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => _buildFallbackBanner(),
+      errorBuilder: (_, err, st) => _buildFallbackBanner(),
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return Container(

@@ -41,6 +41,7 @@ class _MainViewState extends State<MainView> {
   bool _announcementLoading = true;
   String? _announcementError;
   bool _locationLoading = true;
+  // ignore: unused_field
   String? _locationError;
   int _announcementIndex = 0;
   int _currentIndex = 0;
@@ -52,13 +53,17 @@ class _MainViewState extends State<MainView> {
 
   // ── ธีมสีเดียวกับหน้า Login ────────────────────────────
   static const Color indigo = Color(0xFF53658F);
+  // ignore: unused_field
   static const Color softBlue = Color(0xFF7B9BC2);
   static const Color forestGreen = Color(0xFF5F927A);
   static const Color lightGreen = Color(0xFFC9E2D3);
   static const Color creamBg = Color(0xFFF5F7FB);
+  // ignore: unused_field
   static const Color softBrown = Color(0xFF8D806D);
   static const Color darkGreen = Color(0xFF2E3B57);
+  // ignore: unused_field
   static const Color midGreen = Color(0xFF7194B8);
+  // ignore: unused_field
   static const Color cardGreen = Color(0xFFE8F1EC);
 
   @override
@@ -400,7 +405,7 @@ class _MainViewState extends State<MainView> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, -2),
             ),
@@ -445,7 +450,7 @@ class _MainViewState extends State<MainView> {
             height: 200,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: lightGreen.withOpacity(0.15),
+              color: lightGreen.withValues(alpha: 0.15),
             ),
           ),
         ),
@@ -457,7 +462,7 @@ class _MainViewState extends State<MainView> {
             height: 250,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: forestGreen.withOpacity(0.06),
+              color: forestGreen.withValues(alpha: 0.06),
             ),
           ),
         ),
@@ -621,7 +626,7 @@ class _MainViewState extends State<MainView> {
                     border: Border.all(color: Colors.grey.shade100),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 10,
                         offset: const Offset(0, 3),
                       ),
@@ -735,7 +740,7 @@ class _MainViewState extends State<MainView> {
             border: Border.all(color: Colors.grey.shade100),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -784,6 +789,7 @@ class _MainViewState extends State<MainView> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildHeroSection() {
     return Container(
       height: 260,
@@ -792,7 +798,7 @@ class _MainViewState extends State<MainView> {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
@@ -806,7 +812,7 @@ class _MainViewState extends State<MainView> {
               child: Image.network(
                 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80',
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(color: forestGreen),
+                errorBuilder: (_, err, st) => Container(color: forestGreen),
               ),
             ),
             Positioned.fill(
@@ -816,8 +822,8 @@ class _MainViewState extends State<MainView> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.18),
-                      Colors.black.withOpacity(0.34),
+                      Colors.black.withValues(alpha: 0.18),
+                      Colors.black.withValues(alpha: 0.34),
                     ],
                   ),
                 ),
@@ -836,9 +842,9 @@ class _MainViewState extends State<MainView> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                     ),
                     child: const Text(
                       'จุดหมายปลายทาง',
@@ -876,10 +882,10 @@ class _MainViewState extends State<MainView> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.18),
+                          color: Colors.white.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(18),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.28),
+                            color: Colors.white.withValues(alpha: 0.28),
                           ),
                         ),
                         child: Row(
@@ -919,6 +925,7 @@ class _MainViewState extends State<MainView> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildLocationPill() {
     return InkWell(
       onTap: _loadCurrentLocation,
@@ -931,7 +938,7 @@ class _MainViewState extends State<MainView> {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -1044,7 +1051,7 @@ class _MainViewState extends State<MainView> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -1081,7 +1088,7 @@ class _MainViewState extends State<MainView> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -1139,7 +1146,7 @@ class _MainViewState extends State<MainView> {
                       border: Border.all(color: const Color(0xFFEAF3EE)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),

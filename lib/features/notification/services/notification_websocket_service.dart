@@ -44,7 +44,7 @@ class NotificationWebSocketService {
       final wsUrl =
           '$wsScheme://${baseUri.host}:${baseUri.port}$contextPath/ws-greenpass/websocket';
 
-      print('>>> [WebSocket] Attempting to connect: $wsUrl');
+      debugPrint('>>> [WebSocket] Attempting to connect: $wsUrl');
 
       _stompClient = StompClient(
         config: StompConfig(
@@ -55,20 +55,20 @@ class NotificationWebSocketService {
           heartbeatOutgoing: const Duration(seconds: 10),
           onConnect: _onConnect,
           onWebSocketError: (dynamic error) {
-            print('>>> [WebSocket] Connection Error: $error');
+            debugPrint('>>> [WebSocket] Connection Error: $error');
           },
           onDisconnect: (StompFrame frame) {
-            print('>>> [WebSocket] Disconnected');
+            debugPrint('>>> [WebSocket] Disconnected');
           },
           onStompError: (StompFrame frame) {
-            print('>>> [WebSocket] STOMP Error: ${frame.body}');
+            debugPrint('>>> [WebSocket] STOMP Error: ${frame.body}');
           },
         ),
       );
 
       _stompClient!.activate();
     } catch (e) {
-      print('>>> [WebSocket] Failed to initialize: $e');
+      debugPrint('>>> [WebSocket] Failed to initialize: $e');
     }
   }
 
@@ -87,7 +87,7 @@ class NotificationWebSocketService {
     };
 
     for (final topic in topicsToSubscribe) {
-      print('>>> [WebSocket] Subscribing to: $topic');
+      debugPrint('>>> [WebSocket] Subscribing to: $topic');
       _stompClient!.subscribe(
         destination: topic,
         callback: _handleIncomingFrame,
