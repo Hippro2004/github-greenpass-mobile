@@ -18,7 +18,6 @@ class _ParkDetailViewState extends State<ParkDetailView> {
   static const Color deepForestHeader = Color(0xFF0F4A36);
   static const Color primaryGreen = Color(0xFF006D43);
   static const Color emeraldTint = Color(0xFF00A86B);
-  static const Color paleEmerald = Color(0xFF78FBB6);
   static const Color mintLight = Color(0xFFE8F7F0);
   static const Color textDark = Color(0xFF091E25);
   static const Color textMuted = Color(0xFF64748B);
@@ -99,22 +98,120 @@ class _ParkDetailViewState extends State<ParkDetailView> {
     );
   }
 
+  /// สร้างไอคอน Badge อัตโนมัติโดยการตัดคำ (substring) จากชื่ออุทยาน เหมือนหน้าค้นหา
+  Widget _buildSubstringIconBadge(Park park) {
+    // 1. ตัดคำว่า "อุทยานแห่งชาติ" ออกด้วย substring
+    String shortName = park.name;
+    if (shortName.startsWith("อุทยานแห่งชาติ")) {
+      shortName = shortName.substring("อุทยานแห่งชาติ".length).trim();
+    }
+    if (shortName.isEmpty) {
+      shortName = park.name;
+    }
+
+    // 2. วิเคราะห์คำในชื่ออุทยาน (substring) เพื่อเลือกประเภทไอคอนและคู่สีกราเดียนต์
+    final name = park.name;
+    IconData icon;
+    List<Color> gradientColors;
+
+    if (name.contains("น้ำตก")) {
+      icon = Icons.water_drop_rounded;
+      gradientColors = const [
+        Color(0xFF0284C7),
+        Color(0xFF2563EB),
+      ]; // สีฟ้าสายน้ำตก
+    } else if (name.contains("เกาะ") ||
+        name.contains("ทะเล") ||
+        name.contains("หาด") ||
+        name.contains("อ่าว") ||
+        name.contains("ธารา") ||
+        name.contains("หมู่เกาะ")) {
+      icon = Icons.waves_rounded;
+      gradientColors = const [
+        Color(0xFF00796B),
+        Color(0xFF009688),
+      ]; // สีเขียวอมฟ้าทางทะเล
+    } else if (name.contains("ดอย") ||
+        name.contains("ภู") ||
+        name.contains("ยอด")) {
+      icon = Icons.filter_hdr_rounded;
+      gradientColors = const [
+        Color(0xFF7C3AED),
+        Color(0xFF6D28D9),
+      ]; // สีม่วงยอดดอย
+    } else if (name.contains("เขา") ||
+        name.contains("ผา") ||
+        name.contains("หิน") ||
+        name.contains("ถ้ำ")) {
+      icon = Icons.landscape_rounded;
+      gradientColors = const [
+        Color(0xFFEA580C),
+        Color(0xFFD97706),
+      ]; // สีส้มทิวเขา
+    } else {
+      icon = Icons.park_rounded;
+      gradientColors = const [
+        Color(0xFF006D43),
+        Color(0xFF00A86B),
+      ]; // สีเขียวป่าไม้ธรรมชาติ
+    }
+
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors.first.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.white, size: 30),
+          const SizedBox(height: 3),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              shortName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 9.5,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.2,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeroCard(Park park) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 10),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF064E3B), Color(0xFF0B5D41), Color(0xFF043828)],
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: darkForest.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -123,41 +220,8 @@ class _ParkDetailViewState extends State<ParkDetailView> {
         children: [
           Row(
             children: [
-              // Park Image / Icon Squircle
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF003820),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: emeraldTint, width: 1.5),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: park.image != null
-                      ? Image.asset(
-                          'assets/images/${park.image}',
-                          width: 64,
-                          height: 64,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, exception, stackTrace) =>
-                              const Center(
-                                child: Icon(
-                                  Icons.park_rounded,
-                                  color: emeraldTint,
-                                  size: 34,
-                                ),
-                              ),
-                        )
-                      : const Center(
-                          child: Icon(
-                            Icons.park_rounded,
-                            color: emeraldTint,
-                            size: 34,
-                          ),
-                        ),
-                ),
-              ),
+              // Park Badge (same as search view)
+              _buildSubstringIconBadge(park),
 
               const SizedBox(width: 14),
 
@@ -168,29 +232,30 @@ class _ParkDetailViewState extends State<ParkDetailView> {
                     Text(
                       park.name,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 17.5,
+                        color: textDark,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         letterSpacing: -0.2,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         const Icon(
-                          Icons.location_on_outlined,
-                          color: paleEmerald,
-                          size: 13,
+                          Icons.location_on_rounded,
+                          color: emeraldTint,
+                          size: 15,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             park.location ?? "อุทยานแห่งชาติ",
                             style: const TextStyle(
-                              color: paleEmerald,
-                              fontSize: 11.5,
+                              color: textMuted,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w500,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -206,60 +271,22 @@ class _ParkDetailViewState extends State<ParkDetailView> {
 
           const SizedBox(height: 14),
 
-          // Badge 1: World Heritage or Park Status
-          // Container(
-          //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          //   decoration: BoxDecoration(
-          //     color: Colors.black.withValues(alpha: 0.22),
-          //     borderRadius: BorderRadius.circular(20),
-          //     border: Border.all(
-          //       color: isWorldHeritage
-          //           ? starAmber.withValues(alpha: 0.35)
-          //           : emeraldTint.withValues(alpha: 0.35),
-          //     ),
-          //   ),
-          //   child: Row(
-          //     mainAxisSize: MainAxisSize.min,
-          //     children: [
-          //       Icon(
-          //         isWorldHeritage ? Icons.star_rounded : Icons.eco_rounded,
-          //         color: isWorldHeritage ? starAmber : emeraldTint,
-          //         size: 14,
-          //       ),
-          //       const SizedBox(width: 5),
-          //       Text(
-          //         isWorldHeritage
-          //             ? "มรดกโลกทางธรรมชาติ (UNESCO)"
-          //             : (park.status ?? "อุทยานแห่งชาติ"),
-          //         style: TextStyle(
-          //           color: isWorldHeritage
-          //               ? const Color(0xFFFDE047)
-          //               : const Color(0xFFD1FAE5),
-          //           fontSize: 11,
-          //           fontWeight: FontWeight.w600,
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-
-          // const SizedBox(height: 6),
-
-          // Badge 2: Open Hours today
+          // Badge: Open Hours today
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.22),
-              borderRadius: BorderRadius.circular(20),
+              color: mintLight,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFD6EFE2)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 6,
-                  height: 6,
+                  width: 7,
+                  height: 7,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF34D399),
+                    color: emeraldTint,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -267,9 +294,9 @@ class _ParkDetailViewState extends State<ParkDetailView> {
                 Text(
                   "เปิดบริการวันนี้ ${park.openTime ?? '06:00'} - ${park.closeTime ?? '18:00'}",
                   style: const TextStyle(
-                    color: Color(0xFFD1FAE5),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                    color: primaryGreen,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
