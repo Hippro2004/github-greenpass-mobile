@@ -60,9 +60,12 @@ class ReportService {
         options: Options(headers: {"username": username}),
       );
 
-      final rawResult = response.data["result"];
-      if (rawResult != null && rawResult is Map) {
-        return Park.fromJson(Map<String, dynamic>.from(rawResult));
+      final data = response.data;
+      if (data is Map) {
+        final rawResult = data["result"];
+        if (rawResult != null && rawResult is Map) {
+          return Park.fromJson(rawResult);
+        }
       }
       return null;
     } on DioException catch (e) {

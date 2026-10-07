@@ -20,7 +20,7 @@ class _NotificationViewState extends State<NotificationView> {
   List<NotificationModel> _notifications = [];
   bool _isLoading = true;
   String? _errorMessage;
-  int _selectedFilterIndex = 0; // 0: ทั้งหมด, 1: ยังไม่อ่าน
+  int _selectedFilterIndex = 0; // 0: ยังไม่อ่าน, 1: ทั้งหมด
 
   // ── Vibrant Wilderness Palette ─────────────────────────────────
   static const Color screenBg = Color(0xFFF3F7F5);
@@ -166,7 +166,7 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   List<NotificationModel> get _filteredNotifications {
-    if (_selectedFilterIndex == 1) {
+    if (_selectedFilterIndex == 0) {
       return _notifications.where((n) => !n.isRead).toList();
     }
     return _notifications;
@@ -282,15 +282,17 @@ class _NotificationViewState extends State<NotificationView> {
       child: Row(
         children: [
           _buildFilterChip(
-            label: 'ทั้งหมด',
-            count: _notifications.length,
+            label: 'ยังไม่อ่าน',
+            icon: Icons.mark_chat_unread_rounded,
+            count: _unreadCount,
             isSelected: _selectedFilterIndex == 0,
             onTap: () => setState(() => _selectedFilterIndex = 0),
           ),
           const SizedBox(width: 8),
           _buildFilterChip(
-            label: 'ยังไม่อ่าน',
-            count: _unreadCount,
+            label: 'ทั้งหมด',
+            icon: Icons.all_inbox_rounded,
+            count: _notifications.length,
             isSelected: _selectedFilterIndex == 1,
             onTap: () => setState(() => _selectedFilterIndex = 1),
           ),
@@ -301,6 +303,7 @@ class _NotificationViewState extends State<NotificationView> {
 
   Widget _buildFilterChip({
     required String label,
+    required IconData icon,
     required int count,
     required bool isSelected,
     required VoidCallback onTap,
@@ -309,17 +312,18 @@ class _NotificationViewState extends State<NotificationView> {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? darkForest : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? darkForest : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.5 : 1.0,
           ),
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: darkForest.withValues(alpha: 0.2),
+                color: darkForest.withValues(alpha: 0.22),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -328,6 +332,12 @@ class _NotificationViewState extends State<NotificationView> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Icon(
+              icon,
+              size: 15,
+              color: isSelected ? Colors.white : darkForest,
+            ),
+            const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
@@ -336,26 +346,30 @@ class _NotificationViewState extends State<NotificationView> {
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
-            if (count > 0) ...[
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                decoration: BoxDecoration(
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.22)
+                    : (count > 0 && label == 'ยังไม่อ่าน'
+                        ? const Color(0xFFD1FAE5)
+                        : const Color(0xFFF1F5F9)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
                   color: isSelected
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '$count',
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : textMuted,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
+                      ? Colors.white
+                      : (count > 0 && label == 'ยังไม่อ่าน'
+                          ? const Color(0xFF065F46)
+                          : textMuted),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ],
+            ),
           ],
         ),
       ),
@@ -417,6 +431,7 @@ class _NotificationViewState extends State<NotificationView> {
     }
 
     if (list.isEmpty) {
+      final isUnreadTab = _selectedFilterIndex == 0;
       return Center(
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -432,29 +447,60 @@ class _NotificationViewState extends State<NotificationView> {
                     color: mintLight,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.notifications_none_rounded,
+                  child: Icon(
+                    isUnreadTab
+                        ? Icons.mark_email_read_rounded
+                        : Icons.notifications_none_rounded,
                     size: 42,
                     color: emeraldTint,
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'ไม่มีการแจ้งเตือน',
-                  style: TextStyle(
-                    fontSize: 16,
+                Text(
+                  isUnreadTab
+                      ? 'ไม่มีการแจ้งเตือนที่ยังไม่อ่าน'
+                      : 'ไม่มีการแจ้งเตือน',
+                  style: const TextStyle(
+                    fontSize: 16.5,
                     fontWeight: FontWeight.bold,
                     color: textDark,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  _selectedFilterIndex == 1
-                      ? 'คุณอ่านการแจ้งเตือนทั้งหมดแล้ว'
+                  isUnreadTab
+                      ? 'คุณอ่านการแจ้งเตือนทั้งหมดเรียบร้อยแล้ว'
                       : 'คุณจะได้รับการแจ้งเตือนเมื่อมีการอัปเดตสถานะรายงาน',
                   style: const TextStyle(fontSize: 13, color: textMuted),
                   textAlign: TextAlign.center,
                 ),
+                if (isUnreadTab && _notifications.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _selectedFilterIndex = 1;
+                      });
+                    },
+                    icon: const Icon(Icons.all_inbox_rounded, size: 16),
+                    label: Text(
+                      'ดูการแจ้งเตือนทั้งหมด (${_notifications.length})',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: darkForest,
+                      side: const BorderSide(color: mintBorder, width: 1.5),
+                      backgroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -487,17 +533,37 @@ class _NotificationViewState extends State<NotificationView> {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isUnread ? const Color(0xFFF2FBF6) : Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isUnread
-                  ? emeraldTint.withValues(alpha: 0.35)
-                  : const Color(0xFFEAF3EE),
-              width: isUnread ? 1.3 : 1.0,
+            border: Border(
+              left: BorderSide(
+                color: isUnread ? emeraldTint : const Color(0xFFCBD5E1),
+                width: isUnread ? 5.0 : 1.0,
+              ),
+              top: BorderSide(
+                color: isUnread
+                    ? const Color(0xFFBBF7D0)
+                    : const Color(0xFFEAF3EE),
+                width: 1.0,
+              ),
+              right: BorderSide(
+                color: isUnread
+                    ? const Color(0xFFBBF7D0)
+                    : const Color(0xFFEAF3EE),
+                width: 1.0,
+              ),
+              bottom: BorderSide(
+                color: isUnread
+                    ? const Color(0xFFBBF7D0)
+                    : const Color(0xFFEAF3EE),
+                width: 1.0,
+              ),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isUnread ? 0.04 : 0.02),
+                color: isUnread
+                    ? emeraldTint.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.02),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -508,22 +574,57 @@ class _NotificationViewState extends State<NotificationView> {
             children: [
               // Left Badge / Icon Container
               if (parkName.trim().isNotEmpty)
-                _buildSubstringIconBadge(parkName)
+                _buildSubstringIconBadge(parkName, isUnread: isUnread)
               else
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: isUnread ? mintPillBg : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    item.report != null
-                        ? Icons.assignment_outlined
-                        : Icons.notifications_active_outlined,
-                    color: isUnread ? darkForest : textMuted,
-                    size: 24,
-                  ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: isUnread ? mintPillBg : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(
+                          color: isUnread
+                              ? const Color(0xFFA7F3D0)
+                              : const Color(0xFFE2E8F0),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Icon(
+                        item.report != null
+                            ? Icons.assignment_outlined
+                            : (isUnread
+                                ? Icons.mark_chat_unread_rounded
+                                : Icons.drafts_outlined),
+                        color: isUnread ? darkForest : textMuted,
+                        size: 24,
+                      ),
+                    ),
+                    if (isUnread)
+                      Positioned(
+                        top: -3,
+                        right: -3,
+                        child: Container(
+                          width: 13,
+                          height: 13,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF10B981).withValues(
+                                  alpha: 0.5,
+                                ),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
 
               const SizedBox(width: 12),
@@ -533,8 +634,9 @@ class _NotificationViewState extends State<NotificationView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Header: Title + Status Tag (ยังไม่อ่าน / อ่านแล้ว)
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
                           child: Text(
@@ -544,64 +646,166 @@ class _NotificationViewState extends State<NotificationView> {
                               fontWeight: isUnread
                                   ? FontWeight.w800
                                   : FontWeight.w600,
-                              color: textDark,
+                              color: isUnread
+                                  ? textDark
+                                  : const Color(0xFF475569),
                             ),
                           ),
                         ),
-                        if (isUnread) ...[
-                          const SizedBox(width: 6),
+                        const SizedBox(width: 8),
+                        if (isUnread)
                           Container(
-                            width: 8,
-                            height: 8,
-                            margin: const EdgeInsets.only(top: 4),
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: emeraldTint,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD1FAE5),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: const Color(0xFFA7F3D0),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF00A86B),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.mark_chat_unread_rounded,
+                                  size: 12,
+                                  color: Color(0xFF065F46),
+                                ),
+                                const SizedBox(width: 3),
+                                const Text(
+                                  'ยังไม่อ่าน',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF065F46),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(
+                                  Icons.done_all_rounded,
+                                  size: 13,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                                SizedBox(width: 3),
+                                Text(
+                                  'อ่านแล้ว',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
+
+                    // Message text
                     Text(
                       item.message,
                       style: TextStyle(
                         fontSize: 12.5,
+                        fontWeight: isUnread
+                            ? FontWeight.w500
+                            : FontWeight.normal,
                         color: isUnread
-                            ? const Color(0xFF334155)
-                            : Colors.grey.shade600,
-                        height: 1.4,
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFF64748B),
+                        height: 1.45,
                       ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
+
+                    // Bottom info (Timestamp + View progress action)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          timeStr,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: textMuted,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.access_time_rounded,
+                              size: 12,
+                              color: isUnread ? emeraldTint : textMuted,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              timeStr,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: isUnread
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: isUnread ? darkForest : textMuted,
+                              ),
+                            ),
+                          ],
                         ),
                         if (item.report != null)
-                          Row(
-                            children: const [
-                              Text(
-                                'ดูความคืบหน้า',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  color: darkForest,
-                                  fontWeight: FontWeight.bold,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isUnread ? darkForest : mintLight,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'ดูความคืบหน้า',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isUnread ? Colors.white : darkForest,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 3),
-                              Icon(
-                                Icons.chevron_right_rounded,
-                                size: 14,
-                                color: darkForest,
-                              ),
-                            ],
+                                const SizedBox(width: 3),
+                                Icon(
+                                  isUnread
+                                      ? Icons.arrow_forward_rounded
+                                      : Icons.chevron_right_rounded,
+                                  size: 12,
+                                  color: isUnread ? Colors.white : darkForest,
+                                ),
+                              ],
+                            ),
                           ),
                       ],
                     ),
@@ -615,8 +819,8 @@ class _NotificationViewState extends State<NotificationView> {
     );
   }
 
-  /// ไอคอน Badge ตัดคำแบบ Vibrant Wilderness
-  Widget _buildSubstringIconBadge(String rawParkName) {
+  /// ไอคอน Badge ตัดคำแบบ Vibrant Wilderness พร้อมสถานะอ่าน/ยังไม่อ่าน
+  Widget _buildSubstringIconBadge(String rawParkName, {required bool isUnread}) {
     String shortName = rawParkName.trim();
     if (shortName.startsWith("อุทยานแห่งชาติ")) {
       shortName = shortName.substring("อุทยานแห่งชาติ".length).trim();
@@ -656,46 +860,78 @@ class _NotificationViewState extends State<NotificationView> {
       gradientColors = const [Color(0xFF006D43), Color(0xFF00A86B)];
     }
 
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradientColors,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: gradientColors.first.withValues(alpha: 0.25),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isUnread
+                  ? gradientColors
+                  : [
+                      gradientColors[0].withValues(alpha: 0.72),
+                      gradientColors[1].withValues(alpha: 0.72),
+                    ],
+            ),
+            boxShadow: isUnread
+                ? [
+                    BoxShadow(
+                      color: gradientColors.first.withValues(alpha: 0.35),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
           ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white, size: 20),
-          const SizedBox(height: 2),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: Text(
-              shortName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 7.5,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.2,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white, size: 20),
+              const SizedBox(height: 2),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Text(
+                  shortName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 7.5,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
+            ],
+          ),
+        ),
+        if (isUnread)
+          Positioned(
+            top: -3,
+            right: -3,
+            child: Container(
+              width: 13,
+              height: 13,
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }

@@ -8,9 +8,14 @@ class ParkService {
         "/park/search",
         queryParameters: {"keyword": keyword},
       );
-      return (response.data['result'] as List)
-          .map((e) => Park.fromJson(e))
-          .toList();
+      final rawResult = response.data['result'];
+      if (rawResult is List) {
+        return rawResult
+            .whereType<Map>()
+            .map((e) => Park.fromJson(e))
+            .toList();
+      }
+      return [];
     } catch (e) {
       rethrow;
     }

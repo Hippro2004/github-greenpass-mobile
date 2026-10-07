@@ -23,7 +23,7 @@ class QrResponse {
   bool isExpiredAt(DateTime now) => expireAt <= now.millisecondsSinceEpoch;
 
   int remainingSecondsAt(DateTime now) {
-    if (expiresInSeconds > 0) return expiresInSeconds;
+    if (isExpiredAt(now)) return 0;
     final remainingMs = expireAt - now.millisecondsSinceEpoch;
     if (remainingMs <= 0) return 0;
     return (remainingMs / 1000).ceil();
