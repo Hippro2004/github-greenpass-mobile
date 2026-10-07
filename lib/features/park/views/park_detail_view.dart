@@ -272,36 +272,36 @@ class _ParkDetailViewState extends State<ParkDetailView> {
           const SizedBox(height: 14),
 
           // Badge: Open Hours today
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: mintLight,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFD6EFE2)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                    color: emeraldTint,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  "เปิดบริการวันนี้ ${park.openTime ?? '06:00'} - ${park.closeTime ?? '18:00'}",
-                  style: const TextStyle(
-                    color: primaryGreen,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // Container(
+          //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          //   decoration: BoxDecoration(
+          //     color: mintLight,
+          //     borderRadius: BorderRadius.circular(12),
+          //     border: Border.all(color: const Color(0xFFD6EFE2)),
+          //   ),
+          //   child: Row(
+          //     mainAxisSize: MainAxisSize.min,
+          //     children: [
+          //       Container(
+          //         width: 7,
+          //         height: 7,
+          //         decoration: const BoxDecoration(
+          //           color: emeraldTint,
+          //           shape: BoxShape.circle,
+          //         ),
+          //       ),
+          //       const SizedBox(width: 6),
+          //       Text(
+          //         "เปิดบริการวันนี้ ${park.openTime ?? '06:00'} - ${park.closeTime ?? '18:00'}",
+          //         style: const TextStyle(
+          //           color: primaryGreen,
+          //           fontSize: 12,
+          //           fontWeight: FontWeight.w600,
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );
@@ -508,25 +508,25 @@ class _ParkDetailViewState extends State<ParkDetailView> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.info_outline_rounded,
-                size: 13.5,
-                color: Color(0xFF94A3B8),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  park.eventNote ??
-                      "ด่านตรวจปิดรับนักท่องเที่ยวขึ้นเขาหลังเวลา 18:00 น.",
-                  style: const TextStyle(fontSize: 11, color: textMuted),
-                ),
-              ),
-            ],
-          ),
+          // const SizedBox(height: 10),
+          // Row(
+          //   crossAxisAlignment: CrossAxisAlignment.start,
+          //   children: [
+          //     const Icon(
+          //       Icons.info_outline_rounded,
+          //       size: 13.5,
+          //       color: Color(0xFF94A3B8),
+          //     ),
+          //     const SizedBox(width: 6),
+          //     Expanded(
+          //       child: Text(
+          //         park.eventNote ??
+          //             "ด่านตรวจปิดรับนักท่องเที่ยวขึ้นเขาหลังเวลา 18:00 น.",
+          //         style: const TextStyle(fontSize: 11, color: textMuted),
+          //       ),
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );
