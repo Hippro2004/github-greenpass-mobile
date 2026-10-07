@@ -284,7 +284,7 @@ class _AddReportViewState extends State<AddReportView> {
   }
 
   Future<void> _checkParkStatus() async {
-    final username = Session.currentUser!.username;
+    final username = Session.currentUser?.username;
     if (username == null || username.isEmpty) {
       await _showNotStampedDialog("กรุณาเข้าสู่ระบบก่อนแจ้งรายงานปัญหา");
       return;
@@ -304,7 +304,8 @@ class _AddReportViewState extends State<AddReportView> {
         _parkStamped = parkStamped;
         _isCheckingStamp = false;
       });
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint("Error checking stamp status: $e\n$stack");
       if (!mounted) return;
       await _showNotStampedDialog(
         "ไม่สามารถตรวจสอบข้อมูลตราประทับได้ กรุณาลองใหม่อีกครั้ง",

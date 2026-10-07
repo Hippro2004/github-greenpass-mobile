@@ -61,8 +61,8 @@ class ReportService {
       );
 
       final rawResult = response.data["result"];
-      if (rawResult != null && rawResult is Map<String, dynamic>) {
-        return Park.fromJson(rawResult);
+      if (rawResult != null && rawResult is Map) {
+        return Park.fromJson(Map<String, dynamic>.from(rawResult));
       }
       return null;
     } on DioException catch (e) {

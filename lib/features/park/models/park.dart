@@ -31,19 +31,23 @@ class Park {
   });
 
   factory Park.fromJson(Map<String, dynamic> json) => Park(
-    id: json['id'],
-    name: json['name'],
-    image: json['image'],
-    address: json['address'],
-    description: json['description'],
-    location: json['location'],
-    openTime: json['openTime'],
-    closeTime: json['closeTime'],
-    eventNote: json['eventNote'],
-    isSeasonalPark: json['isSeasonalPark'],
-    seasonOpenDate: json['seasonOpenDate'],
-    seasonCloseDate: json['seasonCloseDate'],
-    isTemporaryClosed: json['isTemporaryClosed'],
-    status: json['status'],
+    id: json['id'] is int
+        ? json['id'] as int
+        : (json['parkId'] is int
+            ? json['parkId'] as int
+            : int.tryParse('${json['id'] ?? json['parkId']}') ?? 0),
+    name: json['name']?.toString() ?? '',
+    image: json['image']?.toString(),
+    address: json['address']?.toString(),
+    description: json['description']?.toString(),
+    location: json['location']?.toString(),
+    openTime: json['openTime']?.toString(),
+    closeTime: json['closeTime']?.toString(),
+    eventNote: json['eventNote']?.toString(),
+    isSeasonalPark: json['isSeasonalPark'] as bool?,
+    seasonOpenDate: json['seasonOpenDate']?.toString(),
+    seasonCloseDate: json['seasonCloseDate']?.toString(),
+    isTemporaryClosed: json['isTemporaryClosed'] as bool?,
+    status: json['status']?.toString(),
   );
 }
