@@ -8,6 +8,7 @@ class StampResponse {
   final String parkName;
   final String parkRangerName;
   final String signature;
+  final String? parkImage;
 
   StampResponse({
     required this.stampId,
@@ -17,6 +18,7 @@ class StampResponse {
     required this.parkName,
     required this.parkRangerName,
     required this.signature,
+    this.parkImage,
   });
 
   StampResponse copyWith({
@@ -27,6 +29,7 @@ class StampResponse {
     String? parkName,
     String? parkRangerName,
     String? signature,
+    String? parkImage,
   }) {
     return StampResponse(
       stampId: stampId ?? this.stampId,
@@ -36,6 +39,7 @@ class StampResponse {
       parkName: parkName ?? this.parkName,
       parkRangerName: parkRangerName ?? this.parkRangerName,
       signature: signature ?? this.signature,
+      parkImage: parkImage ?? this.parkImage,
     );
   }
 
@@ -48,6 +52,7 @@ class StampResponse {
       'parkName': parkName,
       'parkRangerName': parkRangerName,
       'signature': signature,
+      if (parkImage != null) 'parkImage': parkImage,
     };
   }
 
@@ -86,6 +91,21 @@ class StampResponse {
           (map['parkRanger']['signature'] ?? '').toString().trim();
     }
 
+    String? parsedParkImage;
+    if (map['parkImage'] != null &&
+        map['parkImage'].toString().trim().isNotEmpty) {
+      parsedParkImage = map['parkImage'].toString().trim();
+    } else if (map['image'] != null &&
+        map['image'].toString().trim().isNotEmpty) {
+      parsedParkImage = map['image'].toString().trim();
+    } else if (map['park'] != null && map['park'] is Map) {
+      final p = map['park'] as Map;
+      final img = p['image'] ?? p['imageUrl'] ?? p['parkImage'];
+      if (img != null && img.toString().trim().isNotEmpty) {
+        parsedParkImage = img.toString().trim();
+      }
+    }
+
     return StampResponse(
       stampId: (map['stampId'] as num?)?.toInt() ?? 0,
       stampDate: map['stampDate']?.toString() ?? '',
@@ -94,6 +114,7 @@ class StampResponse {
       parkName: parsedParkName,
       parkRangerName: parsedRangerName,
       signature: parsedSignature,
+      parkImage: parsedParkImage,
     );
   }
 
@@ -104,7 +125,7 @@ class StampResponse {
 
   @override
   String toString() {
-    return 'StampResponse(stampId: $stampId, stampDate: $stampDate, time: $time, parkId: $parkId, parkName: $parkName, parkRangerName: $parkRangerName, signature: $signature)';
+    return 'StampResponse(stampId: $stampId, stampDate: $stampDate, time: $time, parkId: $parkId, parkName: $parkName, parkRangerName: $parkRangerName, signature: $signature, parkImage: $parkImage)';
   }
 
   @override
@@ -118,7 +139,8 @@ class StampResponse {
         other.parkId == parkId &&
         other.parkName == parkName &&
         other.parkRangerName == parkRangerName &&
-        other.signature == signature;
+        other.signature == signature &&
+        other.parkImage == parkImage;
   }
 
   @override
@@ -129,6 +151,7 @@ class StampResponse {
         parkId.hashCode ^
         parkName.hashCode ^
         parkRangerName.hashCode ^
-        signature.hashCode;
+        signature.hashCode ^
+        parkImage.hashCode;
   }
 }

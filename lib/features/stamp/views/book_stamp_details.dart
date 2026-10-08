@@ -163,6 +163,10 @@ class _BookStampDetailsState extends State<BookStampDetails> {
           signature: history.signature.trim().isEmpty
               ? widget.stamp.signature
               : history.signature,
+          parkImage: (history.parkImage != null &&
+                  history.parkImage!.trim().isNotEmpty)
+              ? history.parkImage
+              : widget.stamp.parkImage,
         );
       }).toList();
       final hasSelectedStamp = mergedHistories.any(
@@ -241,7 +245,7 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                     const SizedBox(width: 10),
                     const Expanded(
                       child: Text(
-                        "ตราประทับและลายมือชื่อ",
+                        "ลายมือชื่อเจ้าหน้าที่",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -393,14 +397,234 @@ class _BookStampDetailsState extends State<BookStampDetails> {
     );
   }
 
+  String? _getParkAssetImage(String rawParkName) {
+    final name = rawParkName.toLowerCase();
+    if (name.contains("เขาใหญ่") ||
+        name.contains("khao yai") ||
+        name.contains("khaoyai")) {
+      return "assets/images/Khao-Yai-National-Park.png";
+    }
+    if (name.contains("อินทนนท์") || name.contains("inthanon")) {
+      return "assets/images/Doi-Inthanon-National-Park.jpg";
+    }
+    if (name.contains("สุเทพ") || name.contains("suthep")) {
+      return "assets/images/Doi-Suthep-Pui-National-Park.jpg";
+    }
+    if (name.contains("เอราวัณ") || name.contains("erawan")) {
+      return "assets/images/Erawan-National-Park.jpg";
+    }
+    if (name.contains("แก่งกระจาน") || name.contains("kaeng krachan")) {
+      return "assets/images/Kaeng-Krachan-National-Park.jpg";
+    }
+    if (name.contains("ภูกระดึง") || name.contains("kradueng")) {
+      return "assets/images/Phu-Kradueng-National-Park.jpg";
+    }
+    if (name.contains("ภูเรือ") ||
+        name.contains("phu ruea") ||
+        name.contains("phuruea")) {
+      return "assets/images/Phu-Ruea-National-Park.jpg";
+    }
+    if (name.contains("อ่างทอง") ||
+        name.contains("ang thong") ||
+        name.contains("angthong")) {
+      return "assets/images/Ang-Thong-National-Marine-Park.jpg";
+    }
+    if (name.contains("พีพี") ||
+        name.contains("นพรัตน์ธารา") ||
+        name.contains("phi phi") ||
+        name.contains("phiphi")) {
+      return "assets/images/Nopparat-Thara-Beach-Phi-Phi-Islands-Marine-National-Park.jpg";
+    }
+    if (name.contains("สุรินทร์") || name.contains("surin")) {
+      return "assets/images/Surin-Islands-National-Park.jpg";
+    }
+    return null;
+  }
+
+  IconData _getParkIcon(String name) {
+    if (name.contains("น้ำตก")) {
+      return Icons.water_drop_rounded;
+    } else if (name.contains("เกาะ") ||
+        name.contains("ทะเล") ||
+        name.contains("หาด") ||
+        name.contains("อ่าว") ||
+        name.contains("ธารา") ||
+        name.contains("หมู่เกาะ")) {
+      return Icons.waves_rounded;
+    } else if (name.contains("ดอย") ||
+        name.contains("ภู") ||
+        name.contains("ยอด")) {
+      return Icons.filter_hdr_rounded;
+    } else if (name.contains("เขา") ||
+        name.contains("ผา") ||
+        name.contains("หิน") ||
+        name.contains("ถ้ำ")) {
+      return Icons.landscape_rounded;
+    }
+    return Icons.park_rounded;
+  }
+
+  Widget _buildDefaultParkIcon(String parkTitle) {
+    return Container(
+      color: const Color(0xFF063A27),
+      alignment: Alignment.center,
+      child: Icon(
+        _getParkIcon(parkTitle),
+        color: const Color(0xFFFCD34D),
+        size: 40,
+      ),
+    );
+  }
+
+  Widget _buildParkEmblem(
+    String parkTitle,
+    String? networkImageUrl,
+    String? assetPath,
+  ) {
+    if (networkImageUrl != null && networkImageUrl.trim().isNotEmpty) {
+      final resolvedUrl = resolveImageUrl(
+        networkImageUrl,
+        defaultCategory: 'parks',
+      );
+      return CachedNetworkImage(
+        imageUrl: resolvedUrl,
+        fit: BoxFit.cover,
+        width: 72,
+        height: 72,
+        placeholder: (_, _) => _buildDefaultParkIcon(parkTitle),
+        errorWidget: (_, _, _) {
+          if (assetPath != null) {
+            return Image.asset(
+              assetPath,
+              fit: BoxFit.cover,
+              width: 72,
+              height: 72,
+              errorBuilder: (_, _, _) => _buildDefaultParkIcon(parkTitle),
+            );
+          }
+          return _buildDefaultParkIcon(parkTitle);
+        },
+      );
+    }
+
+    if (assetPath != null) {
+      return Image.asset(
+        assetPath,
+        fit: BoxFit.cover,
+        width: 72,
+        height: 72,
+        errorBuilder: (_, _, _) => _buildDefaultParkIcon(parkTitle),
+      );
+    }
+
+    return _buildDefaultParkIcon(parkTitle);
+  }
+
+  void _showParkImageDialog(
+    BuildContext context,
+    String parkTitle,
+    String? networkImageUrl,
+    String? assetPath,
+  ) {
+    final hasNetImg =
+        networkImageUrl != null && networkImageUrl.trim().isNotEmpty;
+    if (!hasNetImg && assetPath == null) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: Colors.white,
+        clipBehavior: Clip.antiAlias,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 16, 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        color: mintLight,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.park_rounded,
+                        color: iconGreen,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        parkTitle,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: () => Navigator.pop(ctx),
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: double.infinity,
+                height: 220,
+                color: screenBg,
+                child: hasNetImg
+                    ? CachedNetworkImage(
+                        imageUrl: resolveImageUrl(
+                          networkImageUrl,
+                          defaultCategory: 'parks',
+                        ),
+                        fit: BoxFit.cover,
+                        errorWidget: (_, _, _) => assetPath != null
+                            ? Image.asset(assetPath, fit: BoxFit.cover)
+                            : _buildDefaultParkIcon(parkTitle),
+                      )
+                    : Image.asset(assetPath!, fit: BoxFit.cover),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStampHeroHeader(String parkTitle) {
-    final heroSignature = _latestStamp.signature.trim().isNotEmpty
-        ? _latestStamp.signature
-        : widget.stamp.signature;
-    final heroRanger = _latestStamp.parkRangerName.trim().isNotEmpty
-        ? _latestStamp.parkRangerName
-        : widget.stamp.parkRangerName;
-    final hasSignature = heroSignature.trim().isNotEmpty;
+    final heroParkImage = (_latestStamp.parkImage?.trim().isNotEmpty ?? false)
+        ? _latestStamp.parkImage
+        : widget.stamp.parkImage;
+    final parkAsset = _getParkAssetImage(parkTitle);
+    final hasImage = (heroParkImage != null &&
+            heroParkImage.trim().isNotEmpty) ||
+        parkAsset != null;
 
     return Container(
       width: double.infinity,
@@ -442,13 +666,14 @@ class _BookStampDetailsState extends State<BookStampDetails> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Circular Stamp Badge
+                  // Circular Stamp Badge (Official National Park Emblem / Photo)
                   GestureDetector(
-                    onTap: hasSignature
-                        ? () => _showSignatureDialog(
+                    onTap: hasImage
+                        ? () => _showParkImageDialog(
                             context,
-                            heroSignature,
-                            heroRanger,
+                            parkTitle,
+                            heroParkImage,
+                            parkAsset,
                           )
                         : null,
                     child: Stack(
@@ -485,34 +710,11 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                                 child: SizedBox(
                                   width: 72,
                                   height: 72,
-                                  child: hasSignature
-                                      ? CachedNetworkImage(
-                                          imageUrl: resolveImageUrl(
-                                            heroSignature,
-                                            defaultCategory: 'signatures',
-                                          ),
-                                          fit: BoxFit.contain,
-                                          placeholder: (_, _) => const Center(
-                                            child: Icon(
-                                              Icons.park_rounded,
-                                              color: Color(0xFFFCD34D),
-                                              size: 44,
-                                            ),
-                                          ),
-                                          errorWidget: (_, _, _) =>
-                                              const Center(
-                                            child: Icon(
-                                              Icons.park_rounded,
-                                              color: Color(0xFFFCD34D),
-                                              size: 44,
-                                            ),
-                                          ),
-                                        )
-                                      : const Icon(
-                                          Icons.park_rounded,
-                                          color: Color(0xFFFCD34D),
-                                          size: 44,
-                                        ),
+                                  child: _buildParkEmblem(
+                                    parkTitle,
+                                    heroParkImage,
+                                    parkAsset,
+                                  ),
                                 ),
                               ),
                             ),
@@ -591,17 +793,6 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 4),
-
-                  // Subtitle
-                  // Text(
-                  //   _getParkSubtitle(parkTitle),
-                  //   style: TextStyle(
-                  //     color: const Color(0xFFE2E8F0).withValues(alpha: 0.85),
-                  //     fontSize: 12.5,
-                  //     fontWeight: FontWeight.w500,
-                  //   ),
-                  //   textAlign: TextAlign.center,
-                  // ),
                 ],
               ),
             ),
@@ -1081,46 +1272,48 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                                       ],
                                     ),
                                   ),
-                                  InkWell(
-                                    borderRadius: BorderRadius.circular(20),
-                                    onTap: () => _showSignatureDialog(
-                                      context,
-                                      history.signature,
-                                      history.parkRangerName,
-                                    ),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
+                                  if (history.signature.trim().isNotEmpty)
+                                    InkWell(
+                                      borderRadius: BorderRadius.circular(20),
+                                      onTap: () => _showSignatureDialog(
+                                        context,
+                                        history.signature,
+                                        history.parkRangerName,
                                       ),
-                                      decoration: BoxDecoration(
-                                        color: mintAction,
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: const Color(0xFFA7F3D0),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: mintAction,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          border: Border.all(
+                                            color: const Color(0xFFA7F3D0),
+                                          ),
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.draw_outlined,
+                                              size: 14,
+                                              color: iconGreen,
+                                            ),
+                                            SizedBox(width: 5),
+                                            Text(
+                                              "ลายมือชื่อ",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w700,
+                                                color: mintDark,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.edit_outlined,
-                                            size: 14,
-                                            color: iconGreen,
-                                          ),
-                                          SizedBox(width: 5),
-                                          Text(
-                                            "ตราประทับ",
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                              color: mintDark,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
                                     ),
-                                  ),
                                 ],
                               ),
                             ],

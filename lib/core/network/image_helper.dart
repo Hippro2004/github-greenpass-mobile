@@ -40,6 +40,7 @@ String resolveImageUrl(String? imagePath, {String defaultCategory = 'users'}) {
   // ถ้าส่งมาเป็นชื่อไฟล์เดี่ยวๆ หรือมีโฟลเดอร์หมวดหมู่นำหน้ามาแล้วแต่ยังไม่มี /uploads/
   if (!cleanPath.startsWith('/uploads/')) {
     if (cleanPath.startsWith('/signatures/') ||
+        cleanPath.startsWith('/parks/') ||
         cleanPath.startsWith('/users/') ||
         cleanPath.startsWith('/reports/') ||
         cleanPath.startsWith('/rewards/') ||
