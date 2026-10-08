@@ -780,43 +780,6 @@ class _NotificationViewState extends State<NotificationView> {
                                           ),
                                         ),
                                       ),
-                                      if (isSevere) ...[
-                                        const SizedBox(width: 6),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2.5,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFFEF2F2),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            border: Border.all(
-                                              color: const Color(0xFFFECACA),
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: const Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.warning_amber_rounded,
-                                                size: 11,
-                                                color: Color(0xFFDC2626),
-                                              ),
-                                              SizedBox(width: 2.5),
-                                              Text(
-                                                'ร้ายแรง',
-                                                style: TextStyle(
-                                                  color: Color(0xFFDC2626),
-                                                  fontWeight: FontWeight.w800,
-                                                  fontSize: 10,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
                                       const SizedBox(width: 8),
                                       if (isUnread)
                                         Container(
@@ -921,6 +884,44 @@ class _NotificationViewState extends State<NotificationView> {
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
+                                          if (isSevere) ...[
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                                vertical: 2,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFFEF2F2),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: const Color(0xFFFECACA),
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: const Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.warning_amber_rounded,
+                                                    size: 11,
+                                                    color: Color(0xFFDC2626),
+                                                  ),
+                                                  SizedBox(width: 2.5),
+                                                  Text(
+                                                    'ร้ายแรง',
+                                                    style: TextStyle(
+                                                      color: Color(0xFFDC2626),
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      fontSize: 9.5,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                          ],
                                           Icon(
                                             Icons.access_time_rounded,
                                             size: 12,

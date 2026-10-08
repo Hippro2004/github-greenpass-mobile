@@ -25,6 +25,8 @@ class ReplyReportResponse {
     required this.reportType,
   });
 
+  String get reporyType => reportType;
+
   Map<String, dynamic> toMap() {
     return {
       'replyReportId': replyReportId,

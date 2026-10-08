@@ -68,6 +68,12 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
   }
 
   Future<void> _loadReplies() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    }
     try {
       final replies = await _replyReportService.getReplyReport(
         widget.report.reportId,
@@ -83,7 +89,8 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
         }
         _isLoading = false;
       });
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('Error loading replies: $e\n$stack');
       if (!mounted) return;
       setState(() {
         _error = 'ไม่สามารถโหลดประวัติการดำเนินการได้';
@@ -267,14 +274,12 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: isSevereReport ? const Color(0xFFFEF2F2) : mintLight,
+                  color: mintLight,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  isSevereReport
-                      ? Icons.warning_amber_rounded
-                      : Icons.timeline_rounded,
-                  color: isSevereReport ? const Color(0xFFDC2626) : darkForest,
+                child: const Icon(
+                  Icons.timeline_rounded,
+                  color: darkForest,
                   size: 18,
                 ),
               ),
@@ -288,39 +293,6 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                 ),
               ),
               const Spacer(),
-              if (isSevereReport) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3.5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF2F2),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFFECACA)),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.crisis_alert_rounded,
-                        size: 12,
-                        color: Color(0xFFDC2626),
-                      ),
-                      SizedBox(width: 3),
-                      Text(
-                        'ร้ายแรง',
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFFDC2626),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 6),
-              ],
               if (_replies.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -383,39 +355,6 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                 ? _buildEmptyTimelineView(isSevere: isSevereReport)
                 : Column(
                     children: [
-                      if (isSevereReport)
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF2F2),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFFECACA)),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(
-                                Icons.crisis_alert_rounded,
-                                size: 16,
-                                color: Color(0xFFDC2626),
-                              ),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'รายงานประเภทร้ายแรง — มีการติดตามและดำเนินการเร่งด่วน',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFFB91C1C),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       for (var i = 0; i < _replies.length; i++)
                         _buildTimelineItem(
                           _replies[i],
@@ -819,42 +758,6 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                           ),
                         ),
                       ),
-                      if (isSevere) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF2F2),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: const Color(0xFFFECACA),
-                              width: 1,
-                            ),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                size: 12,
-                                color: Color(0xFFDC2626),
-                              ),
-                              SizedBox(width: 3),
-                              Text(
-                                'ร้ายแรง',
-                                style: TextStyle(
-                                  color: Color(0xFFDC2626),
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 10.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                       const SizedBox(width: 8),
                       Text(
                         '${reply.updateDate} ${reply.updateTime}'.trim(),
@@ -918,6 +821,46 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                             fontSize: 11,
                             color: textMuted,
                             fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (isSevere) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2.5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(0xFFFECACA),
+                              width: 1,
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                size: 12,
+                                color: Color(0xFFDC2626),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'ประเภทร้ายแรง',
+                                style: TextStyle(
+                                  color: Color(0xFFDC2626),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],

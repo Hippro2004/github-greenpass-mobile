@@ -14,8 +14,8 @@ class ReplyReportService {
       final rawResult = response.data["result"];
       List<ReplyReportResponse> replyReports = [];
 
-      if (rawResult != null) {
-        replyReports = (rawResult as List)
+      if (rawResult != null && rawResult is List) {
+        replyReports = rawResult
             .map(
               (e) => ReplyReportResponse.fromMap(
                 Map<String, dynamic>.from(e as Map),
@@ -25,6 +25,11 @@ class ReplyReportService {
       }
 
       return replyReports;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return [];
+      }
+      rethrow;
     } catch (e) {
       rethrow;
     }
