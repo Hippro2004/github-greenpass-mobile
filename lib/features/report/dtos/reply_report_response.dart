@@ -10,6 +10,7 @@ class ReplyReportResponse {
   final String image;
   final String? parkRangerName;
   final String? parkRangerUsername;
+  final String reportType;
 
   ReplyReportResponse({
     this.replyReportId,
@@ -21,6 +22,7 @@ class ReplyReportResponse {
     required this.image,
     required this.parkRangerName,
     this.parkRangerUsername,
+    required this.reportType,
   });
 
   Map<String, dynamic> toMap() {
@@ -34,6 +36,7 @@ class ReplyReportResponse {
       'image': image,
       'parkRangerName': parkRangerName,
       'parkRangerUsername': parkRangerUsername,
+      'reportType': reportType,
     };
   }
 
@@ -48,6 +51,33 @@ class ReplyReportResponse {
       image: (map['image'] ?? '').toString(),
       parkRangerName: map['parkRangerName']?.toString() ?? '',
       parkRangerUsername: map['parkRangerUsername']?.toString(),
+      reportType: (map['reportType'] ?? map['reporyType'] ?? '').toString(),
+    );
+  }
+
+  ReplyReportResponse copyWith({
+    int? replyReportId,
+    int? reportId,
+    String? updateDate,
+    String? updateTime,
+    String? progress,
+    String? currentStatus,
+    String? image,
+    String? parkRangerName,
+    String? parkRangerUsername,
+    String? reportType,
+  }) {
+    return ReplyReportResponse(
+      replyReportId: replyReportId ?? this.replyReportId,
+      reportId: reportId ?? this.reportId,
+      updateDate: updateDate ?? this.updateDate,
+      updateTime: updateTime ?? this.updateTime,
+      progress: progress ?? this.progress,
+      currentStatus: currentStatus ?? this.currentStatus,
+      image: image ?? this.image,
+      parkRangerName: parkRangerName ?? this.parkRangerName,
+      parkRangerUsername: parkRangerUsername ?? this.parkRangerUsername,
+      reportType: reportType ?? this.reportType,
     );
   }
 

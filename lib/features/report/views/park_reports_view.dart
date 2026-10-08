@@ -226,6 +226,10 @@ class ParkReportsView extends StatelessWidget {
   Widget _buildReportCard(BuildContext context, ReportResponse report) {
     final statusColor = _statusColor(report.status);
     final statusLabel = _statusLabel(report.status);
+    final isSevere = report.typeName != null &&
+        (report.typeName!.contains('ร้ายแรง') ||
+            report.typeName!.toLowerCase().contains('severe') ||
+            report.typeName!.toLowerCase().contains('critical'));
 
     return Material(
       color: Colors.transparent,
@@ -242,10 +246,17 @@ class ParkReportsView extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFEAF3EE)),
+            border: Border.all(
+              color: isSevere
+                  ? const Color(0xFFFECACA)
+                  : const Color(0xFFEAF3EE),
+              width: isSevere ? 1.4 : 1.0,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: isSevere
+                    ? const Color(0xFFDC2626).withValues(alpha: 0.06)
+                    : Colors.black.withValues(alpha: 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -265,25 +276,37 @@ class ParkReportsView extends StatelessWidget {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: mintLight,
+                        color: isSevere ? const Color(0xFFFEF2F2) : mintLight,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: mintBorder),
+                        border: Border.all(
+                          color: isSevere
+                              ? const Color(0xFFFECACA)
+                              : mintBorder,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
-                            Icons.category_rounded,
+                          Icon(
+                            isSevere
+                                ? Icons.warning_amber_rounded
+                                : Icons.category_rounded,
                             size: 11,
-                            color: darkForest,
+                            color: isSevere
+                                ? const Color(0xFFDC2626)
+                                : darkForest,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             report.typeName!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10.5,
-                              fontWeight: FontWeight.w600,
-                              color: darkForest,
+                              fontWeight: isSevere
+                                  ? FontWeight.w800
+                                  : FontWeight.w600,
+                              color: isSevere
+                                  ? const Color(0xFFDC2626)
+                                  : darkForest,
                             ),
                           ),
                         ],
@@ -640,7 +663,7 @@ class ParkReportsView extends StatelessWidget {
       case "รับทราบ":
       case "รับทราบแล้ว":
       case "รับเรื่องแล้ว":
-        return const Color(0xFF0284C7); // Sky blue
+        return const Color(0xFF475569); // Dark Grey (เดิมสีฟ้าคราม)
       case "REJECTED":
       case "CANCELLED":
       case "CANCELED":

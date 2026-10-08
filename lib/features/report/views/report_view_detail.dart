@@ -161,7 +161,7 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
       case 'รับทราบ':
       case 'รับทราบแล้ว':
       case 'รับเรื่องแล้ว':
-        return const Color(0xFF0284C7); // Sky Blue
+        return const Color(0xFF475569); // Dark Grey (เดิมสีฟ้าคราม)
       case 'REJECTED':
       case 'CANCELLED':
       case 'CANCELED':
@@ -178,11 +178,34 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
     }
   }
 
+  bool _isSevereType(String? typeName) {
+    if (typeName == null) return false;
+    final t = typeName.trim().toLowerCase();
+    return t.contains('ร้ายแรง') ||
+        t.contains('severe') ||
+        t.contains('critical') ||
+        t.contains('ฉุกเฉิน') ||
+        t.contains('ด่วนที่สุด') ||
+        t.contains('อันตราย');
+  }
+
   @override
   Widget build(BuildContext context) {
     final report = widget.report;
     final statusColor = _statusColor(_currentStatus);
     final statusLabel = _statusLabel(_currentStatus);
+
+    final effectiveTypeName = (report.typeName != null &&
+            report.typeName!.trim().isNotEmpty)
+        ? report.typeName!
+        : (_replies.isNotEmpty &&
+                _replies.any((r) => r.reportType.trim().isNotEmpty)
+            ? _replies
+                .firstWhere((r) => r.reportType.trim().isNotEmpty)
+                .reportType
+            : null);
+    final isSevereReport = _isSevereType(effectiveTypeName) ||
+        _replies.any((r) => _isSevereType(r.reportType));
 
     return Scaffold(
       backgroundColor: screenBg,
@@ -227,7 +250,13 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [
           // ── Main Report Details Card ────────────────────────
-          _buildMainReportCard(report, statusColor, statusLabel),
+          _buildMainReportCard(
+            report,
+            statusColor,
+            statusLabel,
+            effectiveTypeName: effectiveTypeName,
+            isSevere: isSevereReport,
+          ),
 
           const SizedBox(height: 20),
 
@@ -238,12 +267,14 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: mintLight,
+                  color: isSevereReport ? const Color(0xFFFEF2F2) : mintLight,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
-                  Icons.timeline_rounded,
-                  color: darkForest,
+                child: Icon(
+                  isSevereReport
+                      ? Icons.warning_amber_rounded
+                      : Icons.timeline_rounded,
+                  color: isSevereReport ? const Color(0xFFDC2626) : darkForest,
                   size: 18,
                 ),
               ),
@@ -257,6 +288,39 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                 ),
               ),
               const Spacer(),
+              if (isSevereReport) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFECACA)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.crisis_alert_rounded,
+                        size: 12,
+                        color: Color(0xFFDC2626),
+                      ),
+                      SizedBox(width: 3),
+                      Text(
+                        'ร้ายแรง',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFDC2626),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
               if (_replies.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -287,10 +351,17 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: const Color(0xFFEAF3EE)),
+              border: Border.all(
+                color: isSevereReport
+                    ? const Color(0xFFFECACA)
+                    : const Color(0xFFEAF3EE),
+                width: isSevereReport ? 1.4 : 1.0,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  color: isSevereReport
+                      ? const Color(0xFFDC2626).withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.03),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -309,11 +380,48 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                 : _error != null
                 ? _buildErrorView()
                 : _replies.isEmpty
-                ? _buildEmptyTimelineView()
+                ? _buildEmptyTimelineView(isSevere: isSevereReport)
                 : Column(
                     children: [
+                      if (isSevereReport)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFFECACA)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(
+                                Icons.crisis_alert_rounded,
+                                size: 16,
+                                color: Color(0xFFDC2626),
+                              ),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'รายงานประเภทร้ายแรง — มีการติดตามและดำเนินการเร่งด่วน',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFB91C1C),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       for (var i = 0; i < _replies.length; i++)
-                        _buildTimelineItem(_replies[i], i == _replies.length - 1),
+                        _buildTimelineItem(
+                          _replies[i],
+                          i == _replies.length - 1,
+                          isParentSevere: isSevereReport,
+                        ),
                     ],
                   ),
           ),
@@ -326,18 +434,25 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
   Widget _buildMainReportCard(
     ReportResponse report,
     Color statusColor,
-    String statusLabel,
-  ) {
+    String statusLabel, {
+    String? effectiveTypeName,
+    bool isSevere = false,
+  }) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFEAF3EE)),
+        border: Border.all(
+          color: isSevere ? const Color(0xFFFECACA) : const Color(0xFFEAF3EE),
+          width: isSevere ? 1.4 : 1.0,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
+            color: isSevere
+                ? const Color(0xFFDC2626).withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.03),
+            blurRadius: 14,
             offset: const Offset(0, 3),
           ),
         ],
@@ -355,29 +470,34 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: mintLight,
+                  color: isSevere ? const Color(0xFFFEF2F2) : mintLight,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: mintBorder),
+                  border: Border.all(
+                    color: isSevere ? const Color(0xFFFECACA) : mintBorder,
+                    width: isSevere ? 1.2 : 1.0,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      (report.typeName != null && report.typeName!.trim().isNotEmpty)
-                          ? Icons.category_rounded
-                          : Icons.assignment_outlined,
+                      isSevere
+                          ? Icons.warning_amber_rounded
+                          : ((effectiveTypeName != null && effectiveTypeName.trim().isNotEmpty)
+                              ? Icons.category_rounded
+                              : Icons.assignment_outlined),
                       size: 13,
-                      color: darkForest,
+                      color: isSevere ? const Color(0xFFDC2626) : darkForest,
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      (report.typeName != null && report.typeName!.trim().isNotEmpty)
-                          ? report.typeName!
+                      (effectiveTypeName != null && effectiveTypeName.trim().isNotEmpty)
+                          ? effectiveTypeName
                           : 'รายงานเหตุการณ์',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: darkForest,
+                        color: isSevere ? const Color(0xFFDC2626) : darkForest,
                       ),
                     ),
                   ],
@@ -417,6 +537,38 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
               ),
             ],
           ),
+
+          if (isSevere) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFCA5A5)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.crisis_alert_rounded,
+                    color: Color(0xFFDC2626),
+                    size: 18,
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'รายงานประเภทร้ายแรง (ความสำคัญสูงสุด)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFB91C1C),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
 
           const SizedBox(height: 14),
 
@@ -577,9 +729,14 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
   }
 
   /// ไอเท็มแสดงในไทม์ไลน์ความคืบหน้า
-  Widget _buildTimelineItem(ReplyReportResponse reply, bool isLast) {
+  Widget _buildTimelineItem(
+    ReplyReportResponse reply,
+    bool isLast, {
+    bool isParentSevere = false,
+  }) {
     final statusColor = _statusColor(reply.currentStatus);
     final statusLabel = _statusLabel(reply.currentStatus);
+    final isSevere = _isSevereType(reply.reportType) || isParentSevere;
 
     final rawImage = reply.image.trim();
     final imageList = rawImage
@@ -605,10 +762,15 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                   decoration: BoxDecoration(
                     color: statusColor,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2.5),
+                    border: Border.all(
+                      color: isSevere ? const Color(0xFFFCA5A5) : Colors.white,
+                      width: 2.5,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: statusColor.withValues(alpha: 0.35),
+                        color: isSevere
+                            ? const Color(0xFFDC2626).withValues(alpha: 0.4)
+                            : statusColor.withValues(alpha: 0.35),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
@@ -619,7 +781,9 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                   Expanded(
                     child: Container(
                       width: 2,
-                      color: const Color(0xFFE2E8F0),
+                      color: isSevere
+                          ? const Color(0xFFFECACA)
+                          : const Color(0xFFE2E8F0),
                     ),
                   ),
               ],
@@ -655,6 +819,42 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                           ),
                         ),
                       ),
+                      if (isSevere) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(0xFFFECACA),
+                              width: 1,
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                size: 12,
+                                color: Color(0xFFDC2626),
+                              ),
+                              SizedBox(width: 3),
+                              Text(
+                                'ร้ายแรง',
+                                style: TextStyle(
+                                  color: Color(0xFFDC2626),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(width: 8),
                       Text(
                         '${reply.updateDate} ${reply.updateTime}'.trim(),
@@ -673,16 +873,24 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        color: isSevere
+                            ? const Color(0xFFFEF2F2).withValues(alpha: 0.4)
+                            : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFEDF2F7)),
+                        border: Border.all(
+                          color: isSevere
+                              ? const Color(0xFFFECACA).withValues(alpha: 0.7)
+                              : const Color(0xFFEDF2F7),
+                        ),
                       ),
                       child: Text(
                         reply.progress,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           height: 1.45,
-                          color: Color(0xFF334155),
+                          color: isSevere
+                              ? const Color(0xFF1E293B)
+                              : const Color(0xFF334155),
                         ),
                       ),
                     ),
@@ -1113,37 +1321,44 @@ class _ReportViewDetailState extends State<ReportViewDetail> {
     );
   }
 
-  Widget _buildEmptyTimelineView() {
+  Widget _buildEmptyTimelineView({bool isSevere = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: mintLight,
+            decoration: BoxDecoration(
+              color: isSevere ? const Color(0xFFFEF2F2) : mintLight,
               shape: BoxShape.circle,
+              border: isSevere
+                  ? Border.all(color: const Color(0xFFFECACA), width: 1.5)
+                  : null,
             ),
-            child: const Icon(
-              Icons.hourglass_top_rounded,
+            child: Icon(
+              isSevere
+                  ? Icons.crisis_alert_rounded
+                  : Icons.hourglass_top_rounded,
               size: 36,
-              color: emeraldTint,
+              color: isSevere ? const Color(0xFFDC2626) : emeraldTint,
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'อยู่ระหว่างดำเนินการ',
+          Text(
+            isSevere ? 'กำลังประสานงานเร่งด่วน' : 'อยู่ระหว่างดำเนินการ',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: textDark,
+              color: isSevere ? const Color(0xFF991B1B) : textDark,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'เจ้าหน้าที่กำลังตรวจสอบและจะรายงานความคืบหน้าที่นี่',
+          Text(
+            isSevere
+                ? 'รายงานเหตุร้ายแรงนี้ถูกส่งต่อให้เจ้าหน้าที่แล้ว และอยู่ระหว่างดำเนินการจัดการโดยด่วน'
+                : 'เจ้าหน้าที่กำลังตรวจสอบและจะรายงานความคืบหน้าที่นี่',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12.5, color: textMuted),
+            style: const TextStyle(fontSize: 12.5, color: textMuted),
           ),
         ],
       ),

@@ -15,6 +15,7 @@ class NotificationModel {
   final String? image;
   final String? parkRangerName;
   final String? parkRangerUsername;
+  final String? reportType;
 
   NotificationModel({
     required this.notificationId,
@@ -29,6 +30,7 @@ class NotificationModel {
     this.image,
     this.parkRangerName,
     this.parkRangerUsername,
+    this.reportType,
   });
 
   NotificationModel copyWith({
@@ -44,6 +46,7 @@ class NotificationModel {
     String? image,
     String? parkRangerName,
     String? parkRangerUsername,
+    String? reportType,
   }) {
     return NotificationModel(
       notificationId: notificationId ?? this.notificationId,
@@ -58,6 +61,7 @@ class NotificationModel {
       image: image ?? this.image,
       parkRangerName: parkRangerName ?? this.parkRangerName,
       parkRangerUsername: parkRangerUsername ?? this.parkRangerUsername,
+      reportType: reportType ?? this.reportType,
     );
   }
 
@@ -103,6 +107,9 @@ class NotificationModel {
       image: reply.image,
       parkRangerName: reply.parkRangerName,
       parkRangerUsername: reply.parkRangerUsername,
+      reportType: reply.reportType.trim().isNotEmpty
+          ? reply.reportType
+          : report?.typeName,
     );
   }
 
@@ -241,6 +248,10 @@ class NotificationModel {
             ? (parsedReportId * 1000)
             : (parsedDate.millisecondsSinceEpoch % 1000000000));
 
+    final reportType =
+        (map['reportType'] ?? map['reporyType'] ?? parsedReport?.typeName)
+            ?.toString();
+
     return NotificationModel(
       notificationId: id,
       title: title,
@@ -254,6 +265,7 @@ class NotificationModel {
       image: image,
       parkRangerName: parkRangerName,
       parkRangerUsername: parkRangerUsername,
+      reportType: reportType,
     );
   }
 
@@ -274,6 +286,7 @@ class NotificationModel {
       'image': image,
       'parkRangerName': parkRangerName,
       'parkRangerUsername': parkRangerUsername,
+      'reportType': reportType,
     };
   }
 

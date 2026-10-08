@@ -578,9 +578,9 @@ class _NotificationViewState extends State<NotificationView> {
       case 'รับทราบแล้ว':
       case 'รับเรื่องแล้ว':
         return const _NotificationStatusTheme(
-          primary: Color(0xFF0284C7), // Sky Blue (ฟ้าคราม - รับทราบ)
-          bgLight: Color(0xFFF0F9FF),
-          borderColor: Color(0xFFBAE6FD),
+          primary: Color(0xFF475569), // Dark Grey (เทาเข้ม - รับทราบ)
+          bgLight: Color(0xFFF1F5F9),
+          borderColor: Color(0xFFCBD5E1),
           label: 'รับทราบ',
           icon: Icons.assignment_turned_in_rounded,
         );
@@ -639,6 +639,10 @@ class _NotificationViewState extends State<NotificationView> {
     final parkName = item.report?.parkName ?? '';
     final statusTheme = _getStatusTheme(item);
     final displayTitle = _formatNotificationTitle(item.title, item.currentStatus);
+    final typeName = item.reportType ?? item.report?.typeName ?? '';
+    final isSevere = typeName.contains('ร้ายแรง') ||
+        typeName.toLowerCase().contains('severe') ||
+        typeName.toLowerCase().contains('critical');
 
     return Material(
       color: Colors.transparent,
@@ -776,6 +780,43 @@ class _NotificationViewState extends State<NotificationView> {
                                           ),
                                         ),
                                       ),
+                                      if (isSevere) ...[
+                                        const SizedBox(width: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2.5,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFEF2F2),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            border: Border.all(
+                                              color: const Color(0xFFFECACA),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: const Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.warning_amber_rounded,
+                                                size: 11,
+                                                color: Color(0xFFDC2626),
+                                              ),
+                                              SizedBox(width: 2.5),
+                                              Text(
+                                                'ร้ายแรง',
+                                                style: TextStyle(
+                                                  color: Color(0xFFDC2626),
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                       const SizedBox(width: 8),
                                       if (isUnread)
                                         Container(
