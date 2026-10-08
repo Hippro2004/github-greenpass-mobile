@@ -19,6 +19,7 @@ class _BookStampDetailsState extends State<BookStampDetails> {
 
   bool _isLoading = true;
   String? _error;
+  bool _showAllHistories = false;
 
   // ── Vibrant Wilderness Theme Palette (ตามแบบ screen.png) ───────────
   static const Color screenBg = Color(0xFFF3F7F5);
@@ -126,6 +127,14 @@ class _BookStampDetailsState extends State<BookStampDetails> {
         return dtB.compareTo(dtA); // ล่าสุดขึ้นก่อน
       });
     return sorted;
+  }
+
+  /// แสดงเฉพาะ 3 รายการล่าสุด ถ้า _showAllHistories = false
+  List<StampResponse> get _displayedHistories {
+    if (_showAllHistories || _sortedHistories.length <= 3) {
+      return _sortedHistories;
+    }
+    return _sortedHistories.take(3).toList();
   }
 
   Future<void> _loadStampDetails() async {
@@ -894,15 +903,15 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                   ),
                   const SizedBox(height: 12),
 
-                  // รายการการ์ดประวัติการเข้าชม
+                  // รายการการ์ดประวัติการเข้าชม (แสดงเฉพาะ 3 ล่าสุด)
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _sortedHistories.length,
+                    itemCount: _displayedHistories.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 12),
                     itemBuilder: (context, index) {
-                      final history = _sortedHistories[index];
+                      final history = _displayedHistories[index];
                       final visitNumber = _sortedHistories.length - index;
 
                       return Container(
@@ -1120,6 +1129,59 @@ class _BookStampDetailsState extends State<BookStampDetails> {
                       );
                     },
                   ),
+
+                  // ปุ่มดูทั้งหมด / ซ่อน (แสดงเฉพาะเมื่อมีมากกว่า 3 รายการ)
+                  if (_sortedHistories.length > 3) ...[
+                    const SizedBox(height: 14),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _showAllHistories = !_showAllHistories;
+                        });
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 13,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: const Color(0xFFD1FAE5)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _showAllHistories
+                                  ? Icons.keyboard_arrow_up_rounded
+                                  : Icons.keyboard_arrow_down_rounded,
+                              color: iconGreen,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _showAllHistories
+                                  ? "ซ่อนรายการเก่า"
+                                  : "ดูทั้งหมด ${_sortedHistories.length} รายการ",
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: iconGreen,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
