@@ -655,7 +655,9 @@ class _NotificationViewState extends State<NotificationView> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: isUnread
+                color: isSevere
+                    ? const Color(0xFFDC2626).withValues(alpha: 0.08)
+                    : isUnread
                     ? statusTheme.primary.withValues(alpha: 0.12)
                     : Colors.black.withValues(alpha: 0.02),
                 blurRadius: 10,
@@ -670,10 +672,12 @@ class _NotificationViewState extends State<NotificationView> {
               decoration: BoxDecoration(
                 color: isUnread ? statusTheme.bgLight : Colors.white,
                 border: Border.all(
-                  color: isUnread
+                  color: isSevere
+                      ? const Color(0xFFFCA5A5)
+                      : isUnread
                       ? statusTheme.borderColor
                       : const Color(0xFFEAF3EE),
-                  width: 1.0,
+                  width: isSevere ? 1.5 : 1.0,
                 ),
               ),
               child: IntrinsicHeight(
@@ -683,7 +687,9 @@ class _NotificationViewState extends State<NotificationView> {
                     // Left accent bar — colored by status!
                     Container(
                       width: isUnread ? 5.0 : 2.5,
-                      color: isUnread
+                      color: isSevere
+                          ? const Color(0xFFDC2626)
+                          : isUnread
                           ? statusTheme.primary
                           : statusTheme.primary.withValues(alpha: 0.35),
                     ),
@@ -884,44 +890,6 @@ class _NotificationViewState extends State<NotificationView> {
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          if (isSevere) ...[
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 6,
-                                                vertical: 2,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFFEF2F2),
-                                                borderRadius:
-                                                    BorderRadius.circular(6),
-                                                border: Border.all(
-                                                  color: const Color(0xFFFECACA),
-                                                  width: 1,
-                                                ),
-                                              ),
-                                              child: const Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(
-                                                    Icons.warning_amber_rounded,
-                                                    size: 11,
-                                                    color: Color(0xFFDC2626),
-                                                  ),
-                                                  SizedBox(width: 2.5),
-                                                  Text(
-                                                    'ร้ายแรง',
-                                                    style: TextStyle(
-                                                      color: Color(0xFFDC2626),
-                                                      fontWeight:
-                                                          FontWeight.w800,
-                                                      fontSize: 9.5,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const SizedBox(width: 6),
-                                          ],
                                           Icon(
                                             Icons.access_time_rounded,
                                             size: 12,
